@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AOS 상태값 정의서 v0.2</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:12px;color:#1a1a2e;background:#f4f6fa;line-height:1.6}
+
+.doc-header{background:linear-gradient(135deg,#0f1f4b 0%,#1a3a6b 60%,#1e4d8c 100%);color:#fff;padding:36px 52px 28px}
+.doc-header h1{font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px}
+.doc-header .sub{font-size:13px;color:#93c5fd;margin-bottom:14px}
+.doc-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:#cbd5e1;margin-bottom:10px}
+.doc-meta .tag{background:rgba(255,255,255,0.15);padding:2px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.25)}
+.doc-meta .tag.warn{background:rgba(245,158,11,0.3);border-color:rgba(245,158,11,0.5);color:#fde68a}
+.doc-meta .tag.new{background:rgba(34,197,94,0.3);border-color:rgba(34,197,94,0.5);color:#bbf7d0}
+.changelog{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:12px 18px;margin-top:10px}
+.changelog h4{font-size:11px;font-weight:700;color:#93c5fd;margin-bottom:8px;letter-spacing:0.5px;text-transform:uppercase}
+.changelog ul{list-style:none;font-size:11px;color:#e2e8f0}
+.changelog ul li{padding:2px 0;display:flex;gap:8px;align-items:flex-start}
+.changelog ul li::before{content:'▸';color:#60a5fa;flex-shrink:0;margin-top:1px}
+
+.toc{background:#fff;border-bottom:2px solid #e2e8f0;padding:10px 52px;display:flex;gap:5px;flex-wrap:wrap;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.toc a{font-size:11px;color:#1d4ed8;text-decoration:none;padding:3px 10px;border:1px solid #dbeafe;border-radius:20px;white-space:nowrap;background:#eff6ff}
+.toc a:hover{background:#dbeafe}
+
+.container{max-width:1440px;margin:0 auto;padding:32px 52px}
+.section{margin-bottom:52px}
+.sec-title{font-size:16px;font-weight:800;color:#0f1f4b;border-left:5px solid #1d4ed8;padding-left:14px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.sec-title .num{background:#1d4ed8;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;letter-spacing:0.5px}
+.sec-title .changed{background:#d97706;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.sec-title .added{background:#059669;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.sec-desc{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 18px;margin-bottom:18px;font-size:12px;color:#1e40af;line-height:1.7}
+.sec-desc strong{color:#1d4ed8}
+
+.tbl-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:16px}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:11px}
+thead th{background:#1a3a6b;color:#fff;padding:9px 11px;text-align:left;font-weight:700;font-size:10px;white-space:nowrap;letter-spacing:0.3px}
+thead th.center{text-align:center}
+tbody tr:nth-child(even){background:#f8fafc}
+tbody tr:hover{background:#eff6ff}
+tbody td{padding:8px 11px;border-bottom:1px solid #e9ecef;vertical-align:top;line-height:1.55}
+tbody tr:last-child td{border-bottom:none}
+
+.s{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap}
+.s-draft{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1}
+.s-active{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7}
+.s-pending{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.s-process{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd}
+.s-done{background:#ede9fe;color:#4c1d95;border:1px solid #c4b5fd}
+.s-cancel{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.s-hold{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+.s-end{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+.s-fail{background:#ffe4e6;color:#9f1239;border:1px solid #fda4af}
+.s-warn{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+
+.yn-y{color:#059669;font-weight:700}
+.yn-n{color:#9ca3af}
+.yn-c{color:#d97706;font-weight:600}
+
+code{background:#f1f5f9;border:1px solid #e2e8f0;padding:1px 6px;border-radius:4px;font-family:'Courier New',monospace;font-size:10px;color:#0f172a}
+
+.flow-section{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:22px 26px;margin-bottom:18px}
+.flow-title{font-size:13px;font-weight:800;color:#0f1f4b;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e2e8f0;display:flex;align-items:center;gap:8px}
+.flow-title .badge{background:#1d4ed8;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px}
+.flow-title .badge.green{background:#059669}
+.flow-title .badge.amber{background:#d97706}
+.flow-body{font-family:'Courier New',monospace;font-size:11px;color:#1e293b;line-height:2;white-space:pre;background:#f8fafc;border-radius:8px;padding:16px 20px;overflow-x:auto}
+.flow-note{font-size:11px;color:#64748b;margin-top:10px;padding:10px 14px;background:#f8fafc;border-radius:6px;border-left:3px solid #94a3b8}
+
+.rule-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:14px 18px;margin-top:14px}
+.rule-box .rt{font-size:11px;font-weight:800;color:#c2410c;margin-bottom:8px}
+.rule-box ul{list-style:none;font-size:11px;color:#7c2d12}
+.rule-box ul li{padding:2px 0;display:flex;gap:6px;align-items:flex-start}
+.rule-box ul li::before{content:'▸';color:#ea580c;flex-shrink:0}
+
+.warn-box{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin-top:10px}
+.warn-box .wt{font-size:11px;font-weight:800;color:#b45309;margin-bottom:6px}
+.warn-box p{font-size:11px;color:#78350f;line-height:1.7}
+
+.info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-top:10px}
+.info-box .it{font-size:11px;font-weight:800;color:#1d4ed8;margin-bottom:6px}
+.info-box p{font-size:11px;color:#1e40af;line-height:1.7}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+.info-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px}
+.info-card h4{font-size:12px;font-weight:700;color:#0f1f4b;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+.info-card ul{list-style:none;font-size:11px}
+.info-card ul li{padding:3px 0;color:#334155;display:flex;gap:6px;border-bottom:1px solid #f8fafc}
+.info-card ul li:last-child{border-bottom:none}
+.info-card ul li::before{content:'—';color:#94a3b8;flex-shrink:0}
+
+hr.pb{border:none;border-top:2px dashed #e2e8f0;margin:44px 0}
+.doc-footer{text-align:center;padding:24px 0;color:#94a3b8;font-size:10px;border-top:1px solid #e2e8f0;margin-top:32px}
+
+.sub-title{font-size:13px;font-weight:700;color:#1a3a6b;margin:20px 0 10px;padding:6px 12px;background:#f0f4ff;border-radius:6px;border-left:3px solid #3b82f6}
+
+@media print{
+  body{background:#fff;font-size:10px}
+  .toc{display:none}
+  .section{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1>AOS 상태값 정의서</h1>
+  <div class="sub">Admin Operating System · Status Code Definition Document</div>
+  <div class="doc-meta">
+    <span class="tag new">v0.2</span>
+    <span class="tag">작성일: 2026-06-09</span>
+    <span class="tag">이전버전: v0.1 → v0.2</span>
+    <span class="tag">대상: 개발팀 / 기획팀 / QA팀</span>
+    <span class="tag warn">⚠ 개발 착수 전 팀 검토 후 확정 필요</span>
+  </div>
+  <div class="changelog">
+    <h4>v0.2 변경 이력 (v0.1 → v0.2)</h4>
+    <ul>
+      <li>예약상태 전면 재정의 — 환불 관련 상태 제거, 8개 상태로 재편. 예약확정 정의를 "담당자 확정" 기준으로 수정</li>
+      <li>결제상태 재설계 — 여행사 예약금/잔금 구조 반영, 11개 상태(환불 흐름 포함)로 확장</li>
+      <li>상품공유상태와 판매사 노출상태 분리 — 공유승인 ≠ 홈페이지 노출, 별도 EXPO_* 상태 신규 추가</li>
+      <li>알림톡 템플릿 승인상태 신규 추가 (TPL_*) — 카카오 심사 흐름 포함</li>
+      <li>지자체 지원사업 상태 고도화 — 사전신청·결과보고·증빙·정산 흐름 전체 반영, 8개 상태로 재편</li>
+      <li>상태 전이 흐름도 전면 재작성 — 예약/결제 독립 흐름도 포함, 총 7개 흐름도</li>
+    </ul>
+    <h4 style="margin-top:12px;color:#fde68a">v0.2 보완사항 (2026-06-09 추가)</h4>
+    <ul>
+      <li>[결제상태] PAY_EXPIRED(결제만료) 정식 상태 추가 — PAY_PENDING 유효시간 초과 시 자동 만료, 재결제 시 신규 PAY_PENDING 생성</li>
+      <li>[상품상태] PRD_CLOSED와 좌석상태 SEAT_CLOSED 역할 명확히 구분 — 특정 출발일 좌석 마감이 상품 전체 PRD_CLOSED를 의미하지 않음</li>
+      <li>[예약상태] RES_CONFIRMED 정산 영향을 "정산예정"으로 수정 — 실제 정산 확정은 결제상태·출발완료 기준과 함께 판단</li>
+      <li>[결제상태] PAY_*가 예약 단위 결제 요약상태임을 명시 — 개별 결제 거래는 추후 payment_transaction 상태값으로 분리 가능</li>
+      <li>[지자체상태] GOV_REJECTED(신청반려) 신규 추가 — GOV_APPLIED 이후 지자체 미선정·반려 시 처리 흐름 반영</li>
+      <li>[메시지발송상태] 재발송 가능 기준 비고 추가 — MSG_FAILED(재발송 가능), MSG_UNDELIVERED(조건부), MSG_DELIVERED(불필요), MSG_CANCELLED(신규 발송)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="toc">
+  <a href="#overview">개요</a>
+  <a href="#s1">1. 상품상태</a>
+  <a href="#s2">2. 상품공유상태</a>
+  <a href="#s2b">2-1. 노출상태</a>
+  <a href="#s3">3. 예약상태</a>
+  <a href="#s4">4. 결제상태</a>
+  <a href="#s5">5. 출발상태</a>
+  <a href="#s6">6. 좌석상태</a>
+  <a href="#s7">7. 정산상태</a>
+  <a href="#s8">8. 인보이스상태</a>
+  <a href="#s9">9. 메시지발송상태</a>
+  <a href="#s9b">9-1. 알림톡템플릿상태</a>
+  <a href="#s10">10. 지자체지원사업상태</a>
+  <a href="#flow">상태전이흐름도</a>
+  <a href="#rules">공통규칙</a>
+</div>
+
+<div class="container">
+
+<!-- ===== OVERVIEW ===== -->
+<div class="section" id="overview">
+  <div class="sec-title"><span class="num">개요</span> 상태값 설계 원칙 및 코드 체계</div>
+  <div class="sec-desc">
+    본 문서는 AOS 플랫폼 전반에서 사용되는 <strong>표준 상태값(Status Code)</strong>을 정의합니다.<br>
+    v0.2에서는 예약상태와 결제상태의 완전 분리, 상품공유와 노출상태 분리, 알림톡 템플릿 승인상태 추가, 지자체 지원사업 흐름 고도화를 반영했습니다.<br>
+    모든 상태값은 <strong>도메인접두어_영문대문자</strong> 형식을 따르며, 개발자가 임의로 추가·변경할 수 없습니다.
+  </div>
+  <div class="two-col">
+    <div class="info-card">
+      <h4>📐 상태 코드 명명 규칙</h4>
+      <ul>
+        <li><strong>형식:</strong> <code>{DOMAIN}_{STATUS}</code></li>
+        <li><strong>DOMAIN:</strong> 2~5자 영문 대문자 접두어</li>
+        <li><strong>STATUS:</strong> 의미를 명확히 표현하는 영문 대문자</li>
+        <li><strong>구분자:</strong> 언더스코어(_) 단일 사용</li>
+        <li><strong>최대 길이:</strong> 30자 이내 / DB: VARCHAR(30) NOT NULL</li>
+        <li><strong>변경 제어:</strong> Enum 또는 코드 테이블로 서버사이드 통제</li>
+        <li><strong>이력 관리:</strong> <code>*_status_history</code> 테이블 전량 기록</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h4>🏷 도메인 접두어 전체 목록 (v0.2)</h4>
+      <ul>
+        <li><code>PRD_</code> — 상품(Product)</li>
+        <li><code>SHARE_</code> — 상품공유(Product Share)</li>
+        <li><code>EXPO_</code> — 판매사 노출(Exposure) ★신규</li>
+        <li><code>RES_</code> — 예약(Reservation)</li>
+        <li><code>PAY_</code> — 결제/환불(Payment)</li>
+        <li><code>DEP_</code> — 출발(Departure)</li>
+        <li><code>SEAT_</code> — 좌석(Seat)</li>
+        <li><code>STL_</code> — 정산(Settlement)</li>
+        <li><code>INV_</code> — 인보이스(Invoice)</li>
+        <li><code>MSG_</code> — 메시지발송(Message)</li>
+        <li><code>TPL_</code> — 알림톡템플릿(Template) ★신규</li>
+        <li><code>GOV_</code> — 지자체지원사업(Government)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="rule-box">
+    <div class="rt">⚠ v0.2 핵심 설계 원칙 — 반드시 숙지</div>
+    <ul>
+      <li><strong>예약상태(RES_*)와 결제상태(PAY_*)는 완전히 독립된 컬럼으로 관리한다.</strong> 예약확정(RES_CONFIRMED)은 담당자 확정 기준이며, 결제 완료(PAY_PAID) 여부와 무관하다.</li>
+      <li><strong>상품공유 승인(SHARE_ACCEPTED)이 홈페이지 노출을 의미하지 않는다.</strong> 판매사가 카테고리 연결 후 노출 체크를 완료해야 EXPO_VISIBLE이 된다.</li>
+      <li><strong>PRD_CLOSED와 SEAT_CLOSED는 다르다.</strong> SEAT_CLOSED는 특정 출발일(회차) 마감이고, PRD_CLOSED는 상품 전체 마감이다. 특정 출발일만 마감된 경우 PRD_CLOSED로 전환하지 않는다.</li>
+      <li><strong>PAY_EXPIRED 발생 시 기존 결제 건을 재활성화하지 않는다.</strong> 재결제 원할 시 신규 PAY_PENDING을 생성한다.</li>
+      <li><strong>PAY_* 상태는 예약 단위 결제 요약상태다.</strong> 개별 결제 거래 상세는 추후 payment_transaction 상태로 분리 가능하다.</li>
+      <li>신규 상태값 추가 시: 기획팀 승인 → 백엔드 리드 검토 → 본 문서 업데이트 → 코드 테이블 반영 순서를 반드시 준수한다.</li>
+      <li>모든 상태 전이 유효성 검증은 서버사이드 전용. 클라이언트 파라미터 직접 수용 금지.</li>
+    </ul>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 1. 상품상태 ===== -->
+<div class="section" id="s1">
+  <div class="sec-title"><span class="num">01</span> 상품상태 (Product Status) <span class="changed">v0.2 보완</span></div>
+  <div class="sec-desc">여행 상품의 생명주기 전체를 표현합니다. <strong>예약 가능 상태는 <code>PRD_ON_SALE</code> 단 하나</strong>입니다. 관리자가 강제 내림 처리를 해도 이미 확정된 예약에는 영향을 주지 않습니다.<br>
+  <strong>⚠ PRD_CLOSED vs SEAT_CLOSED 구분:</strong> <code>PRD_CLOSED</code>는 <u>상품 전체</u>의 판매 마감 상태입니다. 특정 출발일의 좌석만 마감된 경우는 <code>SEAT_CLOSED</code>로 처리하며, <code>PRD_CLOSED</code>로 전환하지 않습니다. 상품에 남은 출발일이 존재하면 <code>PRD_ON_SALE</code>을 유지합니다.</div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">임시저장</span></td><td><code>PRD_DRAFT</code></td><td>등록 중, 미완성 상태. 홈페이지 비노출</td><td>없음(초기)</td><td><code>PRD_REVIEW</code><br><code>PRD_ON_SALE</code></td><td>상품담당자</td><td>홈페이지 미노출</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>예약 불가</td></tr>
+      <tr><td><span class="s s-pending">검토중</span></td><td><code>PRD_REVIEW</code></td><td>내부 검토 대기. 홈페이지 비노출</td><td><code>PRD_DRAFT</code></td><td><code>PRD_ON_SALE</code><br><code>PRD_DRAFT</code></td><td>상품담당자<br>운영자</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>선택적 단계</td></tr>
+      <tr><td><span class="s s-active">판매중</span></td><td><code>PRD_ON_SALE</code></td><td>홈페이지 공개 및 예약 접수 가능. 특정 출발일 좌석이 마감되어도 다른 출발일이 있으면 이 상태 유지</td><td><code>PRD_DRAFT</code><br><code>PRD_REVIEW</code><br><code>PRD_SUSPENDED</code></td><td><code>PRD_SUSPENDED</code><br><code>PRD_CLOSED</code><br><code>PRD_ENDED</code></td><td>상품담당자<br>운영자</td><td>홈페이지 노출<br>좌석 카운팅 시작</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>판매기간·마감일 별도</td></tr>
+      <tr><td><span class="s s-hold">판매중지</span></td><td><code>PRD_SUSPENDED</code></td><td>일시 중단. 홈페이지 비노출, 기존 예약 유지</td><td><code>PRD_ON_SALE</code></td><td><code>PRD_ON_SALE</code><br><code>PRD_ENDED</code></td><td>운영자<br>관리자</td><td>홈페이지 비노출<br>신규 예약 차단</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-n">N</span></td><td>기존 예약 영향 없음</td></tr>
+      <tr><td><span class="s s-end">판매마감</span></td><td><code>PRD_CLOSED</code></td><td><strong>상품 전체</strong>의 판매가 마감된 상태. 모든 출발일 매진 또는 전체 예약마감일 경과 시 적용. 특정 출발일만 마감된 경우는 SEAT_CLOSED로 처리하며 이 상태로 전환하지 않음</td><td><code>PRD_ON_SALE</code></td><td><code>PRD_ON_SALE</code><br><code>PRD_ENDED</code></td><td>시스템 자동<br>운영자</td><td>홈페이지 전체 마감 표시<br>모든 출발일 신규 예약 차단</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>⚠ 특정 출발일만 마감 → SEAT_CLOSED 사용<br>전체 출발일 매진 시에만 PRD_CLOSED 적용</td></tr>
+      <tr><td><span class="s s-end">판매종료</span></td><td><code>PRD_ENDED</code></td><td>출발 완료 후 종료. 조회만 가능한 최종 상태</td><td><code>PRD_ON_SALE</code><br><code>PRD_SUSPENDED</code><br><code>PRD_CLOSED</code></td><td>없음(최종)</td><td>시스템 자동<br>운영자</td><td>홈페이지 완전 비노출</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-c">정산 완료 후</span></td><td>소프트 삭제, 데이터 보존</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="warn-box">
+    <div class="wt">⚠ PRD_CLOSED vs SEAT_CLOSED 적용 기준</div>
+    <p>
+      <strong>SEAT_CLOSED (좌석상태):</strong> 특정 출발일 또는 특정 회차의 잔여 좌석이 0이 되거나 운영자가 수동 마감한 경우. 상품은 PRD_ON_SALE 유지, 해당 출발일만 예약 불가.<br>
+      <strong>PRD_CLOSED (상품상태):</strong> 상품에 속한 모든 출발일의 좌석이 마감되었거나, 상품 전체 예약마감일이 경과한 경우. 상품 자체를 전체 마감 처리.<br>
+      <strong>판단 기준:</strong> "다른 출발일에 예약 가능한 좌석이 남아 있는가?" → YES이면 PRD_CLOSED 적용 금지.
+    </p>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 2. 상품공유상태 + 노출상태 ===== -->
+<div class="section" id="s2">
+  <div class="sec-title"><span class="num">02</span> 상품공유상태 (Product Share Status) <span class="changed">v0.2 수정</span></div>
+  <div class="sec-desc">
+    공급사가 판매사에게 상품을 공유할 때의 계약/승인 상태입니다.<br>
+    <strong>⚠ v0.2 핵심 변경: 공유 수락(SHARE_ACCEPTED)이 홈페이지 노출을 의미하지 않습니다.</strong><br>
+    공유 수락 이후 판매사가 카테고리를 연결하고 노출 여부를 직접 설정해야 홈페이지에 노출됩니다. 이 노출 흐름은 별도 <code>EXPO_*</code> 상태로 관리합니다.
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-pending">공유요청</span></td><td><code>SHARE_REQUESTED</code></td><td>공급사가 판매사에게 상품 공유를 요청한 상태</td><td>없음(초기)</td><td><code>SHARE_ACCEPTED</code><br><code>SHARE_REJECTED</code></td><td>공급사</td><td>판매사 알림 발송</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-active">공유수락</span></td><td><code>SHARE_ACCEPTED</code></td><td>판매사가 공유 요청을 수락. 노출 설정(EXPO_*)은 별도 진행</td><td><code>SHARE_REQUESTED</code></td><td><code>SHARE_SUSPENDED</code><br><code>SHARE_TERMINATED</code></td><td>판매사<br>운영자</td><td>EXPO_NOT_CONFIGURED 자동 생성<br>수수료 조건 활성화</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-y">Y</span></td><td>수락 ≠ 홈페이지 노출<br>EXPO_* 별도 설정 필요</td></tr>
+      <tr><td><span class="s s-cancel">공유거절</span></td><td><code>SHARE_REJECTED</code></td><td>판매사가 공유 요청을 거절한 최종 상태</td><td><code>SHARE_REQUESTED</code></td><td>없음(최종)</td><td>판매사</td><td>공급사 알림</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td>재요청 가능(신규 건 생성)</td></tr>
+      <tr><td><span class="s s-hold">공유중지</span></td><td><code>SHARE_SUSPENDED</code></td><td>일시적 공유 중단. 진행 중 예약 유지</td><td><code>SHARE_ACCEPTED</code></td><td><code>SHARE_ACCEPTED</code><br><code>SHARE_TERMINATED</code></td><td>공급사<br>판매사<br>운영자</td><td>EXPO_HIDDEN 자동 전환<br>신규 예약 차단</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-end">공유종료</span></td><td><code>SHARE_TERMINATED</code></td><td>계약 종료 또는 만료로 공유 완전 종료</td><td><code>SHARE_ACCEPTED</code><br><code>SHARE_SUSPENDED</code></td><td>없음(최종)</td><td>시스템 자동<br>운영자</td><td>EXPO_ENDED 자동 전환<br>노출 제거·정산 마감</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-y">Y</span></td><td>미정산 건 처리 필요</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ===== 2-1. 판매사 노출상태 ===== -->
+<div class="section" id="s2b">
+  <div class="sec-title"><span class="num">02-1</span> 판매사 노출상태 (Exposure Status) <span class="added">v0.2 신규</span></div>
+  <div class="sec-desc">
+    <strong>상품공유 수락(SHARE_ACCEPTED) 이후, 판매사 홈페이지에 해당 상품이 실제로 노출되기까지의 단계</strong>를 별도로 관리합니다.<br>
+    판매사는 공유 수락된 상품을 자사 카테고리에 연결하고, 노출 여부를 직접 체크해야 홈페이지에 반영됩니다.<br>
+    <code>EXPO_*</code> 상태는 공유 건(판매사 × 상품) 단위로 생성됩니다.
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">카테고리 미연결</span></td><td><code>EXPO_NOT_CONFIGURED</code></td><td>공유 수락 직후 초기 상태. 카테고리 미연결, 홈페이지 비노출</td><td>없음(SHARE_ACCEPTED 시 자동 생성)</td><td><code>EXPO_READY</code></td><td>시스템 자동</td><td>판매사 어드민 알림<br>(카테고리 연결 안내)</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>카테고리 연결 전까지 유지</td></tr>
+      <tr><td><span class="s s-pending">노출준비</span></td><td><code>EXPO_READY</code></td><td>카테고리 연결 완료. 노출 여부 미체크 상태, 홈페이지 비노출</td><td><code>EXPO_NOT_CONFIGURED</code><br><code>EXPO_HIDDEN</code></td><td><code>EXPO_VISIBLE</code><br><code>EXPO_HIDDEN</code></td><td>판매사 담당자</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>노출 체크 전 최종 확인 단계</td></tr>
+      <tr><td><span class="s s-active">홈페이지 노출</span></td><td><code>EXPO_VISIBLE</code></td><td>판매사 홈페이지에 실제 노출 중. 예약 접수 가능</td><td><code>EXPO_READY</code></td><td><code>EXPO_HIDDEN</code><br><code>EXPO_ENDED</code></td><td>판매사 담당자</td><td>홈페이지 노출 반영<br>예약 채널 활성화</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>PRD_ON_SALE AND EXPO_VISIBLE<br>= 예약 가능 조건</td></tr>
+      <tr><td><span class="s s-hold">숨김</span></td><td><code>EXPO_HIDDEN</code></td><td>판매사가 수동으로 숨김 처리. 홈페이지 비노출, 공유 관계는 유지</td><td><code>EXPO_VISIBLE</code><br><code>EXPO_READY</code></td><td><code>EXPO_VISIBLE</code><br><code>EXPO_READY</code><br><code>EXPO_ENDED</code></td><td>판매사 담당자<br>시스템(SHARE_SUSPENDED 연동)</td><td>홈페이지 비노출</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>공유중지(SHARE_SUSPENDED) 시<br>자동 전환</td></tr>
+      <tr><td><span class="s s-end">노출종료</span></td><td><code>EXPO_ENDED</code></td><td>공유 종료 또는 상품 판매 종료로 노출 완전 종료</td><td><code>EXPO_VISIBLE</code><br><code>EXPO_HIDDEN</code></td><td>없음(최종)</td><td>시스템 자동<br>(SHARE_TERMINATED 연동)</td><td>홈페이지 완전 비노출</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>SHARE_TERMINATED 시 자동</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="info-box">
+    <div class="it">💡 예약 가능 조건 (AND 조건)</div>
+    <p>
+      판매사 채널에서 예약이 가능하려면 다음 세 가지 상태가 동시에 만족되어야 합니다.<br>
+      ① <code>PRD_ON_SALE</code> (상품 판매중) <strong>AND</strong> ② <code>SHARE_ACCEPTED</code> (공유 수락) <strong>AND</strong> ③ <code>EXPO_VISIBLE</code> (홈페이지 노출)<br>
+      세 조건 중 하나라도 충족되지 않으면 해당 판매사 채널에서 예약 불가입니다.
+    </p>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 3. 예약상태 ===== -->
+<div class="section" id="s3">
+  <div class="sec-title"><span class="num">03</span> 예약상태 (Reservation Status) <span class="changed">v0.2 전면 재정의</span></div>
+  <div class="sec-desc">
+    <strong>v0.2 핵심 변경사항:</strong><br>
+    ① 예약상태에서 환불 관련 상태(<code>RES_REFUNDING</code>, <code>RES_REFUNDED</code>, <code>RES_REFUND_FAILED</code>) 제거 → 결제상태(<code>PAY_*</code>)로 이관<br>
+    ② 예약확정(<code>RES_CONFIRMED</code>) 정의 변경: "결제 완료 후 확정"이 아닌 <strong>"담당자가 좌석·상품·출발 가능 여부를 확인하여 확정한 상태"</strong><br>
+    ③ 결제 완료 여부는 <code>PAY_*</code> 상태로 별도 관리. 예약확정 후에도 결제는 예약금→잔금 순서로 진행될 수 있음
+  </div>
+  <div class="warn-box">
+    <div class="wt">⚠ 예약상태 vs 결제상태 완전 분리 원칙 (v0.2)</div>
+    <p>
+      <code>reservation.res_status</code>와 <code>payment.pay_status</code>는 별도 테이블의 별도 컬럼으로 관리합니다.<br>
+      <strong>예약확정(RES_CONFIRMED)은 담당자 수동 또는 시스템 자동으로 이루어지며, 결제 완료(PAY_PAID)와 독립적입니다.</strong><br>
+      예: 예약확정 후 예약금만 납부한 경우 → <code>RES_CONFIRMED</code> + <code>PAY_DEPOSIT_PAID</code> 상태가 공존 가능<br>
+      화면에서는 두 상태를 조합하여 표시합니다. (예: "예약확정 | 잔금미납")
+    </p>
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">예약접수</span></td><td><code>RES_RECEIVED</code></td><td>고객이 예약 폼을 제출하여 시스템에 접수된 초기 상태. 담당자 확인 전</td><td>없음(초기)</td><td><code>RES_WAITING</code><br><code>RES_CONFIRMED</code><br><code>RES_CANCELLED</code><br><code>RES_EXPIRED</code></td><td>시스템 자동<br>(폼 제출 시)</td><td>좌석 임시 점유<br>담당자 신규 예약 알림</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td>PAY_UNPAID 상태로 시작<br>결제 상태와 독립</td></tr>
+      <tr><td><span class="s s-pending">예약대기</span></td><td><code>RES_WAITING</code></td><td>접수 후 담당자 검토 중 또는 내부 처리 대기 상태</td><td><code>RES_RECEIVED</code></td><td><code>RES_CONFIRMED</code><br><code>RES_CANCELLED</code><br><code>RES_EXPIRED</code></td><td>운영자<br>담당자</td><td>—</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-n">N</span></td><td>추가 서류·결제 요청 대기 등</td></tr>
+      <tr><td><span class="s s-active">예약확정</span></td><td><code>RES_CONFIRMED</code></td><td>담당자가 좌석·상품·출발 가능 여부를 확인하고 예약을 확정한 상태. 결제 완료 여부와 무관</td><td><code>RES_RECEIVED</code><br><code>RES_WAITING</code><br><code>RES_WAITLISTED</code></td><td><code>RES_COMPLETED</code><br><code>RES_CANCEL_REQUESTED</code><br><code>RES_CANCELLED</code></td><td>담당자(수동)<br>시스템(자동설정 시)</td><td>좌석 확정 점유<br>행사표 반영<br>출발확정 목록 추가<br>잔금 납부 일정 등록</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-c">정산예정</span></td><td>결제는 PAY_* 별도 관리.<br>확정 후 잔금 안내 알림톡 발송.<br>⚠ 실제 정산 확정 기준은 결제상태(PAY_PAID 이상) + 출발완료(DEP_COMPLETED) 기준을 함께 확인. 정산관리 기능명세서에서 정의.</td></tr>
+      <tr><td><span class="s s-process">대기예약</span></td><td><code>RES_WAITLISTED</code></td><td>좌석 마감으로 대기 등록. 취소 발생 시 순번 배정</td><td><code>RES_RECEIVED</code></td><td><code>RES_CONFIRMED</code><br><code>RES_CANCELLED</code></td><td>시스템 자동<br>운영자</td><td>대기 순번 관리<br>좌석 발생 시 자동 안내</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td>좌석 발생 시 순번대로 확정</td></tr>
+      <tr><td><span class="s s-warn">취소요청</span></td><td><code>RES_CANCEL_REQUESTED</code></td><td>고객이 취소를 요청한 상태. 담당자 처리 전 중간 단계</td><td><code>RES_CONFIRMED</code></td><td><code>RES_CANCELLED</code><br><code>RES_CONFIRMED</code></td><td>고객<br>판매사</td><td>담당자 취소 요청 알림<br>취소 수수료 계산 준비</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td>담당자가 최종 취소 처리</td></tr>
+      <tr><td><span class="s s-cancel">예약취소</span></td><td><code>RES_CANCELLED</code></td><td>예약이 취소된 최종 상태. 환불은 PAY_* 상태로 별도 진행</td><td><code>RES_RECEIVED</code><br><code>RES_WAITING</code><br><code>RES_CONFIRMED</code><br><code>RES_CANCEL_REQUESTED</code><br><code>RES_WAITLISTED</code></td><td>없음(최종)</td><td>고객<br>담당자<br>운영자<br>시스템</td><td>좌석 반환<br>PAY_REFUND_REQUESTED 전환 안내<br>취소 수수료 계산 후 정산 반영</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-y">Y</span></td><td>환불은 PAY_* 에서 처리<br>예약취소 ≠ 환불완료</td></tr>
+      <tr><td><span class="s s-done">행사완료</span></td><td><code>RES_COMPLETED</code></td><td>출발 및 귀환 완료 후 종료된 최종 상태</td><td><code>RES_CONFIRMED</code></td><td>없음(최종)</td><td>시스템 자동<br>(DEP_COMPLETED 연동)</td><td>정산 대상 확정<br>리뷰 요청 발송</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-y">Y</span></td><td>DEP_COMPLETED 시 자동</td></tr>
+      <tr><td><span class="s s-end">예약만료</span></td><td><code>RES_EXPIRED</code></td><td>담당자 미처리 또는 설정 기간 초과로 자동 소멸</td><td><code>RES_RECEIVED</code><br><code>RES_WAITING</code></td><td>없음(최종)</td><td>시스템 자동</td><td>좌석 임시 점유 해제</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-n">N</span></td><td>만료 기준 시간 운영 설정</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 4. 결제상태 ===== -->
+<div class="section" id="s4">
+  <div class="sec-title"><span class="num">04</span> 결제상태 (Payment Status) <span class="changed">v0.2 보완</span></div>
+  <div class="sec-desc">
+    <strong>v0.2 핵심 변경:</strong> 여행사 실무의 <strong>예약금 → 잔금 납부 구조</strong>를 결제상태에 반영했습니다.<br>
+    예약 취소 시 환불 흐름(<code>PAY_REFUND_REQUESTED</code> → <code>PAY_REFUNDING</code> → <code>PAY_REFUNDED</code>)도 결제상태 내에서 관리합니다.<br>
+    <strong>PAY_* 상태는 예약(reservation) 단위의 결제 진행 요약상태입니다.</strong> 하나의 예약에는 예약금·잔금 등 여러 결제 거래가 연결될 수 있으며, PAY_*는 그 전체 진행 상황을 표현합니다.<br>
+    카드 승인·가상계좌 입금·무통장 입금 등 개별 결제 거래의 상세 상태는 추후 <code>payment_transaction</code> 상태값으로 별도 분리하여 관리할 수 있습니다.
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">미입금</span></td><td><code>PAY_UNPAID</code></td><td>예약 접수 직후 초기 상태. 아직 아무 결제도 이루어지지 않음</td><td>없음(초기, RES_RECEIVED 시 자동 생성)</td><td><code>PAY_PENDING</code><br><code>PAY_DEPOSIT_PAID</code></td><td>시스템 자동</td><td>결제 안내 알림톡 발송</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td>예약 접수와 동시 생성</td></tr>
+      <tr><td><span class="s s-pending">결제대기</span></td><td><code>PAY_PENDING</code></td><td>결제 링크·가상계좌 등 발행 후 입금 대기 중. 유효시간 내 결제 미완료 시 PAY_EXPIRED로 자동 전환</td><td><code>PAY_UNPAID</code></td><td><code>PAY_DEPOSIT_PAID</code><br><code>PAY_PAID</code><br><code>PAY_FAILED</code><br><code>PAY_EXPIRED</code></td><td>시스템 자동<br>담당자</td><td>결제 링크 발행<br>유효시간 타이머 시작</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>가상계좌·카드 결제창 포함</td></tr>
+      <tr><td><span class="s s-process">예약금입금</span></td><td><code>PAY_DEPOSIT_PAID</code></td><td>예약금(계약금)이 입금된 상태. 잔금 납부 필요</td><td><code>PAY_UNPAID</code><br><code>PAY_PENDING</code></td><td><code>PAY_BALANCE_REQUESTED</code><br><code>PAY_PAID</code><br><code>PAY_REFUND_REQUESTED</code></td><td>PG 웹훅<br>담당자(수동 입금 확인)</td><td>잔금 납부 일정 등록<br>잔금 안내 알림톡 스케줄</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-c">조건부</span></td><td>잔금 납부 기한 별도 설정 필요.<br>개별 거래는 payment_transaction 참조</td></tr>
+      <tr><td><span class="s s-hold">잔금요청</span></td><td><code>PAY_BALANCE_REQUESTED</code></td><td>잔금 납부 기한이 도래하여 고객에게 잔금 요청을 발송한 상태</td><td><code>PAY_DEPOSIT_PAID</code></td><td><code>PAY_PAID</code><br><code>PAY_REFUND_REQUESTED</code></td><td>시스템 자동<br>(기한 도래 시)<br>담당자</td><td>잔금 납부 안내 알림톡 발송</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td>잔금 미납 시 예약 취소 처리<br>정책 별도 정의 필요</td></tr>
+      <tr><td><span class="s s-active">결제완료</span></td><td><code>PAY_PAID</code></td><td>예약금+잔금 또는 전액 결제가 완료된 상태. 정산 대상 확정 기준</td><td><code>PAY_PENDING</code><br><code>PAY_DEPOSIT_PAID</code><br><code>PAY_BALANCE_REQUESTED</code></td><td><code>PAY_REFUND_REQUESTED</code></td><td>PG 웹훅<br>담당자(수동 확인)</td><td>정산 대상 확정 등록<br>영수증 발행</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-y">Y</span></td><td>PG 웹훅 이중처리 방지 필수</td></tr>
+      <tr><td><span class="s s-fail">결제실패</span></td><td><code>PAY_FAILED</code></td><td>PG사 결제 거절 또는 오류 응답 수신</td><td><code>PAY_PENDING</code></td><td><code>PAY_PENDING</code></td><td>PG 웹훅</td><td>실패 사유 기록<br>고객 안내</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-n">N</span></td><td>재결제 시 기존 건 되살리지 않고<br>신규 PAY_PENDING 생성</td></tr>
+      <tr><td><span class="s s-end">결제만료</span></td><td><code>PAY_EXPIRED</code></td><td>결제 링크·가상계좌·결제 요청의 유효시간이 만료된 상태. 결제 창이 닫히거나 입금 기한이 경과됨</td><td><code>PAY_PENDING</code></td><td>없음(최종)<br>또는 신규 <code>PAY_PENDING</code> 재생성</td><td>시스템 자동</td><td>결제 링크 만료 처리<br>고객 재결제 안내 가능</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-n">N</span></td><td>⚠ 재결제 시 기존 PAY_EXPIRED 건을 되살리지 않고 신규 PAY_PENDING 생성 권장.<br>예약상태(RES_*)와 독립적으로 관리.</td></tr>
+      <tr><td><span class="s s-warn">환불요청</span></td><td><code>PAY_REFUND_REQUESTED</code></td><td>고객 또는 운영자가 환불을 요청한 상태. 담당자 처리 대기</td><td><code>PAY_DEPOSIT_PAID</code><br><code>PAY_BALANCE_REQUESTED</code><br><code>PAY_PAID</code></td><td><code>PAY_REFUNDING</code></td><td>고객<br>운영자<br>시스템(RES_CANCELLED 연동)</td><td>담당자 환불 요청 알림<br>취소 수수료 계산</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-c">보류</span></td><td>RES_CANCELLED 시 자동 안내</td></tr>
+      <tr><td><span class="s s-process">환불중</span></td><td><code>PAY_REFUNDING</code></td><td>담당자 승인 후 PG사 환불 처리 진행 중</td><td><code>PAY_REFUND_REQUESTED</code></td><td><code>PAY_REFUNDED</code><br><code>PAY_PARTIAL_REFUNDED</code><br><code>PAY_REFUND_FAILED</code></td><td>담당자<br>시스템(PG 연동)</td><td>PG 환불 API 호출</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-y">Y</span></td><td></td></tr>
+      <tr><td><span class="s s-done">부분환불</span></td><td><code>PAY_PARTIAL_REFUNDED</code></td><td>취소 수수료 차감 후 일부 금액만 환불 완료</td><td><code>PAY_REFUNDING</code></td><td>없음(최종)</td><td>PG 웹훅</td><td>취소수수료 정산 기록<br>환불 금액·수수료 명세 저장</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-y">Y</span></td><td>환불금액·수수료 명세 필수 저장</td></tr>
+      <tr><td><span class="s s-done">환불완료</span></td><td><code>PAY_REFUNDED</code></td><td>전액 환불이 완료된 최종 상태</td><td><code>PAY_REFUNDING</code></td><td>없음(최종)</td><td>PG 웹훅</td><td>정산 차감 확정<br>고객 환불완료 안내</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-y">Y</span></td><td></td></tr>
+      <tr><td><span class="s s-fail">환불실패</span></td><td><code>PAY_REFUND_FAILED</code></td><td>PG사 환불 처리 실패. 관리자 수동 처리 필요</td><td><code>PAY_REFUNDING</code></td><td><code>PAY_REFUNDING</code></td><td>PG 웹훅</td><td>관리자 긴급 알림<br>수동 처리 큐 등록</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-c">보류</span></td><td>SLA(처리 기한) 정의 필요<br>계좌이체 환불로 전환 가능</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="info-box">
+    <div class="it">💡 PAY_* 상태와 payment_transaction 관계</div>
+    <p>
+      <strong>PAY_* (결제상태):</strong> 예약(reservation) 단위의 전체 결제 진행 요약상태. 예약금 납부 여부, 잔금 납부 완료 여부, 환불 진행 상태를 표현.<br>
+      <strong>payment_transaction (개별 거래):</strong> 카드 승인 1건, 가상계좌 입금 1건, 무통장 입금 1건 등 실제 개별 결제 처리 단위. PAY_*에 1:N으로 연결.<br>
+      현재는 PAY_* 단위로 관리하며, 결제 수단별 트랜잭션 상세 추적이 필요한 시점에 <code>payment_transaction</code> 상태값(<code>TXN_PENDING</code>, <code>TXN_APPROVED</code>, <code>TXN_FAILED</code> 등)으로 분리 설계 가능합니다.
+    </p>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 5. 출발상태 ===== -->
+<div class="section" id="s5">
+  <div class="sec-title"><span class="num">05</span> 출발상태 (Departure Status) <span style="font-size:11px;color:#64748b;font-weight:400">— v0.1과 동일</span></div>
+  <div class="sec-desc">출발 일정 단위(상품 × 출발일)의 운행 여부를 관리합니다. <strong><code>DEP_CONFIRMED</code> 상태에서만 탑승자 명단 확정 및 안내 발송이 가능합니다.</strong></div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-pending">출발대기</span></td><td><code>DEP_PENDING</code></td><td>출발 예정이나 아직 확정되지 않은 상태</td><td>없음(초기)</td><td><code>DEP_CONFIRMED</code><br><code>DEP_CANCELLED</code></td><td>운영자</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>상품 판매 시작과 함께 생성</td></tr>
+      <tr><td><span class="s s-active">출발확정</span></td><td><code>DEP_CONFIRMED</code></td><td>최소 인원 충족 등 조건 만족으로 출발 확정</td><td><code>DEP_PENDING</code></td><td><code>DEP_DEPARTED</code><br><code>DEP_CANCELLED</code></td><td>운영자<br>시스템 자동</td><td>고객 출발확정 알림톡 발송<br>행사표 확정<br>D-3, D-1 리마인더 스케줄 등록</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-process">출발</span></td><td><code>DEP_DEPARTED</code></td><td>실제 출발이 완료된 상태. 여행 진행 중</td><td><code>DEP_CONFIRMED</code></td><td><code>DEP_COMPLETED</code></td><td>운영자<br>시스템 자동</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>출발일 자동 전환 가능</td></tr>
+      <tr><td><span class="s s-done">행사완료</span></td><td><code>DEP_COMPLETED</code></td><td>여행 일정 전체 완료</td><td><code>DEP_DEPARTED</code></td><td>없음(최종)</td><td>운영자<br>시스템 자동</td><td>연결 예약 RES_COMPLETED 전환<br>정산 대상 확정</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-y">Y</span></td><td>귀환일 자동 전환 가능</td></tr>
+      <tr><td><span class="s s-cancel">출발취소</span></td><td><code>DEP_CANCELLED</code></td><td>최소 인원 미달 또는 운영 사정으로 취소</td><td><code>DEP_PENDING</code><br><code>DEP_CONFIRMED</code></td><td>없음(최종)</td><td>운영자</td><td>연결 예약 전체 RES_CANCELLED 전환<br>환불 처리 일괄 시작</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-y">Y</span></td><td>고객 전체 알림톡 필수</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 6. 좌석상태 ===== -->
+<div class="section" id="s6">
+  <div class="sec-title"><span class="num">06</span> 좌석상태 (Seat Status) <span class="changed">v0.2 보완</span></div>
+  <div class="sec-desc">상품 × <strong>출발일(회차)</strong> 단위 좌석 가용 여부를 관리합니다. 예약 생성 시 <strong>서버사이드 선점 검증(Optimistic Lock 또는 SELECT FOR UPDATE)</strong>이 필수입니다.<br>
+  <strong>⚠ SEAT_CLOSED 적용 범위:</strong> 특정 출발일 또는 특정 회차의 좌석 마감 상태입니다. 이 상태가 되어도 상품 전체(<code>PRD_*</code>)에는 영향을 주지 않습니다. 다른 출발일에 잔여석이 있으면 상품은 <code>PRD_ON_SALE</code>을 유지합니다.</div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-active">예약가능</span></td><td><code>SEAT_AVAILABLE</code></td><td>잔여 좌석이 있어 예약 접수 가능</td><td><code>SEAT_CLOSED</code></td><td><code>SEAT_LIMITED</code><br><code>SEAT_CLOSED</code><br><code>SEAT_BLOCKED</code></td><td>시스템 자동</td><td>예약 접수 허용</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-hold">잔여석부족</span></td><td><code>SEAT_LIMITED</code></td><td>잔여 좌석 임박. 마감 임박 배지 표시</td><td><code>SEAT_AVAILABLE</code></td><td><code>SEAT_CLOSED</code><br><code>SEAT_AVAILABLE</code></td><td>시스템 자동</td><td>홈페이지 마감임박 배지</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>기본 임박 기준: 잔여 3석 이하<br>(운영 설정 변경 가능)</td></tr>
+      <tr><td><span class="s s-end">회차마감</span></td><td><code>SEAT_CLOSED</code></td><td><strong>특정 출발일(회차)</strong>의 잔여 좌석 0 또는 운영자 수동 마감. 상품 전체 PRD_CLOSED와 무관하며, 다른 출발일에 잔여석이 있으면 상품은 PRD_ON_SALE 유지</td><td><code>SEAT_AVAILABLE</code><br><code>SEAT_LIMITED</code></td><td><code>SEAT_AVAILABLE</code></td><td>시스템 자동<br>운영자</td><td>해당 출발일 신규 예약 차단<br>대기 접수 전환</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>⚠ 상품 전체 마감 ≠ SEAT_CLOSED<br>상품 전체 마감은 PRD_CLOSED 사용<br>취소 발생 시 자동 재오픈 가능</td></tr>
+      <tr><td><span class="s s-cancel">블록</span></td><td><code>SEAT_BLOCKED</code></td><td>운영자가 단체석·VIP석 등 임의 점유</td><td><code>SEAT_AVAILABLE</code></td><td><code>SEAT_AVAILABLE</code><br><code>SEAT_CLOSED</code></td><td>운영자</td><td>해당 좌석 수 예약 가능 수에서 제외</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>블록 사유 메모 필드 필요</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 7. 정산상태 ===== -->
+<div class="section" id="s7">
+  <div class="sec-title"><span class="num">07</span> 정산상태 (Settlement Status) <span style="font-size:11px;color:#64748b;font-weight:400">— v0.1과 동일</span></div>
+  <div class="sec-desc">판매사·공급사·지자체와의 수수료 및 대금 정산 처리 상태입니다. 정산상태와 인보이스상태는 독립적으로 관리됩니다.</div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">정산대기</span></td><td><code>STL_PENDING</code></td><td>정산 대상으로 집계됐으나 아직 처리 전</td><td>없음(초기)</td><td><code>STL_IN_REVIEW</code><br><code>STL_APPROVED</code></td><td>시스템 자동</td><td>정산 대상 목록 등록</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-y">Y</span></td><td></td></tr>
+      <tr><td><span class="s s-process">검토중</span></td><td><code>STL_IN_REVIEW</code></td><td>정산 내용 검토 및 확인 중</td><td><code>STL_PENDING</code></td><td><code>STL_APPROVED</code><br><code>STL_DISPUTED</code></td><td>정산담당자</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-y">Y</span></td><td></td></tr>
+      <tr><td><span class="s s-active">정산승인</span></td><td><code>STL_APPROVED</code></td><td>정산 금액 확정 및 지급 승인 완료</td><td><code>STL_PENDING</code><br><code>STL_IN_REVIEW</code></td><td><code>STL_PAID</code></td><td>정산담당자<br>운영자</td><td>인보이스 생성 트리거<br>지급 스케줄 등록</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-y">Y</span></td><td></td></tr>
+      <tr><td><span class="s s-hold">이의제기</span></td><td><code>STL_DISPUTED</code></td><td>판매사/공급사에서 정산 금액에 이의 제기</td><td><code>STL_IN_REVIEW</code></td><td><code>STL_IN_REVIEW</code><br><code>STL_APPROVED</code></td><td>판매사<br>공급사<br>운영자</td><td>이의제기 내용·증빙 기록</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-c">보류</span></td><td>이의제기 사유·증빙 첨부 필요</td></tr>
+      <tr><td><span class="s s-done">지급완료</span></td><td><code>STL_PAID</code></td><td>실제 입금이 완료된 최종 상태</td><td><code>STL_APPROVED</code></td><td>없음(최종)</td><td>정산담당자</td><td>미지급 현황에서 제거</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-y">Y</span></td><td>이체 확인서 첨부 권장</td></tr>
+      <tr><td><span class="s s-cancel">정산취소</span></td><td><code>STL_CANCELLED</code></td><td>예약 취소 등으로 정산 대상에서 제외</td><td><code>STL_PENDING</code><br><code>STL_IN_REVIEW</code></td><td>없음(최종)</td><td>시스템 자동<br>운영자</td><td>정산 대상 제외<br>인보이스 수정</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-y">Y</span></td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 8. 인보이스상태 ===== -->
+<div class="section" id="s8">
+  <div class="sec-title"><span class="num">08</span> 인보이스상태 (Invoice Status) <span style="font-size:11px;color:#64748b;font-weight:400">— v0.1과 동일</span></div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">초안</span></td><td><code>INV_DRAFT</code></td><td>작성 중, 미발송 상태</td><td>없음(초기)</td><td><code>INV_SENT</code><br><code>INV_CANCELLED</code></td><td>정산담당자</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>PDF 미리보기 가능</td></tr>
+      <tr><td><span class="s s-process">발송완료</span></td><td><code>INV_SENT</code></td><td>수신자에게 발송됨. 지급 기한 타이머 시작</td><td><code>INV_DRAFT</code></td><td><code>INV_ACKNOWLEDGED</code><br><code>INV_OVERDUE</code><br><code>INV_CANCELLED</code></td><td>정산담당자</td><td>이메일/알림톡 발송</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td>발송일 기록 필수</td></tr>
+      <tr><td><span class="s s-active">수신확인</span></td><td><code>INV_ACKNOWLEDGED</code></td><td>수신자가 확인한 상태</td><td><code>INV_SENT</code></td><td><code>INV_PAID</code><br><code>INV_DISPUTED</code><br><code>INV_OVERDUE</code></td><td>수신자<br>시스템 자동</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-hold">이의제기</span></td><td><code>INV_DISPUTED</code></td><td>수신자가 금액 등에 이의 제기</td><td><code>INV_ACKNOWLEDGED</code><br><code>INV_SENT</code></td><td><code>INV_DRAFT</code><br><code>INV_SENT</code></td><td>수신자</td><td>이의 내용 기록·담당자 알림</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-c">보류</span></td><td>수정 후 재발송 필요</td></tr>
+      <tr><td><span class="s s-fail">연체</span></td><td><code>INV_OVERDUE</code></td><td>지급 기한 초과 미지급</td><td><code>INV_SENT</code><br><code>INV_ACKNOWLEDGED</code></td><td><code>INV_PAID</code></td><td>시스템 자동</td><td>연체 알림·미지급 현황 등록</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-c">보류</span></td><td>연체 이자 정책 별도 정의 필요</td></tr>
+      <tr><td><span class="s s-done">지급완료</span></td><td><code>INV_PAID</code></td><td>전액 지급 완료</td><td><code>INV_ACKNOWLEDGED</code><br><code>INV_OVERDUE</code></td><td>없음(최종)</td><td>정산담당자</td><td>STL_PAID 연동</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-y">Y</span></td><td></td></tr>
+      <tr><td><span class="s s-end">취소</span></td><td><code>INV_CANCELLED</code></td><td>발행 취소 또는 예약 취소로 무효화</td><td><code>INV_DRAFT</code><br><code>INV_SENT</code></td><td>없음(최종)</td><td>정산담당자<br>운영자</td><td>취소 사유 기록</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-y">Y</span></td><td>지급 완료 건 취소 불가</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 9. 메시지 발송상태 ===== -->
+<div class="section" id="s9">
+  <div class="sec-title"><span class="num">09</span> 메시지 발송상태 (Message Delivery Status) <span class="changed">v0.2 보완</span></div>
+  <div class="sec-desc">알림톡·SMS·이메일 채널 공통 발송 처리 상태입니다. <code>MSG_CHANNEL</code> 컬럼으로 <code>KAKAO</code> / <code>SMS</code> / <code>EMAIL</code>을 구분합니다.<br>
+  재발송 가능 기준: <strong>MSG_FAILED</strong>(재발송 가능) / <strong>MSG_UNDELIVERED</strong>(조건부 재발송 가능) / <strong>MSG_DELIVERED</strong>(재발송 불필요) / <strong>MSG_CANCELLED</strong>(신규 발송으로만 처리)</div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">재발송</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">발송대기</span></td><td><code>MSG_PENDING</code></td><td>발송 큐 등록, 미처리 상태</td><td>없음(초기)</td><td><code>MSG_SENDING</code><br><code>MSG_SCHEDULED</code><br><code>MSG_CANCELLED</code></td><td>시스템 자동<br>운영자</td><td>발송 큐 등록</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-hold">발송예약</span></td><td><code>MSG_SCHEDULED</code></td><td>특정 일시에 발송 예약된 상태</td><td><code>MSG_PENDING</code></td><td><code>MSG_SENDING</code><br><code>MSG_CANCELLED</code></td><td>운영자</td><td>스케줄러 등록</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-process">발송중</span></td><td><code>MSG_SENDING</code></td><td>발송 API 호출 중</td><td><code>MSG_PENDING</code><br><code>MSG_SCHEDULED</code></td><td><code>MSG_SENT</code><br><code>MSG_FAILED</code></td><td>시스템 자동</td><td>발송 API 호출</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-active">발송완료</span></td><td><code>MSG_SENT</code></td><td>발송 API 정상 응답 수신</td><td><code>MSG_SENDING</code></td><td><code>MSG_DELIVERED</code><br><code>MSG_UNDELIVERED</code></td><td>발송 API 응답</td><td>발송 이력 기록</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td></td></tr>
+      <tr><td><span class="s s-done">수신확인</span></td><td><code>MSG_DELIVERED</code></td><td>수신자 단말기 전달 확인됨</td><td><code>MSG_SENT</code></td><td>없음(최종)</td><td>발송 API 콜백</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>SMS/알림톡만 지원.<br>✅ 재발송 불필요 — 이미 정상 전달됨</td></tr>
+      <tr><td><span class="s s-end">미전달</span></td><td><code>MSG_UNDELIVERED</code></td><td>수신거부·번호오류·단말기 미수신 등으로 미전달</td><td><code>MSG_SENT</code></td><td>없음(최종)</td><td>발송 API 콜백</td><td>미전달 고객 태깅</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>⚡ 조건부 재발송 가능 — 수신거부가 아닌 단순 미전달(번호오류 수정 후, 단말기 장애 해제 후)인 경우 신규 발송 가능. 수신거부 고객은 재발송 금지.</td></tr>
+      <tr><td><span class="s s-fail">발송실패</span></td><td><code>MSG_FAILED</code></td><td>발송 API 오류 응답 (서버 오류, 잘못된 번호 형식, API 한도 초과 등)</td><td><code>MSG_SENDING</code></td><td><code>MSG_PENDING</code></td><td>발송 API 응답</td><td>실패 사유 기록<br>대체 채널 발송 시도</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-n">N</span></td><td>✅ 재발송 가능 — 실패 사유 확인 후 동일 채널 재시도 또는 대체 채널(알림톡→SMS) 자동 폴백 가능.</td></tr>
+      <tr><td><span class="s s-end">발송취소</span></td><td><code>MSG_CANCELLED</code></td><td>예약 발송 전 취소 처리된 상태</td><td><code>MSG_PENDING</code><br><code>MSG_SCHEDULED</code></td><td>없음(최종)</td><td>운영자</td><td>스케줄 삭제</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>실제 발송 후 취소 불가.<br>🔄 신규 발송으로만 처리 — MSG_CANCELLED 건을 재활성화하지 않고 새 MSG_PENDING 건 생성.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ===== 9-1. 알림톡 템플릿 승인상태 ===== -->
+<div class="section" id="s9b">
+  <div class="sec-title"><span class="num">09-1</span> 알림톡 템플릿 승인상태 (KakaoTalk Template Status) <span class="added">v0.2 신규</span></div>
+  <div class="sec-desc">
+    카카오 비즈니스 채널을 통한 알림톡 발송을 위해서는 <strong>템플릿이 카카오로부터 사전 승인</strong>을 받아야 합니다.<br>
+    <code>TPL_APPROVED</code> 상태의 템플릿만 실제 알림톡 발송에 사용할 수 있습니다. 내용 수정 시 재심사 과정을 거칩니다.
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">작성중</span></td><td><code>TPL_DRAFT</code></td><td>템플릿 초안 작성 중. 카카오 미제출 상태</td><td>없음(초기)<br><code>TPL_REJECTED</code></td><td><code>TPL_REQUESTED</code></td><td>운영자<br>담당자</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>발송 사용 불가</td></tr>
+      <tr><td><span class="s s-pending">승인요청</span></td><td><code>TPL_REQUESTED</code></td><td>카카오에 심사 요청이 제출된 상태. 검토 대기 중</td><td><code>TPL_DRAFT</code><br><code>TPL_MODIFY_REQUESTED</code></td><td><code>TPL_APPROVED</code><br><code>TPL_REJECTED</code></td><td>카카오(자동)<br>운영자</td><td>카카오 API 심사 제출</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>카카오 심사 기간: 영업일 1~3일</td></tr>
+      <tr><td><span class="s s-active">승인완료</span></td><td><code>TPL_APPROVED</code></td><td>카카오 심사 통과. 실제 알림톡 발송에 사용 가능</td><td><code>TPL_REQUESTED</code></td><td><code>TPL_MODIFY_REQUESTED</code><br><code>TPL_INACTIVE</code></td><td>카카오(자동)</td><td>발송 가능 템플릿 목록에 등록<br>자동발송 트리거 연결 허용</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>이 상태만 실제 발송 가능</td></tr>
+      <tr><td><span class="s s-cancel">반려</span></td><td><code>TPL_REJECTED</code></td><td>카카오 심사에서 반려됨. 수정 후 재제출 필요</td><td><code>TPL_REQUESTED</code></td><td><code>TPL_DRAFT</code></td><td>카카오(자동)</td><td>반려 사유 기록<br>담당자 알림</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>반려 사유 저장 필수<br>수정 후 TPL_DRAFT → 재제출</td></tr>
+      <tr><td><span class="s s-hold">수정요청</span></td><td><code>TPL_MODIFY_REQUESTED</code></td><td>승인된 템플릿의 내용 수정을 카카오에 요청한 상태</td><td><code>TPL_APPROVED</code></td><td><code>TPL_APPROVED</code><br><code>TPL_REJECTED</code></td><td>운영자</td><td>기존 승인 템플릿은 수정 승인 전까지 유지</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>수정 심사 중 기존 템플릿 사용 가능 여부<br>카카오 정책 확인 필요</td></tr>
+      <tr><td><span class="s s-end">사용중지</span></td><td><code>TPL_INACTIVE</code></td><td>운영자가 해당 템플릿을 더 이상 사용하지 않도록 비활성화</td><td><code>TPL_APPROVED</code></td><td>없음(최종)</td><td>운영자</td><td>자동발송 트리거 연결 해제<br>발송 불가 처리</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>카카오 채널에서 삭제 처리는<br>별도 진행 필요</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== 10. 지자체 지원사업 상태 ===== -->
+<div class="section" id="s10">
+  <div class="sec-title"><span class="num">10</span> 지자체 지원사업 상태 (Government Support Program Status) <span class="changed">v0.2 보완</span></div>
+  <div class="sec-desc">
+    <strong>v0.2 핵심 변경:</strong> 단순 할인코드·예산 관리 중심에서, 실제 지자체 공모사업의 <strong>사전신청 → 진행 → 결과보고 → 증빙 → 정산</strong> 전체 행정 흐름을 반영한 상태로 재설계했습니다.<br>
+    지자체 사업은 여행사가 지자체에 사업을 신청하고(GOV_APPLIED), 승인 후 운영하며(GOV_ACTIVE), 종료 후 결과 보고(GOV_REPORTING)와 정산(GOV_SETTLING) 절차를 거칩니다.<br>
+    <strong>v0.2 보완:</strong> <code>GOV_REJECTED</code>(신청반려) 상태 추가 — 지자체 심사에서 미선정 또는 반려된 경우 처리 흐름 반영.
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>상태명</th><th>상태코드</th><th>설명</th><th>이전 가능 상태</th><th>다음 가능 상태</th><th>변경 주체</th><th>연동 기능</th><th class="center">알림톡</th><th class="center">정산 영향</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td><span class="s s-draft">사업등록</span></td><td><code>GOV_DRAFT</code></td><td>지원사업 정보 입력 중. 공모 신청 전 준비 단계</td><td>없음(초기)</td><td><code>GOV_READY</code><br><code>GOV_CANCELLED</code></td><td>운영자</td><td>—</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>사업 기본 정보·담당자·계약 초안 등록</td></tr>
+      <tr><td><span class="s s-pending">신청준비</span></td><td><code>GOV_READY</code></td><td>신청에 필요한 서류·조건이 준비된 상태. 공모 신청 전</td><td><code>GOV_DRAFT</code><br><code>GOV_REJECTED</code></td><td><code>GOV_APPLIED</code><br><code>GOV_CANCELLED</code></td><td>운영자</td><td>필요 서류 체크리스트 관리</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>공모 마감일 알림 스케줄 등록 권장.<br>반려 후 재신청 준비 시 이 상태로 복귀</td></tr>
+      <tr><td><span class="s s-process">신청완료</span></td><td><code>GOV_APPLIED</code></td><td>지자체 공모 신청 제출 완료. 심사·승인 대기 중</td><td><code>GOV_READY</code></td><td><code>GOV_ACTIVE</code><br><code>GOV_REJECTED</code><br><code>GOV_CANCELLED</code></td><td>운영자</td><td>신청 서류 첨부 저장<br>심사 결과 대기 알림</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>신청일·접수번호·담당 공무원 기록</td></tr>
+      <tr><td><span class="s s-cancel">신청반려</span></td><td><code>GOV_REJECTED</code></td><td>지자체 심사에서 미선정 또는 반려된 상태. 사업 진행 불가</td><td><code>GOV_APPLIED</code></td><td><code>GOV_READY</code></td><td>운영자</td><td>반려 사유 기록 저장<br>관련 서류 보관</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-n">N</span></td><td>재신청 가능 여부는 사업별 지자체 정책에 따름.<br>재신청 시 GOV_READY로 복귀하여 재준비.</td></tr>
+      <tr><td><span class="s s-active">진행중</span></td><td><code>GOV_ACTIVE</code></td><td>지자체 승인 후 사업 정상 운영 중. 할인코드 활성화 상태</td><td><code>GOV_APPLIED</code></td><td><code>GOV_REPORTING</code><br><code>GOV_CANCELLED</code></td><td>운영자<br>시스템 자동<br>(사업 시작일 도래)</td><td>할인코드 활성화<br>예약 시 자동 할인 적용<br>예산 소진 모니터링</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-y">Y</span></td><td>예산 80% 소진 시 경고 알림 권장<br>사업 기간 종료 시 자동 전환</td></tr>
+      <tr><td><span class="s s-hold">결과보고중</span></td><td><code>GOV_REPORTING</code></td><td>사업 종료 후 지자체에 결과 보고서 제출 단계</td><td><code>GOV_ACTIVE</code></td><td><code>GOV_SETTLING</code><br><code>GOV_CANCELLED</code></td><td>운영자</td><td>결과 보고서 작성·첨부<br>실적 데이터 자동 집계</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-c">준비중</span></td><td>실적 보고: 참가 인원·집행 금액·<br>증빙서류(영수증·명단) 첨부</td></tr>
+      <tr><td><span class="s s-process">정산중</span></td><td><code>GOV_SETTLING</code></td><td>결과 보고 후 지자체와 보조금·지원금 정산 진행 중</td><td><code>GOV_REPORTING</code></td><td><code>GOV_COMPLETED</code></td><td>정산담당자<br>운영자</td><td>지자체 전용 정산서 생성<br>인보이스 발행<br>증빙 서류 최종 제출</td><td class="center"><span class="yn-c">조건부</span></td><td class="center"><span class="yn-y">Y</span></td><td>정산 서류: 사업비 정산서·<br>통장사본·세금계산서 등</td></tr>
+      <tr><td><span class="s s-done">정산완료</span></td><td><code>GOV_COMPLETED</code></td><td>지자체 정산까지 완전히 처리된 최종 상태</td><td><code>GOV_SETTLING</code></td><td>없음(최종)</td><td>정산담당자</td><td>최종 정산서 확정 저장<br>실적 보고서 아카이빙</td><td class="center"><span class="yn-n">N</span></td><td class="center"><span class="yn-y">Y</span></td><td>사업 완료 후 서류 보관 기한 설정 권장</td></tr>
+      <tr><td><span class="s s-cancel">사업취소</span></td><td><code>GOV_CANCELLED</code></td><td>협약 파기·예산 삭감·여행사 사정으로 완전 취소</td><td><code>GOV_DRAFT</code><br><code>GOV_READY</code><br><code>GOV_APPLIED</code><br><code>GOV_ACTIVE</code><br><code>GOV_REPORTING</code></td><td>없음(최종)</td><td>운영자</td><td>할인코드 비활성화<br>기존 적용 예약 환불 처리 안내</td><td class="center"><span class="yn-y">Y</span></td><td class="center"><span class="yn-y">Y</span></td><td>진행 중 취소 시 기존 예약 건<br>환불 정책 별도 검토 필요</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== FLOW DIAGRAMS ===== -->
+<div class="section" id="flow">
+  <div class="sec-title"><span class="num">흐름도</span> 상태 전이 흐름도 (v0.2 전면 재작성)</div>
+
+  <div class="flow-section">
+    <div class="flow-title"><span class="badge">01</span> 예약상태와 결제상태의 독립적 흐름 (핵심)</div>
+    <div class="flow-body">
+╔══════════════════════════════════════════════════════════════════════════╗
+║             예약상태(RES_*)와 결제상태(PAY_*)는 완전히 독립적으로 움직인다             ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                      예약상태 흐름 (RES_*)                      │
+  └─────────────────────────────────────────────────────────────┘
+
+  [고객 예약 폼 제출]
+         │
+         ▼
+   RES_RECEIVED ──────────────────────────────────► RES_EXPIRED
+   (예약접수)       (담당자 미처리·기간 초과 자동)      (예약만료, 최종)
+         │
+         │ [담당자 검토 필요 시]
+         ▼
+   RES_WAITING ──────────────────────────────────► RES_EXPIRED
+   (예약대기)
+         │
+         │ [담당자가 좌석·상품·출발 가능 확인 후 확정]
+         │ (결제 완료 여부와 무관)
+         ▼
+   RES_CONFIRMED ◄──── RES_WAITLISTED ←── RES_RECEIVED
+   (예약확정)           (대기예약)          (좌석 마감 시)
+         │
+         │ [고객 취소 요청]
+         ▼
+   RES_CANCEL_REQUESTED ──► [담당자 취소 처리]
+   (취소요청)
+         │  또는 담당자 직접 취소
+         ▼
+   RES_CANCELLED ─────────────────── 환불은 PAY_* 에서 진행
+   (예약취소, 최종)                    RES_CANCELLED ≠ 환불완료
+         
+   RES_CONFIRMED ──[DEP_COMPLETED 연동]──► RES_COMPLETED
+                                            (행사완료, 최종)
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                      결제상태 흐름 (PAY_*)                      │
+  │              (예약상태와 독립적으로 별도 관리)                      │
+  └─────────────────────────────────────────────────────────────┘
+
+  [RES_RECEIVED 생성 시 자동 생성]
+         │
+         ▼
+   PAY_UNPAID ──────────────────────────────── 결제 안내 알림톡 발송
+   (미입금)
+         │ [결제 링크·가상계좌 발행]
+         ▼
+   PAY_PENDING ──────────────────────────────► PAY_FAILED (재시도 가능 → 신규 PAY_PENDING)
+   (결제대기)
+         │                                           │
+         │                              [유효시간 초과]│
+         │                                           ▼
+         │                                    PAY_EXPIRED (최종, 시스템 자동)
+         │                                    → 재결제 원할 시 신규 PAY_PENDING 생성
+         │
+         │ [예약금만 납부]            [전액 납부]
+         ▼                               ▼
+   PAY_DEPOSIT_PAID                  PAY_PAID
+   (예약금입금)                       (결제완료)
+         │                               │
+         │ [잔금 기한 도래]               │
+         ▼                               │
+   PAY_BALANCE_REQUESTED               │
+   (잔금요청)                           │
+         │ [잔금 납부]                   │
+         └───────────────────────────────┘
+                         │
+                         ▼
+                     PAY_PAID
+                     (결제완료)
+
+  ─── 취소/환불 흐름 (PAY_* 내부에서 처리) ─────────────────────────
+
+   PAY_DEPOSIT_PAID                PAY_PAID
+   PAY_BALANCE_REQUESTED  ──►  PAY_REFUND_REQUESTED (고객·운영자 요청)
+   PAY_PAID                         │
+                                    │ [담당자 승인]
+                                    ▼
+                             PAY_REFUNDING
+                             (환불중)
+                                    │
+                    ┌───────────────┼───────────────┐
+                    │               │               │
+             [전액환불]         [부분환불]        [실패]
+                    │               │               │
+             PAY_REFUNDED  PAY_PARTIAL_REFUNDED  PAY_REFUND_FAILED
+             (환불완료)     (부분환불, 수수료 차감)  (수동처리 필요)
+             (최종)        (최종)
+    </div>
+    <div class="flow-note">
+      💡 <strong>핵심 설계 원칙:</strong>
+      RES_CONFIRMED(예약확정)은 담당자 확정 기준이며 결제 완료와 무관합니다.
+      예) RES_CONFIRMED + PAY_DEPOSIT_PAID = "예약확정 상태이지만 잔금 미납" → 화면에 "예약확정 | 잔금미납" 조합 표시
+      예) RES_CANCELLED + PAY_REFUNDING = "예약은 취소됐으나 환불 처리 중" → 예약취소와 환불은 별도 상태로 추적
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="flow-title"><span class="badge green">02</span> 상품공유 → 노출 흐름도 (SHARE_* + EXPO_*)</div>
+    <div class="flow-body">
+  ╔════════════════════════════════════════════════════════╗
+  ║  공유상태(SHARE_*)와 노출상태(EXPO_*)는 별도 관리          ║
+  ║  공유수락 ≠ 홈페이지 노출                                ║
+  ╚════════════════════════════════════════════════════════╝
+
+  [공급사]                    [판매사]                  [홈페이지]
+     │                           │                        │
+     │ SHARE_REQUESTED            │                        │
+     │──────────────────────────►│                        │
+     │                           │                        │
+     │                  [수락]   │                        │
+     │                   ▼       │                        │
+     │             SHARE_ACCEPTED│                        │
+     │                   │       │                        │
+     │                   │ 자동  │                        │
+     │                   ▼       │                        │
+     │          EXPO_NOT_CONFIGURED                       │
+     │          (카테고리 미연결)  │                        │
+     │                   │       │                        │
+     │             [카테고리 연결] │                       │
+     │                   ▼       │                        │
+     │              EXPO_READY   │                        │
+     │              (노출준비)    │                        │
+     │                   │       │                        │
+     │             [노출 체크 ON] │                        │
+     │                   ▼       │                        │
+     │            EXPO_VISIBLE ──────────────────────────►│ 노출
+     │            (홈페이지 노출) │                        │
+     │                   │       │                        │
+     │             [숨김 처리]   │                        │
+     │                   ▼       │                        │
+     │             EXPO_HIDDEN   │                        │
+     │                   │       │                        │
+     │  SHARE_SUSPENDED 연동      │                        │
+     │                   │       │                        │
+     │  SHARE_TERMINATED ──────►EXPO_ENDED ──────────────►│ 노출 제거
+
+  ※ 예약 가능 조건: PRD_ON_SALE AND SHARE_ACCEPTED AND EXPO_VISIBLE (세 가지 AND 조건)
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="flow-title"><span class="badge">03</span> 출발 → 예약 연동 흐름도</div>
+    <div class="flow-body">
+  DEP_PENDING ─────────► DEP_CANCELLED ──► 연결된 모든 예약 RES_CANCELLED 전환
+  (출발대기)               (출발취소)          + PAY_REFUND_REQUESTED 안내 발송
+        │
+        │ [최소 인원 충족, 운영자 확정]
+        ▼
+  DEP_CONFIRMED ─────────────────────────── 고객 전체 출발확정 알림톡
+  (출발확정)                                  D-3, D-1 리마인더 스케줄 등록
+        │
+        │ [출발일 당일]
+        ▼
+  DEP_DEPARTED
+  (출발중)
+        │
+        │ [귀환일]
+        ▼
+  DEP_COMPLETED ─────────────────────────── 연결 예약 전체 RES_COMPLETED 전환
+  (행사완료)                                  정산 대상 자동 확정
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="flow-title"><span class="badge">04</span> 정산 + 인보이스 흐름도</div>
+    <div class="flow-body">
+  RES_COMPLETED / DEP_COMPLETED
+        │
+        ▼
+  STL_PENDING ──► STL_CANCELLED (예약 취소 발생 시 자동)
+  (정산대기)
+        │
+        ▼
+  STL_IN_REVIEW ──► STL_DISPUTED ──► STL_IN_REVIEW (재검토)
+  (검토중)            (이의제기)
+        │
+        │ [금액 확정]
+        ▼
+  STL_APPROVED ──────► 인보이스 생성 ──► INV_DRAFT
+  (정산승인)                               │
+                                    [발송] │
+                                           ▼
+                                      INV_SENT
+                                           │
+                              ┌────────────┤
+                       [수신확인]       [기한초과]
+                              │            │
+                    INV_ACKNOWLEDGED   INV_OVERDUE
+                              │            │
+                  ┌───────────┤            │
+              [이의제기]     [지급]         │
+                  │            │            │
+             INV_DISPUTED  INV_PAID ◄──────┘
+                  │         (최종)
+              [재발송]
+                  │
+              INV_SENT
+                            STL_PAID 최종 확정 ←── INV_PAID 연동
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="flow-title"><span class="badge green">05</span> 알림톡 템플릿 승인 흐름도 (TPL_*)</div>
+    <div class="flow-body">
+  [담당자 템플릿 작성]
+         │
+         ▼
+   TPL_DRAFT ──────────────────────────────── (반려 후 수정 재작성)
+   (작성중)                                          ▲
+         │                                           │
+         │ [카카오 심사 제출]                         │
+         ▼                                           │
+   TPL_REQUESTED                                     │
+   (승인요청)         ← 카카오 심사 기간: 영업일 1~3일 │
+         │                                           │
+         ├──[승인]──────────────────────────────────►│ 
+         │                                           │
+         ▼                                           │
+   TPL_APPROVED                              TPL_REJECTED
+   (승인완료)                                (반려, 사유 저장)
+   ← 이 상태만 실제 발송 가능                        │
+         │                                           │
+         │ [내용 수정 필요]              [수정 후]   │
+         ▼                              └────────────┘
+   TPL_MODIFY_REQUESTED ──[재심사]──► TPL_APPROVED (재승인)
+   (수정요청)                    또는  TPL_REJECTED (재반려)
+         │
+         │ [더 이상 사용 안 함]
+         ▼
+   TPL_INACTIVE (사용중지, 최종)
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="flow-title"><span class="badge green">06</span> 지자체 지원사업 흐름도 (v0.2 고도화)</div>
+    <div class="flow-body">
+  [여행사가 지자체 공모사업 확인]
+         │
+         ▼
+   GOV_DRAFT ──────────────────────────────► GOV_CANCELLED (최종)
+   (사업등록)
+         │
+         │ [신청 서류 준비 완료]
+         ▼
+   GOV_READY ──────────────────────────────► GOV_CANCELLED (최종)
+   (신청준비)       ◄──────────────────────── GOV_REJECTED (재신청 시 복귀)
+         │
+         │ [공모 신청 제출]
+         ▼
+   GOV_APPLIED ────────────────────────────► GOV_CANCELLED (최종)
+   (신청완료)       ← 지자체 심사 대기
+         │
+         ├──[미선정·반려]──► GOV_REJECTED ──► GOV_READY (재신청 준비)
+         │                   (신청반려)          또는 포기 시 GOV_CANCELLED
+         │
+         │ [지자체 승인, 사업 시작일 도래]
+         ▼
+   GOV_ACTIVE ─────────────────────────────► GOV_CANCELLED (최종)
+   (진행중)
+   · 할인코드 활성화
+   · 예약 시 자동 할인 적용
+   · 예산 소진 모니터링 (80% → 경고)
+         │
+         │ [사업 기간 종료]
+         ▼
+   GOV_REPORTING
+   (결과보고중)
+   · 참가 인원·집행 금액 집계
+   · 증빙 서류 첨부 (영수증, 명단)
+   · 결과 보고서 작성·제출
+         │
+         │ [보고서 제출 완료]
+         ▼
+   GOV_SETTLING
+   (정산중)
+   · 지자체 전용 정산서 생성
+   · 증빙 서류 최종 제출
+   · 사업비 정산서·세금계산서 처리
+         │
+         │ [정산 완료]
+         ▼
+   GOV_COMPLETED (최종)
+   · 최종 정산서 확정 저장
+   · 사업 실적 아카이빙
+    </div>
+    <div class="flow-note">💡 GOV_ACTIVE 상태일 때만 할인코드 활성화. 예산 소진 시 시스템이 자동으로 할인 코드를 비활성화하고 관리자에게 알림을 발송합니다.</div>
+  </div>
+
+  <div class="flow-section">
+    <div class="flow-title"><span class="badge">07</span> 메시지 발송 흐름도 (채널 폴백 포함)</div>
+    <div class="flow-body">
+  [발송 이벤트 트리거: 예약접수/확정/취소/출발 등]
+         │
+         ▼
+   MSG_PENDING ──[예약 발송]──► MSG_SCHEDULED ──► MSG_SENDING
+         │                                              │
+         └──────────────────────────────────── MSG_SENDING
+                                                        │
+                                ┌──────────────────────┤
+                           [성공]                   [실패]
+                                │                       │
+                          MSG_SENT               MSG_FAILED
+                                │                       │
+                     ┌──────────┤               [폴백 발송]
+                     │          │               알림톡→SMS 자동 전환
+             [수신확인]   [미전달]                       │
+                     │          │                MSG_PENDING (재시도)
+               MSG_DELIVERED  MSG_UNDELIVERED
+               (최종)          (최종)
+    </div>
+  </div>
+</div>
+
+<hr class="pb">
+
+<!-- ===== COMMON RULES ===== -->
+<div class="section" id="rules">
+  <div class="sec-title"><span class="num">규칙</span> 공통 구현 규칙 및 개발 가이드</div>
+
+  <div class="three-col">
+    <div class="info-card">
+      <h4>🗄 DB 설계 가이드</h4>
+      <ul>
+        <li>모든 상태 컬럼: <code>VARCHAR(30) NOT NULL</code></li>
+        <li>상태값 제약: CHECK CONSTRAINT 또는 Enum</li>
+        <li>이력 테이블: <code>*_status_history</code></li>
+        <li>이력 필드: from/to/changed_by/changed_at/reason</li>
+        <li>소프트 삭제: <code>is_deleted</code> + <code>deleted_at</code></li>
+        <li>좌석 선점: <code>version</code> 컬럼 필수 (낙관적 잠금)</li>
+        <li>예약-결제 관계: 1:N (예약금+잔금 복수 결제)</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h4>🔒 상태 변경 보안 규칙</h4>
+      <ul>
+        <li>서버사이드 전용 유효성 검증</li>
+        <li>클라이언트 파라미터 직접 수용 금지</li>
+        <li>권한 없는 변경: HTTP 403</li>
+        <li>유효하지 않은 전이: HTTP 422 + 에러코드</li>
+        <li>STL_PAID / INV_PAID: 변경 불가 처리</li>
+        <li>상태 변경 API: <code>PATCH /resource/{id}/status</code></li>
+        <li>PAY_PAID 중복 처리 방지 필수 (PG 웹훅)</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <h4>🔔 알림톡 자동 발송 트리거</h4>
+      <ul>
+        <li><code>RES_RECEIVED</code> → 예약 접수 안내</li>
+        <li><code>RES_CONFIRMED</code> → 예약 확정 + 잔금 납부 안내</li>
+        <li><code>PAY_DEPOSIT_PAID</code> → 예약금 입금 확인</li>
+        <li><code>PAY_BALANCE_REQUESTED</code> → 잔금 납부 요청</li>
+        <li><code>PAY_PAID</code> → 결제 완료</li>
+        <li><code>DEP_CONFIRMED</code> → 출발 확정</li>
+        <li>출발 D-3, D-1 → 리마인더 (스케줄)</li>
+        <li><code>RES_CANCELLED</code> → 취소 확인</li>
+        <li><code>PAY_REFUNDED</code> → 환불 완료</li>
+        <li><code>DEP_CANCELLED</code> → 행사 취소 (전체 발송)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="rule-box">
+    <div class="rt">📋 v0.2 주요 검토 필요 항목</div>
+    <ul>
+      <li><strong>예약만료(RES_EXPIRED) 기준 시간:</strong> 운영 환경에 맞게 설정값 정의 필요 (B2C: 30분, B2B 판매사: 별도 협의)</li>
+      <li><strong>잔금 미납 시 자동 취소 정책:</strong> PAY_BALANCE_REQUESTED 이후 미납 N일 → RES_CANCELLED 자동 전환 여부 및 기한 정의 필요</li>
+      <li><strong>알림톡 폴백 과금 주체:</strong> 알림톡 실패 → SMS 대체 발송 시 SMS 건당 과금 처리 및 정산 방식 확인 필요</li>
+      <li><strong>TPL_MODIFY_REQUESTED 중 기존 템플릿 사용 가능 여부:</strong> 카카오 채널 정책 확인 후 AOS 동작 정의 필요</li>
+      <li><strong>GOV_ACTIVE 예산 자동 소진 처리:</strong> 예산 한도 도달 시 할인코드 자동 비활성화 처리 로직 개발 명세 필요</li>
+      <li><strong>PAY_REFUND_FAILED SLA:</strong> 환불 실패 후 수동 처리 기한(예: 영업일 3일) 정의 및 에스컬레이션 절차 수립 필요</li>
+      <li><strong>EXPO_* 상태 생성 시점:</strong> SHARE_ACCEPTED 시 자동 EXPO_NOT_CONFIGURED 생성 로직 백엔드 명세 필요</li>
+    </ul>
+  </div>
+
+  <div class="rule-box" style="background:#f0fdf4;border-color:#86efac;margin-top:14px">
+    <div class="rt" style="color:#166534">✅ 상태값 추가 시 필수 체크리스트</div>
+    <ul style="color:#14532d">
+      <li>신규 상태의 이전/다음 전이 가능 상태를 명확히 정의했는가?</li>
+      <li>신규 상태 진입 시 알림톡 발송이 필요한가? 승인된 TPL_APPROVED 템플릿이 존재하는가?</li>
+      <li>신규 상태가 정산 금액 또는 정산 대상에 영향을 주는가?</li>
+      <li>DB 마이그레이션 스크립트 및 Enum/코드 테이블 업데이트가 준비되었는가?</li>
+      <li>프론트엔드에서 해당 상태에 대응하는 배지/라벨 디자인이 정의되었는가?</li>
+      <li>본 문서(AOS_상태값정의서)가 업데이트되고 팀 리뷰(기획+개발+QA)를 받았는가?</li>
+    </ul>
+  </div>
+</div>
+
+<div class="doc-footer">
+  AOS_상태값정의서_v0.2 (보완) &nbsp;|&nbsp; Admin Operating System · Status Code Definition &nbsp;|&nbsp; 최초: 2026-06-09 / 보완: 2026-06-09 &nbsp;|&nbsp; 참조: AOS_메뉴화면목록표_v0.1 / AOS_상태값정의서_v0.1 &nbsp;|&nbsp; ⚠ 개발 착수 전 팀 검토 후 확정 필요
+</div>
+
+</div>
+</body>
+</html>
