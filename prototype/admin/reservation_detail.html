@@ -10,7 +10,8 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
   <style>
 .modal.option-modal{width:min(1680px,calc(100vw - 32px))}.option-edit-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}.option-edit-block{border:1px solid #d9dde3;border-radius:7px;background:#fff;overflow:hidden;min-width:0}.option-edit-title{background:#f1f3f5;border-bottom:1px solid #d9dde3;padding:12px 14px;font-weight:900;display:flex;align-items:center;justify-content:space-between}.option-edit-body{padding:12px;min-width:0}.option-edit-body .table-wrap{overflow-x:visible}.option-note{background:#fff8e6;border:1px solid #f2d48b;border-radius:7px;padding:10px 12px;margin-bottom:12px;color:#6b4e00;font-weight:700}.qty-control{display:inline-flex;align-items:center;gap:6px}.qty-control button{width:28px;height:28px;border:1px solid #cfd5dd;background:white;border-radius:4px;font-weight:900;cursor:pointer}.qty-control input{width:48px;text-align:center;min-height:30px;padding:4px}.option-select{width:100%;min-width:0}.option-total-line{display:flex;justify-content:flex-end;gap:18px;align-items:center;margin-top:10px;font-size:14px;font-weight:900}.option-total-line strong{color:#2f63f6;font-size:18px}.option-available-table,.option-selected-table{min-width:0;width:100%;table-layout:auto}.option-available-table th,.option-available-table td,.option-selected-table th,.option-selected-table td{padding:8px 7px;font-size:13px}.option-empty{padding:18px;text-align:center;color:#667085;font-weight:800;border:1px dashed #cfd5dd;border-radius:7px;background:#fafbfc}.price-negative{color:#d92d20}@media(max-width:1280px){.option-edit-grid{grid-template-columns:1fr}.option-edit-body .table-wrap{overflow-x:auto}.option-available-table,.option-selected-table{min-width:760px}}
 .reservation-option-table{min-width:0;table-layout:fixed}.reservation-option-table th,.reservation-option-table td{padding:8px 6px}.reservation-option-table th:nth-child(1),.reservation-option-table td:nth-child(1){width:auto;word-break:keep-all}.reservation-option-table th:nth-child(2),.reservation-option-table td:nth-child(2){width:104px}.reservation-option-table th:nth-child(3),.reservation-option-table td:nth-child(3){width:48px}.reservation-option-table th:nth-child(4),.reservation-option-table td:nth-child(4){width:82px}.reservation-option-table th:nth-child(5),.reservation-option-table td:nth-child(5){width:64px}.reservation-option-table .badge{padding:3px 6px;font-size:11px}.reservation-option-table td.money{font-size:12px}
-.billing-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}.billing-block{border:1px solid #d9dde3;border-radius:7px;background:#fff;overflow:hidden}.billing-title{background:#f7f9fb;border-bottom:1px solid #edf0f3;padding:10px 12px;font-weight:900;display:flex;justify-content:space-between;align-items:center}.billing-body{padding:12px}.calc-table{width:100%;border-collapse:collapse}.calc-table th,.calc-table td{border-bottom:1px solid #edf0f3;padding:9px;text-align:left}.calc-table td.money{text-align:right;font-weight:900;white-space:nowrap}.calc-table .minus{color:#d92d20}.calc-table .plus{color:#0f8738}.calc-table .total td{background:#eef6ff;font-size:15px}.payment-mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.adjust-table{width:100%;border-collapse:collapse;margin-top:10px}.adjust-table th,.adjust-table td{border:1px solid #edf0f3;padding:8px}.adjust-table th{background:#f1f3f5}.adjust-table td.money{text-align:right;font-weight:900}.adjust-actions{display:flex;gap:6px;flex-wrap:wrap}.amount-modal{width:min(720px,100%)}@media(max-width:1200px){.billing-grid{grid-template-columns:1fr}.payment-mini-grid{grid-template-columns:1fr}}
+.billing-grid{display:grid;grid-template-columns:minmax(360px,.72fr) minmax(720px,1.28fr);gap:14px}.billing-block{border:1px solid #d9dde3;border-radius:7px;background:#fff;overflow:hidden}.billing-title{background:#f7f9fb;border-bottom:1px solid #edf0f3;padding:10px 12px;font-weight:900;display:flex;justify-content:space-between;align-items:center}.billing-body{padding:12px}.calc-table{width:100%;border-collapse:collapse}.calc-table th,.calc-table td{border-bottom:1px solid #edf0f3;padding:9px;text-align:left}.calc-table td.money{text-align:right;font-weight:900;white-space:nowrap}.calc-table .minus{color:#d92d20}.calc-table .plus{color:#0f8738}.calc-table .total td{background:#eef6ff;font-size:15px}.payment-mini-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.payment-status-line{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}.payment-status-card{border:1px solid #edf0f3;background:#fafbfc;border-radius:6px;padding:9px}.payment-status-card span{display:block;color:#667085;font-weight:800;margin-bottom:5px}.payment-status-card strong{font-size:15px}.payment-table{width:100%;border-collapse:collapse;min-width:0}.payment-table th,.payment-table td{border:1px solid #edf0f3;padding:8px}.payment-table th{background:#f1f3f5}.payment-table td.money{text-align:right;font-weight:900}.payment-actions{display:flex;gap:6px;flex-wrap:wrap}.adjust-table{width:100%;border-collapse:collapse;margin-top:10px}.adjust-table th,.adjust-table td{border:1px solid #edf0f3;padding:8px}.adjust-table th{background:#f1f3f5}.adjust-table td.money{text-align:right;font-weight:900}.adjust-actions{display:flex;gap:6px;flex-wrap:wrap}.amount-modal,.payment-modal{width:min(720px,100%)}@media(max-width:1280px){.billing-grid{grid-template-columns:1fr}.payment-mini-grid,.payment-status-line{grid-template-columns:1fr 1fr}}@media(max-width:760px){.payment-status-line{grid-template-columns:1fr}}
+.save-bar{position:sticky;bottom:0;z-index:5;background:#fff;border:1px solid #d9dde3;border-radius:7px;padding:12px 14px;margin:12px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -4px 14px rgba(7,17,34,.06)}.save-bar strong{display:block;margin-bottom:4px}.save-bar .muted{font-size:12px}.save-actions{display:flex;gap:8px;flex-wrap:wrap}
   </style>
 </head>
 <body>
@@ -37,6 +38,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
           <div class="top-actions">
             <button class="btn" onclick="location.href='reservation_list.html'">목록으로</button>
             <button class="btn" onclick="openEditModal()">예약수정</button>
+            <button class="btn blue" onclick="saveReservationDetail()">변경사항 저장</button>
             <button class="btn green" onclick="msg('예약상태를 예약확정으로 변경하는 샘플입니다.')">예약확정</button>
             <button class="btn blue" onclick="msg('미수금 160,000원 결제요청 알림을 발송합니다.')">결제요청</button>
             <button class="btn green" onclick="openModal('알림톡 발송','예약접수, 예약확정, 결제요청, 출발안내 템플릿 중 선택해 발송하는 샘플 모달입니다.')">알림톡 발송</button>
@@ -48,7 +50,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
         <section class="summary" aria-label="예약 요약">
           <div class="card"><span>예약번호</span><strong>RV20260610015</strong></div>
           <div class="card"><span>예약상태</span><strong><span id="summaryReservationStatus" class="badge b-orange">대기예약</span></strong></div>
-          <div class="card"><span>결제상태</span><strong><span class="badge b-blue">예약금완료</span></strong></div>
+          <div class="card"><span>결제상태</span><strong><span id="summaryPaymentStatus" class="badge b-blue">예약금완료</span></strong></div>
           <div class="card"><span>예약접수일 / 출발일</span><strong>06-10 / 06-18</strong></div>
           <div class="card"><span>예약자명 / 총인원</span><strong id="summaryCustomerPeople">최정우 / 4명</strong></div>
           <div class="card money"><span>총금액</span><strong>240,000원</strong></div>
@@ -161,16 +163,29 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
                 <div class="billing-block">
                   <div class="billing-title">
                     <span>결제/입금 처리</span>
-                    <span class="badge b-blue">예약금완료</span>
+                    <span id="paymentStatusBadge" class="badge b-blue">예약금완료</span>
                   </div>
                   <div class="billing-body">
-                    <div class="payment-mini-grid">
-                      <div class="field"><label>결제방식</label><select><option>무통장입금</option><option>카드결제</option><option>가상계좌</option></select></div>
-                      <div class="field"><label>입금자명</label><input value="최정우"></div>
-                      <div class="field"><label>예약금</label><input value="80,000원"></div>
-                      <div class="field"><label>잔금</label><input value="160,000원"></div>
-                      <div class="field"><label>결제일</label><input type="date" value="2026-06-10"></div>
-                      <div class="field"><label>결제상태</label><select><option>예약금완료</option><option>미결제</option><option>잔금완료</option><option>전액결제완료</option><option>환불요청</option><option>환불완료</option></select></div>
+                    <div class="payment-status-line">
+                      <div class="payment-status-card"><span>예약금</span><strong id="depositAmount">80,000원</strong></div>
+                      <div class="payment-status-card"><span>잔금</span><strong id="remainingAmount">160,000원</strong></div>
+                      <div class="payment-status-card"><span>결제상태</span><strong id="paymentStatusText">예약금완료</strong></div>
+                      <div class="payment-status-card"><span>최근 결제일</span><strong id="lastPaymentDate">2026-06-10</strong></div>
+                    </div>
+                    <div class="payment-actions" style="margin-bottom:10px">
+                      <button class="btn small blue" onclick="openPaymentRegisterModal('card')">카드결제 내역추가</button>
+                      <button class="btn small" onclick="openPaymentRegisterModal('bank')">무통장입금 등록</button>
+                      <button class="btn small" onclick="msg('계좌 API 연동으로 통장 입금내역을 불러오는 샘플입니다.')">계좌확인</button>
+                    </div>
+                    <div class="table-wrap">
+                      <table class="payment-table">
+                        <thead><tr><th>결제일</th><th>결제방식</th><th>구분</th><th>금액</th><th>결제상태</th><th>입금자/승인번호</th><th>등록구분</th></tr></thead>
+                        <tbody id="paymentHistoryBody">
+                          <tr><td>2026-06-10</td><td>무통장입금</td><td>예약금</td><td class="money">80,000원</td><td><span class="badge b-blue">예약금완료</span></td><td>최정우</td><td>관리자확인</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="payment-mini-grid" style="margin-top:10px">
                       <div class="field"><label>현금영수증</label><div class="value"><span class="badge b-blue">신청</span></div></div>
                       <div class="field"><label>세금계산서</label><div class="value"><span class="badge b-gray">미신청</span></div></div>
                     </div>
@@ -263,6 +278,17 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
             </div>
           </div>
         </section>
+
+        <div class="save-bar">
+          <div>
+            <strong>예약상세 변경사항 저장</strong>
+            <span class="muted">예약 기본정보, 예약자 정보, 메모, 금액/결제 처리 결과를 저장하고 변경이력에 기록합니다.</span>
+          </div>
+          <div class="save-actions">
+            <button class="btn" onclick="location.href='reservation_list.html'">목록으로</button>
+            <button class="btn blue" onclick="saveReservationDetail()">변경사항 저장</button>
+          </div>
+        </div>
 
         <section class="panel">
           <div class="panel-head">변경이력</div>
@@ -431,6 +457,31 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
     </div>
   </div>
 
+  <div id="paymentRegisterModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal payment-modal">
+      <div id="paymentRegisterTitle" class="modal-head">결제/입금 등록</div>
+      <div class="modal-body">
+        <div class="edit-help">
+          카드결제는 결제사 승인내역이 자동으로 들어오는 상황을 가정하고, 무통장입금은 관리자가 금액과 상태를 확인해 등록합니다.
+          결제 후 미수금이 0원이 되면 결제상태는 자동으로 전액결제완료 처리됩니다.
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>결제일</label><input id="paymentInputDate" type="date" value="2026-06-14"></div>
+          <div class="field"><label>결제방식</label><select id="paymentInputMethod"><option>무통장입금</option><option>카드결제</option><option>가상계좌</option></select></div>
+          <div class="field"><label>구분</label><select id="paymentInputType"><option>잔금</option><option>예약금</option><option>추가입금</option></select></div>
+          <div class="field"><label>금액</label><input id="paymentInputAmount" placeholder="예: 160000"></div>
+          <div class="field"><label>결제상태</label><select id="paymentInputStatus"><option>입금완료</option><option>승인완료</option><option>확인중</option></select></div>
+          <div class="field"><label>입금자/승인번호</label><input id="paymentInputRef" value="최정우"></div>
+          <div class="field full"><label>관리 메모</label><textarea id="paymentInputMemo" placeholder="입금 확인 메모 또는 카드 승인 메모"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" onclick="closePaymentRegisterModal()">닫기</button>
+        <button class="btn blue" onclick="savePaymentRecord()">결제내역 저장</button>
+      </div>
+    </div>
+  </div>
+
   <script>
 function msg(t){alert(t)}
 function openModal(title, body){
@@ -443,6 +494,21 @@ function closeModal(){
 }
 function getValue(id){return document.getElementById(id).value}
 function setValue(id,value){document.getElementById(id).value=value}
+function nowText(){
+  var now=new Date();
+  return now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+}
+function addHistoryRow(type,beforeText,afterText,manager,memo){
+  var row=document.getElementById('changeHistoryBody').insertRow(0);
+  [nowText(),type,beforeText,afterText,manager,memo].forEach(function(text){
+    row.insertCell().textContent=text;
+  });
+}
+function saveReservationDetail(){
+  var manager=getValue('detailManager');
+  addHistoryRow('예약상세 저장','화면 수정중','저장완료',manager,'예약상세 화면의 직접 수정 항목 저장');
+  msg('예약상세 변경사항이 저장되었습니다. 변경이력에 저장 기록을 추가했습니다.');
+}
 function openEditModal(){
   setValue('editRoute', getValue('detailRoute'));
   setValue('editReservationStatus', getValue('detailReservationStatus'));
@@ -514,6 +580,7 @@ var billingDiscountAmount=10000;
 var billingExtraAmount=0;
 var billingPaidAmount=80000;
 var currentAmountType='discount';
+var currentPaymentRegisterMode='bank';
 function openAmountModal(type){
   currentAmountType=type;
   document.getElementById('amountModalTitle').textContent=type==='discount'?'할인금액 추가':'추가금액 추가';
@@ -564,6 +631,8 @@ function updateBillingSummary(){
   document.getElementById('billingTotalAmount').textContent=formatMoney(total);
   document.getElementById('billingPaidAmount').textContent=formatMoney(billingPaidAmount);
   document.getElementById('billingBalanceAmount').textContent=formatMoney(balance);
+  document.getElementById('remainingAmount').textContent=formatMoney(Math.max(balance,0));
+  updatePaymentStatusByBalance(balance);
 }
 function addBillingHistory(type,amount,reason,manager){
   var history=document.getElementById('changeHistoryBody');
@@ -572,6 +641,76 @@ function addBillingHistory(type,amount,reason,manager){
   var nowText=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
   var label=type==='discount'?'할인금액':'추가금액';
   [nowText,'금액조정',label,label+' '+formatMoney(amount),manager,reason].forEach(function(text){
+    row.insertCell().textContent=text;
+  });
+}
+function openPaymentRegisterModal(mode){
+  currentPaymentRegisterMode=mode;
+  var balance=currentBalanceAmount();
+  document.getElementById('paymentRegisterTitle').textContent=mode==='card'?'카드결제 내역추가':'무통장입금 등록';
+  document.getElementById('paymentInputMethod').value=mode==='card'?'카드결제':'무통장입금';
+  document.getElementById('paymentInputType').value=balance>0?'잔금':'추가입금';
+  document.getElementById('paymentInputAmount').value=balance>0?balance.toLocaleString('ko-KR'):'';
+  document.getElementById('paymentInputStatus').value=mode==='card'?'승인완료':'입금완료';
+  document.getElementById('paymentInputRef').value=mode==='card'?'CARD-AUTO-20260614':'최정우';
+  document.getElementById('paymentInputMemo').value=mode==='card'?'카드 승인 자동수집 샘플':'무통장입금 관리자 확인 샘플';
+  document.getElementById('paymentRegisterModal').style.display='flex';
+}
+function closePaymentRegisterModal(){
+  document.getElementById('paymentRegisterModal').style.display='none';
+}
+function currentTotalAmount(){
+  return billingBaseAmount+billingOptionAmount-billingDiscountAmount+billingExtraAmount;
+}
+function currentBalanceAmount(){
+  return currentTotalAmount()-billingPaidAmount;
+}
+function savePaymentRecord(){
+  var raw=document.getElementById('paymentInputAmount').value.replace(/[^0-9]/g,'');
+  var amount=parseInt(raw,10);
+  if(!amount){
+    msg('결제금액을 입력해주세요.');
+    return;
+  }
+  billingPaidAmount+=amount;
+  var date=document.getElementById('paymentInputDate').value;
+  var method=document.getElementById('paymentInputMethod').value;
+  var type=document.getElementById('paymentInputType').value;
+  var status=document.getElementById('paymentInputStatus').value;
+  var ref=document.getElementById('paymentInputRef').value;
+  addPaymentHistoryRow(date,method,type,amount,status,ref,currentPaymentRegisterMode==='card'?'자동수집':'관리자등록');
+  updateBillingSummary();
+  document.getElementById('lastPaymentDate').textContent=date;
+  addPaymentHistory(date,method,type,amount,status);
+  closePaymentRegisterModal();
+  msg(currentBalanceAmount()<=0?'미수금이 0원이 되어 결제상태가 전액결제완료로 자동 변경되었습니다.':'결제내역이 저장되었습니다.');
+}
+function addPaymentHistoryRow(date,method,type,amount,status,ref,source){
+  var row=document.getElementById('paymentHistoryBody').insertRow(0);
+  row.insertCell().textContent=date;
+  row.insertCell().textContent=method;
+  row.insertCell().textContent=type;
+  var amountCell=row.insertCell();
+  amountCell.className='money';
+  amountCell.textContent=formatMoney(amount);
+  var statusCell=row.insertCell();
+  statusCell.innerHTML='<span class="badge b-blue"></span>';
+  statusCell.querySelector('span').textContent=status;
+  row.insertCell().textContent=ref;
+  row.insertCell().textContent=source;
+}
+function updatePaymentStatusByBalance(balance){
+  var status=balance<=0?'전액결제완료':(billingPaidAmount>0?'예약금완료':'미결제');
+  document.getElementById('paymentStatusText').textContent=status;
+  document.getElementById('paymentStatusBadge').textContent=status;
+  document.getElementById('paymentStatusBadge').className=balance<=0?'badge b-green':'badge b-blue';
+  document.getElementById('summaryPaymentStatus').textContent=status;
+  document.getElementById('summaryPaymentStatus').className=balance<=0?'badge b-green':'badge b-blue';
+}
+function addPaymentHistory(date,method,type,amount,status){
+  var history=document.getElementById('changeHistoryBody');
+  var row=history.insertRow(0);
+  [date,'결제상태','미수금 '+formatMoney(currentBalanceAmount()+amount),'미수금 '+formatMoney(currentBalanceAmount()),'이도현',method+' '+type+' '+formatMoney(amount)+' '+status].forEach(function(text){
     row.insertCell().textContent=text;
   });
 }
