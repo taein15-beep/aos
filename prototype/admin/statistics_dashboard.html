@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>통계 대시보드</title>
+  <style>
+body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;font-size:13px}.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}.sidebar{background:#071122;color:#d7e1f0;padding:18px 0}.brand{padding:0 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}.brand strong{display:block;color:white;font-size:17px}.nav-title{padding:18px 18px 8px;color:#8ea0bb;font-size:11px}.nav a{display:block;padding:11px 18px;color:#cdd6e5;text-decoration:none;border-left:3px solid transparent}.nav a.active{background:rgba(255,255,255,.08);border-left-color:#5b8cff;color:white}.nav-tree{padding:8px 0 18px}.nav-group{border-bottom:1px solid rgba(255,255,255,.06);padding:6px 0}.nav-depth1{padding:10px 18px 8px;color:#fff;font-weight:900;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}.nav-depth1:after{content:'▾';font-size:10px;color:#8ea0bb}.nav-group:not(.open) .nav-depth1:after{content:'▸'}.nav-group:not(.open) a{display:none}.nav-group a{position:relative;padding:7px 18px 7px 46px;font-size:12px;color:#b9c6d8}.nav-group a:before{content:'├';position:absolute;left:26px;top:7px;color:rgba(185,198,216,.7);font-size:12px;line-height:1}.nav-group a.active{background:rgba(91,140,255,.18);border-left-color:#5b8cff;color:white}.nav-group.open .nav-depth1{color:#8fb3ff}.topbar{height:48px;background:white;border-bottom:1px solid #d9dde3;display:flex;align-items:center;justify-content:space-between;padding:0 16px}.page{padding:16px;max-width:1800px}.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}h1{font-size:24px;margin:0 0 6px}.desc{font-weight:700;color:#555}.btn{border:1px solid #cfd5dd;background:white;border-radius:4px;padding:8px 12px;font-weight:700;cursor:pointer;white-space:nowrap}.btn:hover{background:#f7f9fb}.btn.green{background:#18a34a;border-color:#18a34a;color:white}.btn.green:hover{background:#138a3e}.btn.blue{background:#2f63f6;border-color:#2f63f6;color:white}.panel{background:white;border:1px solid #d9dde3;border-radius:7px;margin-bottom:12px}.panel-head{background:#e6e6e6;padding:12px 14px;font-weight:900;border-bottom:1px solid #d9dde3;display:flex;justify-content:space-between;align-items:center}.panel-body{padding:14px;overflow:auto}input,select{border:1px solid #d6dbe1;border-radius:4px;padding:8px 9px;min-height:36px;box-sizing:border-box;background:white}label{font-weight:800;color:#3b4654}.field{display:flex;flex-direction:column;gap:6px}.summary{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}.card{background:white;border:1px solid #d9dde3;border-radius:7px;padding:14px}.card span{display:block;color:#667085;font-weight:800;margin-bottom:8px}.card strong{font-size:22px;color:#2f63f6}.card.warn strong{color:#b45309}.card.danger strong{color:#d92d20}.card.good strong{color:#0f8738}.filter-grid{display:grid;grid-template-columns:128px 116px 116px 118px 128px 128px 108px 108px 110px auto auto auto;gap:8px 10px;align-items:end;min-width:1420px}.filter-grid input,.filter-grid select{width:100%;min-height:32px;padding:6px 7px;font-size:12px}.filter-grid label{display:none}.filter-action button{width:100%;min-height:32px;padding:6px 9px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:1280px}.table th{background:#e6e6e6;border:1px solid #cfd3d8;padding:10px;text-align:center;white-space:nowrap}.table td{border:1px solid #edf0f3;padding:9px;background:white;vertical-align:middle;white-space:nowrap}.table td.center{text-align:center}.table td.money{text-align:right}.badge{display:inline-flex;border-radius:14px;padding:4px 8px;font-size:12px;font-weight:900;white-space:nowrap}.b-green{background:#e7f8ee;color:#0f8738}.b-blue{background:#eaf1ff;color:#2556d9}.b-orange{background:#fff4de;color:#b45309}.b-red{background:#fff0f0;color:#d92d20}.b-gray{background:#eef1f5;color:#475467}.b-purple{background:#f1ecff;color:#6941c6}.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.mini-chart{display:grid;gap:8px}.bar-row{display:grid;grid-template-columns:110px 1fr 90px;gap:10px;align-items:center}.bar-track{height:12px;background:#edf0f3;border-radius:12px;overflow:hidden}.bar-fill{height:100%;background:#2f63f6}.bar-fill.green{background:#18a34a}.bar-fill.orange{background:#f59e0b}.bar-fill.red{background:#d92d20}.muted{color:#667085;font-size:12px}.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}@media(max-width:1300px){.summary{grid-template-columns:repeat(3,1fr)}.stat-grid{grid-template-columns:1fr}}@media(max-width:1000px){.app{grid-template-columns:1fr}.sidebar{display:none}.page-head{display:block}.top-actions{margin-top:10px}.summary{grid-template-columns:repeat(2,1fr)}.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.filter-action{grid-column:auto}.table{min-width:1100px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><strong>AviaNext</strong><small>AOS Admin Prototype</small></div>
+      <div class="nav-title">관리메뉴</div>
+      <nav class="nav nav-tree">
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
+          <a href="product_register.html">상품관리</a>
+          <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
+          <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
+          <a href="template_manage.html">템플릿관리</a>
+          <a href="#" onclick="msg('상품분류관리 화면은 준비 중입니다.');return false;">상품분류관리</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">📋 예약관리</div>
+          <a href="reservation_list.html">예약목록</a>
+          <a href="#" onclick="msg('예약현황 화면은 준비 중입니다.');return false;">예약현황</a>
+          <a href="#" onclick="msg('좌석관리 화면은 준비 중입니다.');return false;">좌석관리</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">✈️ 항공예약관리</div>
+          <a href="#" onclick="msg('국제선예약 화면은 준비 중입니다.');return false;">국제선예약</a>
+          <a href="#" onclick="msg('국제선예약목록 화면은 준비 중입니다.');return false;">국제선예약목록</a>
+          <a href="#" onclick="msg('국내선예약 화면은 준비 중입니다.');return false;">국내선예약</a>
+          <a href="#" onclick="msg('국내선예약목록 화면은 준비 중입니다.');return false;">국내선예약목록</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">👤 회원관리</div>
+          <a href="#" onclick="msg('웹회원관리 화면은 준비 중입니다.');return false;">웹회원관리</a>
+          <a href="#" onclick="msg('관리자/직원 관리 화면은 준비 중입니다.');return false;">관리자/직원 관리</a>
+          <a href="#" onclick="msg('판매점관리 화면은 준비 중입니다.');return false;">판매점관리</a>
+          <a href="#" onclick="msg('거래처관리 화면은 준비 중입니다.');return false;">거래처관리</a>
+          <a href="#" onclick="msg('그룹관리 화면은 준비 중입니다.');return false;">그룹관리</a>
+          <a href="#" onclick="msg('탈퇴회원 화면은 준비 중입니다.');return false;">탈퇴회원</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">💰 정산관리</div>
+          <a href="#" onclick="msg('인보이스관리 화면은 준비 중입니다.');return false;">인보이스관리</a>
+          <a href="#" onclick="msg('입금/환불현황 화면은 준비 중입니다.');return false;">입금/환불현황</a>
+          <a href="#" onclick="msg('미수금관리 화면은 준비 중입니다.');return false;">미수금관리</a>
+          <a href="#" onclick="msg('국제선정산(항공) 화면은 준비 중입니다.');return false;">국제선정산(항공)</a>
+          <a href="#" onclick="msg('발권데이터(항공) 화면은 준비 중입니다.');return false;">발권데이터(항공)</a>
+        </div>
+        <div class="nav-group open">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">📊 통계관리</div>
+          <a class="active" href="statistics_dashboard.html">통계 대시보드</a>
+          <a href="statistics_sales.html">매출통계</a>
+          <a href="statistics_reservation.html">예약통계</a>
+          <a href="statistics_product.html">상품별 통계</a>
+          <a href="statistics_seller.html">판매점별 통계</a>
+          <a href="statistics_region.html">지역별 통계</a>
+          <a href="statistics_settlement.html">정산통계</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">🎨 디자인설정</div>
+          <a href="#" onclick="msg('템플릿관리 화면은 준비 중입니다.');return false;">템플릿관리</a>
+          <a href="#" onclick="msg('섹션관리 화면은 준비 중입니다.');return false;">섹션관리</a>
+          <a href="#" onclick="msg('홈페이지 설정 화면은 준비 중입니다.');return false;">홈페이지 설정</a>
+          <a href="#" onclick="msg('메인메뉴관리 화면은 준비 중입니다.');return false;">메인메뉴관리</a>
+          <a href="#" onclick="msg('팝업관리 화면은 준비 중입니다.');return false;">팝업관리</a>
+          <a href="#" onclick="msg('상단띠배너 화면은 준비 중입니다.');return false;">상단띠배너</a>
+          <a href="#" onclick="msg('관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">💬 알림톡/문자관리</div>
+          <a href="#" onclick="msg('알림톡 설정 화면은 준비 중입니다.');return false;">알림톡 설정</a>
+          <a href="#" onclick="msg('이메일발송 화면은 준비 중입니다.');return false;">이메일발송</a>
+          <a href="#" onclick="msg('문자발송 화면은 준비 중입니다.');return false;">문자발송</a>
+          <a href="#" onclick="msg('발송내역 화면은 준비 중입니다.');return false;">발송내역</a>
+          <a href="#" onclick="msg('메크로설정 화면은 준비 중입니다.');return false;">메크로설정</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">📝 게시판관리</div>
+          <a href="#" onclick="msg('공지사항 화면은 준비 중입니다.');return false;">공지사항</a>
+          <a href="#" onclick="msg('고객문의 화면은 준비 중입니다.');return false;">고객문의</a>
+          <a href="#" onclick="msg('여행후기 화면은 준비 중입니다.');return false;">여행후기</a>
+          <a href="#" onclick="msg('자주묻는질문 화면은 준비 중입니다.');return false;">자주묻는질문</a>
+          <a href="#" onclick="msg('고객문의 화면은 준비 중입니다.');return false;">고객문의</a>
+          <a href="#" onclick="msg('스캔목록 화면은 준비 중입니다.');return false;">스캔목록</a>
+          <a href="#" onclick="msg('자료실 화면은 준비 중입니다.');return false;">자료실</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-depth1" onclick="toggleNavGroup(this)">⚙️ 기본설정</div>
+          <a href="#" onclick="msg('항공사 Bin관리 화면은 준비 중입니다.');return false;">항공사 Bin관리</a>
+          <a href="#" onclick="msg('노선관리 화면은 준비 중입니다.');return false;">노선관리</a>
+          <a href="#" onclick="msg('탑승역관리 화면은 준비 중입니다.');return false;">탑승역관리</a>
+          <a href="#" onclick="msg('열차관리 화면은 준비 중입니다.');return false;">열차관리</a>
+          <a href="#" onclick="msg('템플릿사이트관리 화면은 준비 중입니다.');return false;">템플릿사이트관리</a>
+        </div>
+      </nav>
+    </aside>
+    <main>
+      <header class="topbar"><strong>통계 대시보드</strong><span>윤호님 · 로그아웃</span></header>
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h1>통계 대시보드</h1>
+            <div class="desc">예약, 매출, 정산, 취소 흐름을 한 화면에서 확인합니다.</div>
+          </div>
+          <div class="top-actions">
+            <button class="btn" onclick="msg('통계 기준 안내 모달 샘플입니다.')">기준 안내</button>
+            <button class="btn blue" onclick="msg('현재 검색조건 기준으로 엑셀을 다운로드합니다.')">엑셀 다운로드</button>
+          </div>
+        </div>
+
+        <section class="summary" aria-label="통계 요약">
+          <div class="card"><span>총 예약건수</span><strong>428건</strong></div>
+          <div class="card good"><span>총 예약인원</span><strong>1,284명</strong></div>
+          <div class="card"><span>총 매출</span><strong>128,450,000원</strong></div>
+          <div class="card warn"><span>정산예정금액</span><strong>96,820,000원</strong></div>
+          <div class="card"><span>수수료</span><strong>8,740,000원</strong></div>
+          <div class="card danger"><span>취소율</span><strong>6.8%</strong></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">검색/필터</div>
+          <div class="panel-body">
+            <div class="filter-grid">
+              <div class="field"><label>조회기간</label><select><option>조회기간</option><option>오늘</option><option>이번주</option><option>이번달</option><option>직접입력</option></select></div>
+              <div class="field"><label>시작일</label><input type="date" value="2026-06-01"></div>
+              <div class="field"><label>종료일</label><input type="date" value="2026-06-30"></div>
+              <div class="field"><label>기준일자</label><select><option>예약일</option><option>결제일</option><option>출발일</option></select></div>
+              <div class="field"><label>상품유형</label><select><option>상품유형 전체</option><option>자사상품</option><option>공유상품</option><option>위탁상품</option></select></div>
+              <div class="field"><label>공급여행사</label><select><option>공급여행사 전체</option><option>AOS 직영</option><option>강화테마투어</option><option>제주로컬투어</option><option>남도기차여행</option></select></div>
+              <div class="field"><label>판매여행사</label><select><option>판매여행사 전체</option><option>AOS 직영</option><option>수도권투어</option><option>복지몰파트너</option></select></div>
+              <div class="field"><label>판매점</label><select><option>판매점 전체</option><option>본사몰</option><option>강남지점</option><option>기업복지몰</option><option>콜센터</option></select></div>
+              <div class="field"><label>판매채널</label><select><option>판매채널 전체</option><option>자사몰</option><option>판매사</option><option>관리자등록</option></select></div>
+              <div class="field"><label>상품지역</label><select><option>상품지역 전체</option><option>인천 강화</option><option>경남 거제</option><option>제주 서귀포</option><option>경기 화성</option></select></div>
+              <div class="field filter-action"><label>&nbsp;</label><button class="btn green" onclick="msg('샘플 데이터 기준으로 검색했습니다.')">검색</button></div>
+              <div class="field filter-action"><label>&nbsp;</label><button class="btn" onclick="msg('검색조건을 초기화했습니다.')">초기화</button></div>
+              <div class="field filter-action"><label>&nbsp;</label><button class="btn blue" onclick="msg('현재 검색조건 기준으로 엑셀을 다운로드합니다.')">엑셀 다운로드</button></div>
+            </div>
+          </div>
+        </section>
+        <div class="stat-grid">
+          <section class="panel">
+            <div class="panel-head">판매채널 매출 비중</div>
+            <div class="panel-body mini-chart">
+              <div class="bar-row"><strong>자사몰</strong><div class="bar-track"><div class="bar-fill green" style="width:42%"></div></div><span>42.0%</span></div>
+              <div class="bar-row"><strong>판매사</strong><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div><span>38.0%</span></div>
+              <div class="bar-row"><strong>관리자등록</strong><div class="bar-track"><div class="bar-fill orange" style="width:20%"></div></div><span>20.0%</span></div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">정산상태 비중</div>
+            <div class="panel-body mini-chart">
+              <div class="bar-row"><strong>정산완료</strong><div class="bar-track"><div class="bar-fill green" style="width:46%"></div></div><span>46.2%</span></div>
+              <div class="bar-row"><strong>정산중</strong><div class="bar-track"><div class="bar-fill orange" style="width:34%"></div></div><span>34.4%</span></div>
+              <div class="bar-row"><strong>미작성</strong><div class="bar-track"><div class="bar-fill red" style="width:19%"></div></div><span>19.4%</span></div>
+            </div>
+          </section>
+        </div>
+        <section class="panel">
+          <div class="panel-head">
+            <span>채널별 핵심 지표</span>
+            <span class="muted">샘플 데이터 · DB 연동 전 프로토타입</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr><th>판매채널</th><th>공급여행사</th><th>판매여행사</th><th>판매점</th><th>예약건수</th><th>예약인원</th><th>매출</th><th>정산금액</th><th>수수료</th><th>취소율</th><th>정산상태</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>자사몰</td><td>AOS 직영</td><td>AOS 직영</td><td>본사몰</td><td class="center">142건</td><td class="center">426명</td><td class="money">42,860,000원</td><td class="money">42,860,000원</td><td class="money">0원</td><td class="center">3.1%</td><td><span class="badge b-green">정산완료</span></td></tr>
+                <tr><td>판매사</td><td>강화테마투어</td><td>수도권투어</td><td>강남지점</td><td class="center">96건</td><td class="center">288명</td><td class="money">31,420,000원</td><td class="money">26,890,000원</td><td class="money">2,210,000원</td><td class="center">5.8%</td><td><span class="badge b-orange">정산중</span></td></tr>
+                <tr><td>판매사</td><td>제주로컬투어</td><td>복지몰파트너</td><td>기업복지몰</td><td class="center">74건</td><td class="center">218명</td><td class="money">24,950,000원</td><td class="money">19,740,000원</td><td class="money">1,880,000원</td><td class="center">8.4%</td><td><span class="badge b-red">미작성</span></td></tr>
+                <tr><td>관리자등록</td><td>남도기차여행</td><td>AOS 직영</td><td>콜센터</td><td class="center">58건</td><td class="center">174명</td><td class="money">16,780,000원</td><td class="money">15,220,000원</td><td class="money">720,000원</td><td class="center">4.9%</td><td><span class="badge b-orange">정산중</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script>
+    function msg(t){alert(t)}
+function toggleNavGroup(el){el.closest('.nav-group').classList.toggle('open')}
+  </script>
+</body>
+</html>
