@@ -16,7 +16,8 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
       <nav class="nav nav-tree">
         <div class="nav-group">
           <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
-          <a href="product_register.html">상품관리</a>
+          <a href="product_list.html">상품목록</a>
+          <a href="product_register.html">상품등록</a>
           <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
           <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
           <a href="template_manage.html">템플릿관리</a>
@@ -174,7 +175,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
             <div class="chart-bar"><span class="chart-label">복지몰</span><div class="chart-track"><div class="chart-fill purple" style="width:16%"></div></div><strong>16.0%</strong></div>
             <div class="chart-bar"><span class="chart-label">지자체연계</span><div class="chart-track"><div class="chart-fill orange" style="width:12%"></div></div><strong>12.0%</strong></div>
           </div></section>
-          <section class="chart-box"><div class="chart-head"><span>판매판매판매수수료율/취소율 비교</span><span class="muted">리스크 확인</span></div><div class="chart-body chart-bars">
+          <section class="chart-box"><div class="chart-head"><span>판매수수료율/취소율 비교</span><span class="muted">리스크 확인</span></div><div class="chart-body chart-bars">
             <div class="chart-bar"><span class="chart-label">강남판매점</span><div class="chart-track"><div class="chart-fill orange" style="width:86%"></div></div><strong>8.6%</strong></div>
             <div class="chart-bar"><span class="chart-label">기업복지몰</span><div class="chart-track"><div class="chart-fill red" style="width:100%"></div></div><strong>11.8%</strong></div>
             <div class="chart-bar"><span class="chart-label">본사몰</span><div class="chart-track"><div class="chart-fill green" style="width:26%"></div></div><strong>3.1%</strong></div>
@@ -187,7 +188,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
         </div>
 
         <div class="table-set">
-          <section class="panel"><div class="panel-head"><span>판매점별 실적</span><span class="muted">성과등급과 정산상태 기준</span></div><div class="table-wrap"><table class="table wide"><thead><tr><th>판매점</th><th>판매채널</th><th>공급여행사</th><th>예약건수</th><th>예약인원</th><th>총 총 총 예약금액</th><th>실실실결제금액</th><th>환불금액</th><th>순매출</th><th>미수금</th><th>평균객단가</th><th>취소건수</th><th>취소율</th><th>판매수수료</th><th>판매판매수수료율</th><th>정산예정금액</th><th>정산완료금액</th><th>정산상태</th><th>성과등급</th><th>관리</th></tr></thead><tbody>
+          <section class="panel"><div class="panel-head"><span>판매점별 실적</span><span class="muted">성과등급과 정산상태 기준</span></div><div class="table-wrap"><table class="table wide"><thead><tr><th>판매점</th><th>판매채널</th><th>공급여행사</th><th>예약건수</th><th>예약인원</th><th>총 예약금액</th><th>실결제금액</th><th>환불금액</th><th>순매출</th><th>미수금</th><th>평균객단가</th><th>취소건수</th><th>취소율</th><th>판매수수료</th><th>판매수수료율</th><th>정산예정금액</th><th>정산완료금액</th><th>정산상태</th><th>성과등급</th><th>관리</th></tr></thead><tbody>
             <tr><td>본사몰</td><td>자사몰</td><td>AOS 직영</td><td class="center">142건</td><td class="center">426명</td><td class="money">42,860,000원</td><td class="money">39,240,000원</td><td class="money">1,120,000원</td><td class="money">38,120,000원</td><td class="money">0원</td><td class="money">89,484원</td><td class="center">4건</td><td class="center">3.1%</td><td class="money">0원</td><td class="center">0.0%</td><td class="money">0원</td><td class="money">39,240,000원</td><td><span class="badge b-green">정산완료</span></td><td><span class="badge b-green">우수</span></td><td><button class="btn" onclick="msg('판매점 상세 샘플입니다.')">상세</button></td></tr>
             <tr><td>강남판매점</td><td>판매점</td><td>행복투어</td><td class="center">116건</td><td class="center">348명</td><td class="money">36,700,000원</td><td class="money">31,940,000원</td><td class="money">2,440,000원</td><td class="money">29,500,000원</td><td class="money">4,760,000원</td><td class="money">84,770원</td><td class="center">10건</td><td class="center">8.6%</td><td class="money">2,860,000원</td><td class="center">7.8%</td><td class="money">29,080,000원</td><td class="money">0원</td><td><span class="badge b-orange">정산대기</span></td><td><span class="badge b-orange">정산확인</span></td><td><button class="btn" onclick="msg('판매점 상세 샘플입니다.')">상세</button></td></tr>
             <tr><td>기업복지몰</td><td>복지몰</td><td>제주로컬투어</td><td class="center">82건</td><td class="center">246명</td><td class="money">24,960,000원</td><td class="money">21,300,000원</td><td class="money">2,760,000원</td><td class="money">18,540,000원</td><td class="money">5,850,000원</td><td class="money">75,366원</td><td class="center">12건</td><td class="center">11.8%</td><td class="money">1,980,000원</td><td class="center">7.5%</td><td class="money">19,320,000원</td><td class="money">0원</td><td><span class="badge b-red">미정산</span></td><td><span class="badge b-red">주의</span></td><td><button class="btn" onclick="msg('판매점 상세 샘플입니다.')">상세</button></td></tr>
@@ -195,7 +196,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
             <tr><td>수원판매점</td><td>지자체연계</td><td>AOS 직영</td><td class="center">69건</td><td class="center">207명</td><td class="money">17,560,000원</td><td class="money">15,790,000원</td><td class="money">840,000원</td><td class="money">14,950,000원</td><td class="money">980,000원</td><td class="money">72,222원</td><td class="center">3건</td><td class="center">4.2%</td><td class="money">650,000원</td><td class="center">3.7%</td><td class="money">0원</td><td class="money">15,140,000원</td><td><span class="badge b-green">정산완료</span></td><td><span class="badge b-green">우수</span></td><td><button class="btn" onclick="msg('판매점 상세 샘플입니다.')">상세</button></td></tr>
           </tbody></table></div></section>
 
-          <section class="panel"><div class="panel-head"><span>판매채널별 요약</span><span class="muted">채널별 총 예약금액 비중</span></div><div class="table-wrap"><table class="table"><thead><tr><th>판매채널</th><th>예약건수</th><th>예약인원</th><th>총 총 총 예약금액</th><th>실실실결제금액</th><th>미수금</th><th>취소율</th><th>판매수수료</th><th>총 예약금액 비중</th></tr></thead><tbody>
+          <section class="panel"><div class="panel-head"><span>판매채널별 요약</span><span class="muted">채널별 총 예약금액 비중</span></div><div class="table-wrap"><table class="table"><thead><tr><th>판매채널</th><th>예약건수</th><th>예약인원</th><th>총 예약금액</th><th>실결제금액</th><th>미수금</th><th>취소율</th><th>판매수수료</th><th>총 예약금액 비중</th></tr></thead><tbody>
             <tr><td>자사몰</td><td class="center">142건</td><td class="center">426명</td><td class="money">42,860,000원</td><td class="money">39,240,000원</td><td class="money">0원</td><td class="center">3.1%</td><td class="money">0원</td><td class="center">34.0%</td></tr>
             <tr><td>판매점</td><td class="center">116건</td><td class="center">348명</td><td class="money">36,700,000원</td><td class="money">31,940,000원</td><td class="money">4,760,000원</td><td class="center">8.6%</td><td class="money">2,860,000원</td><td class="center">28.0%</td></tr>
             <tr><td>복지몰</td><td class="center">82건</td><td class="center">246명</td><td class="money">24,960,000원</td><td class="money">21,300,000원</td><td class="money">5,850,000원</td><td class="center">11.8%</td><td class="money">1,980,000원</td><td class="center">16.0%</td></tr>

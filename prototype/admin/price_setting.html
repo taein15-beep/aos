@@ -1,4 +1,4 @@
-﻿<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>요금설정</title><style>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>요금설정</title><style>
 body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;font-size:13px}.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}.sidebar{background:#071122;color:#d7e1f0;padding:18px 0}.brand{padding:0 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}.brand strong{display:block;color:white;font-size:17px}.nav-title{padding:18px 18px 8px;color:#8ea0bb;font-size:11px}.nav a{display:block;padding:11px 18px;color:#cdd6e5;text-decoration:none;border-left:3px solid transparent}.nav a.active{background:rgba(255,255,255,.08);border-left-color:#5b8cff;color:white}.nav-tree{padding:8px 0 18px}.nav-group{border-bottom:1px solid rgba(255,255,255,.06);padding:6px 0}.nav-depth1{padding:10px 18px 8px;color:#fff;font-weight:900;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}.nav-depth1:after{content:'▾';font-size:10px;color:#8ea0bb}.nav-group:not(.open) .nav-depth1:after{content:'▸'}.nav-group:not(.open) a{display:none}.nav-group a{position:relative;padding:7px 18px 7px 46px;font-size:12px;color:#b9c6d8}.nav-group a:before{content:'├';position:absolute;left:26px;top:7px;color:rgba(185,198,216,.7);font-size:12px;line-height:1}.nav-group a.active{background:rgba(91,140,255,.18);border-left-color:#5b8cff;color:white}.nav-group.open .nav-depth1{color:#8fb3ff}.topbar{height:48px;background:white;border-bottom:1px solid #d9dde3;display:flex;align-items:center;justify-content:space-between;padding:0 16px}.page{padding:16px;max-width:1800px}h1{font-size:24px;margin:0 0 6px}.desc{font-weight:700;color:#555;margin-bottom:14px}.btn{border:1px solid #cfd5dd;background:white;border-radius:4px;padding:8px 12px;font-weight:700;cursor:pointer}.btn.green{background:#18a34a;border-color:#18a34a;color:white}.btn.blue{background:#2f63f6;border-color:#2f63f6;color:white}.panel{background:white;border:1px solid #d9dde3;border-radius:7px;margin-bottom:12px}.panel-head{background:#e6e6e6;padding:12px 14px;font-weight:900;border-bottom:1px solid #d9dde3}.panel-body{padding:14px}input,select,textarea{border:1px solid #d6dbe1;border-radius:4px;padding:8px 9px;min-height:36px}textarea{width:100%;min-height:100px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:1100px}.table th{background:#e6e6e6;border:1px solid #cfd3d8;padding:10px;text-align:center}.table td{border:1px solid #edf0f3;padding:9px;background:white}.badge{display:inline-flex;border-radius:14px;padding:4px 8px;font-size:12px;font-weight:900}.b-green{background:#e7f8ee;color:#0f8738}.b-blue{background:#eaf1ff;color:#2556d9}.b-orange{background:#fff4de;color:#b45309}.b-red{background:#fff0f0;color:#d92d20}.tag{display:inline-flex;background:#f2f2f2;border:1px solid #ddd;border-radius:15px;padding:5px 9px;margin:2px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.card{background:white;border:1px solid #d9dde3;border-radius:7px;padding:14px}.card strong{font-size:24px;color:#2f63f6}@media(max-width:1000px){.app{grid-template-columns:1fr}.sidebar{display:none}.summary{grid-template-columns:repeat(2,1fr)}}
 </style></head><body><div class="app">    <aside class="sidebar">
       <div class="brand"><strong>AviaNext</strong><small>AOS Admin Prototype</small></div>
@@ -6,7 +6,8 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
       <nav class="nav nav-tree">
         <div class="nav-group open">
           <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
-          <a class="active" href="product_register.html">상품관리</a>
+          <a href="product_list.html">상품목록</a>
+          <a class="active" href="product_register.html">상품등록</a>
           <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
           <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
           <a href="template_manage.html">템플릿관리</a>
@@ -60,7 +61,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
           <a href="#" onclick="msg('메인메뉴관리 화면은 준비 중입니다.');return false;">메인메뉴관리</a>
           <a href="#" onclick="msg('팝업관리 화면은 준비 중입니다.');return false;">팝업관리</a>
           <a href="#" onclick="msg('상단띠배너 화면은 준비 중입니다.');return false;">상단띠배너</a>
-          <a href="#" onclick="msg('7-7 관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
+          <a href="#" onclick="msg('관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
         </div>
         <div class="nav-group">
           <div class="nav-depth1" onclick="toggleNavGroup(this)">💬 알림톡/문자관리</div>

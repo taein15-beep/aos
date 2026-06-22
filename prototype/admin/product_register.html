@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
@@ -25,7 +25,8 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
       <nav class="nav nav-tree">
         <div class="nav-group open">
           <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
-          <a class="active" href="product_register.html">상품관리</a>
+          <a href="product_list.html">상품목록</a>
+          <a class="active" href="product_register.html">상품등록</a>
           <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
           <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
           <a href="template_manage.html">템플릿관리</a>
@@ -79,7 +80,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
           <a href="#" onclick="msg('메인메뉴관리 화면은 준비 중입니다.');return false;">메인메뉴관리</a>
           <a href="#" onclick="msg('팝업관리 화면은 준비 중입니다.');return false;">팝업관리</a>
           <a href="#" onclick="msg('상단띠배너 화면은 준비 중입니다.');return false;">상단띠배너</a>
-          <a href="#" onclick="msg('7-7 관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
+          <a href="#" onclick="msg('관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
         </div>
         <div class="nav-group">
           <div class="nav-depth1" onclick="toggleNavGroup(this)">💬 알림톡/문자관리</div>
@@ -125,7 +126,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
           <a class="tab active" href="product_register.html">상품기본설정</a>
           <a class="tab" href="schedule_register.html">일정표</a>
           <a class="tab" href="price_setting.html">요금설정</a>
-          <a class="tab" href="#" onclick="msg('판매사 설정 샘플입니다.');return false;">판매사 설정</a>
+          <a class="tab" href="#" onclick="msg('판매점 설정 샘플입니다.');return false;">판매점 설정</a>
           <a class="tab" href="#" onclick="msg('랜딩 설정 샘플입니다.');return false;">랜딩 설정</a>
         </nav>
 
@@ -289,26 +290,26 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
             </div>
           </section>
 
-          <!-- 판매사 커미션 설정: 회원관리의 판매사 그룹과 그룹관리 기본 커미션을 불러오고, 상품별 개별 값을 덮어쓸 수 있습니다. -->
+          <!-- 판매점 수수료 설정: 회원관리의 판매점 그룹과 그룹관리 기본 수수료를 불러오고, 상품별 개별 값을 덮어쓸 수 있습니다. -->
           <section class="panel commission-panel">
             <div class="panel-head">
-              <span class="commission-title">판매사 커미션 설정</span>
-              <div class="commission-mode" aria-label="커미션 지급 방식">
-                <span>커미션 고정으로 지급</span>
+              <span class="commission-title">판매점 수수료 설정</span>
+              <div class="commission-mode" aria-label="수수료 지급 방식">
+                <span>수수료 고정으로 지급</span>
                 <label class="switch"><input id="commissionMode" type="checkbox" onchange="toggleCommissionMode()"><span class="slider"></span></label>
-                <span>커미션 %로 가변 지급</span>
+                <span>수수료 %로 가변 지급</span>
               </div>
-              <button class="btn small green" onclick="msg('판매사 관리 화면으로 이동하는 샘플입니다.')">판매사 관리</button>
+              <button class="btn small green" onclick="msg('판매점 관리 화면으로 이동하는 샘플입니다.')">판매점 관리</button>
             </div>
             <div class="panel-body">
               <div class="commission-body">
-                <div class="commission-groups" aria-label="판매사 그룹 목록">
-                  <div class="group-chip">A그룹 판매사</div>
-                  <div class="group-chip">B그룹 판매사</div>
-                  <div class="group-chip">C그룹 판매사</div>
-                  <div class="group-chip">D그룹 판매사</div>
+                <div class="commission-groups" aria-label="판매점 그룹 목록">
+                  <div class="group-chip">A그룹 판매점</div>
+                  <div class="group-chip">B그룹 판매점</div>
+                  <div class="group-chip">C그룹 판매점</div>
+                  <div class="group-chip">D그룹 판매점</div>
                 </div>
-                <div id="commissionFixedBox" class="commission-box fixed active" aria-label="정액 커미션">
+                <div id="commissionFixedBox" class="commission-box fixed active" aria-label="정액 수수료">
                   <label class="commission-input">대인 <input value="0"> 원</label>
                   <label class="commission-input">소인 <input value="0"> 원</label>
                   <label class="commission-input">대인 <input value="0"> 원</label>
@@ -318,7 +319,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
                   <label class="commission-input">대인 <input value="0"> 원</label>
                   <label class="commission-input">소인 <input value="0"> 원</label>
                 </div>
-                <div id="commissionRateBox" class="commission-box rate" aria-label="정률 커미션">
+                <div id="commissionRateBox" class="commission-box rate" aria-label="정률 수수료">
                   <label class="commission-input">대인 <input value="0"> %</label>
                   <label class="commission-input">소인 <input value="0"> %</label>
                   <label class="commission-input">대인 <input value="0"> %</label>
@@ -328,7 +329,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
                   <label class="commission-input">대인 <input value="0"> %</label>
                   <label class="commission-input">소인 <input value="0"> %</label>
                 </div>
-                <p class="commission-note">판매사는 회원관리에서 그룹을 지정하고, 그룹별 기본 커미션은 그룹관리 값을 불러옵니다. 이 화면의 입력값은 현재 상품에만 적용되는 개별 설정입니다.</p>
+                <p class="commission-note">판매점은 회원관리에서 그룹을 지정하고, 그룹별 기본 수수료는 그룹관리 값을 불러옵니다. 이 화면의 입력값은 현재 상품에만 적용되는 개별 설정입니다.</p>
               </div>
             </div>
           </section>
@@ -406,7 +407,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
             </div>
           </div>
 
-          <!-- 내부관리: 관리자 전용 메모와 판매사 공유 메모, 내부 파일을 분리합니다. -->
+          <!-- 내부관리: 관리자 전용 메모와 판매점 공유 메모, 내부 파일을 분리합니다. -->
           <div class="internal-row">
             <section class="panel">
               <div class="panel-head">관리자 메모</div>
@@ -414,8 +415,8 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
             </section>
 
             <section class="panel">
-              <div class="panel-head">판매사 전달 메모</div>
-              <div class="panel-body"><textarea placeholder="판매사 관리자에서도 보이는 메모"></textarea></div>
+              <div class="panel-head">판매점 전달 메모</div>
+              <div class="panel-body"><textarea placeholder="판매점 관리자에서도 보이는 메모"></textarea></div>
             </section>
 
             <section class="panel">

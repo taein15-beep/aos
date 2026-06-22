@@ -16,7 +16,8 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
       <nav class="nav nav-tree">
         <div class="nav-group">
           <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
-          <a href="product_register.html">상품관리</a>
+          <a href="product_list.html">상품목록</a>
+          <a href="product_register.html">상품등록</a>
           <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
           <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
           <a href="template_manage.html">템플릿관리</a>
@@ -124,7 +125,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
           <div class="card good"><span>예약인원</span><strong>1,926명</strong></div>
           <div class="card"><span>평균객단가</span><strong>96,791원</strong></div>
           <div class="card"><span>판매수수료</span><strong>13,740,000원</strong></div>
-          <div class="card warn"><span>공급사 정산금액</span><strong>118,920,000원</strong></div>
+          <div class="card warn"><span>공급여행사 정산금액</span><strong>118,920,000원</strong></div>
           <div class="card"><span>예상수익</span><strong>24,820,000원</strong></div>
           <div class="card good"><span>전년동월대비</span><strong>27.8%</strong></div>
         </section>
@@ -199,7 +200,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
         <div class="table-set">
           <section class="panel">
             <div class="panel-head"><span>기간별 매출 요약</span><span class="muted">표시단위 선택에 따라 일별/주별/월별로 확장 예정</span></div>
-            <div class="table-wrap"><table class="table wide"><thead><tr><th>기간</th><th>예약건수</th><th>예약인원</th><th>총 총 총 예약금액</th><th>실실실결제금액</th><th>환불금액</th><th>순매출</th><th>미수금</th><th>판매수수료</th><th>공급사 정산금액</th><th>예상수익</th><th>전년동월대비</th></tr></thead><tbody>
+            <div class="table-wrap"><table class="table wide"><thead><tr><th>기간</th><th>예약건수</th><th>예약인원</th><th>총 예약금액</th><th>실결제금액</th><th>환불금액</th><th>순매출</th><th>미수금</th><th>판매수수료</th><th>공급여행사 정산금액</th><th>예상수익</th><th>전년동월대비</th></tr></thead><tbody>
               <tr><td>2026-06-01 ~ 2026-06-07</td><td class="center">146건</td><td class="center">438명</td><td class="money">42,600,000원</td><td class="money">37,800,000원</td><td class="money">2,100,000원</td><td class="money">35,700,000원</td><td class="money">4,800,000원</td><td class="money">3,140,000원</td><td class="money">28,900,000원</td><td class="money">4,760,000원</td><td class="center">18.4%</td></tr>
               <tr><td>2026-06-08 ~ 2026-06-14</td><td class="center">158건</td><td class="center">474명</td><td class="money">48,300,000원</td><td class="money">42,600,000원</td><td class="money">2,840,000원</td><td class="money">39,760,000원</td><td class="money">5,700,000원</td><td class="money">3,520,000원</td><td class="money">31,400,000원</td><td class="money">4,840,000원</td><td class="center">22.1%</td></tr>
               <tr><td>2026-06-15 ~ 2026-06-21</td><td class="center">171건</td><td class="center">513명</td><td class="money">51,920,000원</td><td class="money">46,250,000원</td><td class="money">3,320,000원</td><td class="money">42,930,000원</td><td class="money">5,670,000원</td><td class="money">3,980,000원</td><td class="money">33,620,000원</td><td class="money">5,330,000원</td><td class="center">31.6%</td></tr>
@@ -209,7 +210,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
 
           <section class="panel">
             <div class="panel-head"><span>상품유형/채널별 총 예약금액</span><span class="muted">공급/판매 구조별 수익성</span></div>
-            <div class="table-wrap"><table class="table wide"><thead><tr><th>상품유형</th><th>공급여행사</th><th>판매점</th><th>판매채널</th><th>예약건수</th><th>예약인원</th><th>총 총 총 예약금액</th><th>실실실결제금액</th><th>환불금액</th><th>순매출</th><th>판매수수료</th><th>공급사 정산금액</th><th>예상수익</th><th>정산상태</th></tr></thead><tbody>
+            <div class="table-wrap"><table class="table wide"><thead><tr><th>상품유형</th><th>공급여행사</th><th>판매점</th><th>판매채널</th><th>예약건수</th><th>예약인원</th><th>총 예약금액</th><th>실결제금액</th><th>환불금액</th><th>순매출</th><th>판매수수료</th><th>공급여행사 정산금액</th><th>예상수익</th><th>정산상태</th></tr></thead><tbody>
               <tr><td>자사상품</td><td>AOS 직영</td><td>본사몰</td><td>자사몰</td><td class="center">142건</td><td class="center">426명</td><td class="money">42,860,000원</td><td class="money">39,240,000원</td><td class="money">1,120,000원</td><td class="money">38,120,000원</td><td class="money">0원</td><td class="money">0원</td><td class="money">38,120,000원</td><td><span class="badge b-green">정산완료</span></td></tr>
               <tr><td>공유상품</td><td>현담여행사</td><td>강남판매점</td><td>판매점</td><td class="center">116건</td><td class="center">348명</td><td class="money">36,700,000원</td><td class="money">31,940,000원</td><td class="money">2,440,000원</td><td class="money">29,500,000원</td><td class="money">2,860,000원</td><td class="money">24,300,000원</td><td class="money">2,340,000원</td><td><span class="badge b-orange">정산대기</span></td></tr>
               <tr><td>위탁상품</td><td>제주로컬투어</td><td>기업복지몰</td><td>복지몰</td><td class="center">82건</td><td class="center">246명</td><td class="money">24,960,000원</td><td class="money">21,300,000원</td><td class="money">2,760,000원</td><td class="money">18,540,000원</td><td class="money">1,980,000원</td><td class="money">15,200,000원</td><td class="money">1,360,000원</td><td><span class="badge b-red">미정산</span></td></tr>
@@ -220,7 +221,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
 
           <section class="panel">
             <div class="panel-head"><span>전년동월 비교</span><span class="muted">동월 기준 매출 성장 추적</span></div>
-            <div class="table-wrap"><table class="table"><thead><tr><th>비교월</th><th>2024년 총 총 예약금액</th><th>2025년 총 총 예약금액</th><th>2026년 총 총 예약금액</th><th>예약건수</th><th>예약인원</th><th>평균객단가</th><th>성장률</th></tr></thead><tbody>
+            <div class="table-wrap"><table class="table"><thead><tr><th>비교월</th><th>2024년 총 예약금액</th><th>2025년 총 예약금액</th><th>2026년 총 예약금액</th><th>예약건수</th><th>예약인원</th><th>평균객단가</th><th>성장률</th></tr></thead><tbody>
               <tr><td>3월</td><td class="money">96,800,000원</td><td class="money">121,300,000원</td><td class="money">142,600,000원</td><td class="center">486건</td><td class="center">1,458명</td><td class="money">97,805원</td><td class="center">17.6%</td></tr>
               <tr><td>4월</td><td class="money">104,200,000원</td><td class="money">132,700,000원</td><td class="money">158,900,000원</td><td class="center">548건</td><td class="center">1,644명</td><td class="money">96,655원</td><td class="center">19.7%</td></tr>
               <tr><td>5월</td><td class="money">110,400,000원</td><td class="money">139,800,000원</td><td class="money">171,200,000원</td><td class="center">602건</td><td class="center">1,806명</td><td class="money">94,795원</td><td class="center">22.5%</td></tr>
@@ -230,7 +231,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
 
           <section class="panel">
             <div class="panel-head"><span>결제상태별 실결제금액 현황</span><span class="muted">미수금과 환불 흐름 확인</span></div>
-            <div class="table-wrap"><table class="table"><thead><tr><th>결제상태</th><th>예약건수</th><th>총 총 예약금액</th><th>실실실결제금액</th><th>미수금</th><th>환불금액</th><th>비중</th></tr></thead><tbody>
+            <div class="table-wrap"><table class="table"><thead><tr><th>결제상태</th><th>예약건수</th><th>총 예약금액</th><th>실결제금액</th><th>미수금</th><th>환불금액</th><th>비중</th></tr></thead><tbody>
               <tr><td><span class="badge b-gray">미결제</span></td><td class="center">64건</td><td class="money">18,400,000원</td><td class="money">0원</td><td class="money">18,400,000원</td><td class="money">0원</td><td class="center">9.9%</td></tr>
               <tr><td><span class="badge b-blue">예약금결제</span></td><td class="center">118건</td><td class="money">32,600,000원</td><td class="money">12,840,000원</td><td class="money">19,760,000원</td><td class="money">0원</td><td class="center">17.5%</td></tr>
               <tr><td><span class="badge b-orange">잔금대기</span></td><td class="center">92건</td><td class="money">29,700,000원</td><td class="money">18,420,000원</td><td class="money">11,280,000원</td><td class="money">0원</td><td class="center">15.9%</td></tr>

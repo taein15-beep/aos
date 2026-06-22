@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
@@ -16,7 +16,8 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
       <nav class="nav nav-tree">
         <div class="nav-group">
           <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
-          <a href="product_register.html">상품관리</a>
+          <a href="product_list.html">상품목록</a>
+          <a href="product_register.html">상품등록</a>
           <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
           <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
           <a href="template_manage.html">템플릿관리</a>
@@ -70,7 +71,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
           <a href="#" onclick="msg('메인메뉴관리 화면은 준비 중입니다.');return false;">메인메뉴관리</a>
           <a href="#" onclick="msg('팝업관리 화면은 준비 중입니다.');return false;">팝업관리</a>
           <a href="#" onclick="msg('상단띠배너 화면은 준비 중입니다.');return false;">상단띠배너</a>
-          <a href="#" onclick="msg('7-7 관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
+          <a href="#" onclick="msg('관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
         </div>
         <div class="nav-group">
           <div class="nav-depth1" onclick="toggleNavGroup(this)">💬 알림톡/문자관리</div>
@@ -169,11 +170,11 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
               </div>
               <div class="field">
                 <label for="salesChannel">판매채널</label>
-                <select id="salesChannel"><option>판매채널</option><option>자사몰</option><option>판매사</option><option>관리자등록</option></select>
+                <select id="salesChannel"><option>판매채널</option><option>자사몰</option><option>판매점</option><option>관리자등록</option></select>
               </div>
               <div class="field">
-                <label for="seller">판매사</label>
-                <select id="seller"><option>판매사</option><option>직접판매</option><option>하나투어 제휴</option><option>지역몰A</option><option>복지몰B</option></select>
+                <label for="seller">판매점</label>
+                <select id="seller"><option>판매점</option><option>직접판매</option><option>하나투어 제휴</option><option>지역몰A</option><option>복지몰B</option></select>
               </div>
               <div class="field">
                 <label for="manager">담당자</label>
@@ -249,7 +250,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
                   <th>금액: 총금액 / 결제금액 / 미수금</th>
                   <th>예약상태</th>
                   <th>결제상태</th>
-                  <th>판매채널 / 판매사</th>
+                  <th>판매채널 / 판매점</th>
                   <th>담당자</th>
                   <th>알림 / 메모</th>
                   <th>관리 버튼</th>
@@ -281,10 +282,10 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
                   <td class="money">96,000원<br>96,000원<br><strong>0원</strong></td>
                   <td class="center"><span class="badge b-green">예약확정</span></td>
                   <td class="center"><span class="badge b-green">전액결제완료</span></td>
-                  <td>판매사<br><span class="muted">하나투어 제휴</span></td>
+                  <td>판매점<br><span class="muted">하나투어 제휴</span></td>
                   <td class="center">박서연</td>
                   <td><span class="note">확정안내 발송</span><br><span class="empty-memo">메모 없음</span></td>
-                  <td><div class="manage"><button class="btn small" onclick="location.href='product_detail.html'">상품상세</button><button class="btn small green" onclick="openTalkModal('RV20260611008','박민지','010-2345-6789','제부도 해상케이블카 당일여행','2026-06-21','예약확정','전액결제완료','0원')">알림톡</button><button class="btn small blue" onclick="openPaymentModal('RV20260611008','박민지','010-2345-6789','제부도 해상케이블카 당일여행','2026-06-21','예약확정','전액결제완료','96,000원','96,000원','0원','판매사')">결제</button></div></td>
+                  <td><div class="manage"><button class="btn small" onclick="location.href='product_detail.html'">상품상세</button><button class="btn small green" onclick="openTalkModal('RV20260611008','박민지','010-2345-6789','제부도 해상케이블카 당일여행','2026-06-21','예약확정','전액결제완료','0원')">알림톡</button><button class="btn small blue" onclick="openPaymentModal('RV20260611008','박민지','010-2345-6789','제부도 해상케이블카 당일여행','2026-06-21','예약확정','전액결제완료','96,000원','96,000원','0원','판매점')">결제</button></div></td>
                 </tr>
                 <tr>
                   <td class="center"><input class="row-check" type="checkbox" onchange="updateSelected()"></td>
@@ -311,10 +312,10 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
                   <td class="money">120,000원<br>120,000원<br><strong>0원</strong></td>
                   <td class="center"><span class="badge b-red">취소요청</span></td>
                   <td class="center"><span class="badge b-purple">환불요청</span></td>
-                  <td>판매사<br><span class="muted">복지몰B</span></td>
+                  <td>판매점<br><span class="muted">복지몰B</span></td>
                   <td class="center">박서연</td>
                   <td><span class="note">취소접수 발송</span><br><span class="memo">메모 있음</span></td>
-                  <td><div class="manage"><button class="btn small" onclick="location.href='product_detail.html'">상품상세</button><button class="btn small green" onclick="openTalkModal('RV20260609004','이수진','010-4567-8901','남이섬 힐링 패키지','2026-06-15','취소요청','환불요청','0원')">알림톡</button><button class="btn small blue" onclick="openPaymentModal('RV20260609004','이수진','010-4567-8901','남이섬 힐링 패키지','2026-06-15','취소요청','환불요청','120,000원','120,000원','0원','판매사')">결제</button></div></td>
+                  <td><div class="manage"><button class="btn small" onclick="location.href='product_detail.html'">상품상세</button><button class="btn small green" onclick="openTalkModal('RV20260609004','이수진','010-4567-8901','남이섬 힐링 패키지','2026-06-15','취소요청','환불요청','0원')">알림톡</button><button class="btn small blue" onclick="openPaymentModal('RV20260609004','이수진','010-4567-8901','남이섬 힐링 패키지','2026-06-15','취소요청','환불요청','120,000원','120,000원','0원','판매점')">결제</button></div></td>
                 </tr>
               </tbody>
             </table>
