@@ -20,98 +20,98 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
 <body>
   <div class="app">
         <aside class="sidebar">
-      <div class="brand"><strong>AviaNext</strong><small>AOS Admin Prototype</small></div>
-      <div class="nav-title">관리메뉴</div>
-      <nav class="nav nav-tree">
-      <a href="popup_manage.html" style="background:rgba(91,140,255,.12);border-left-color:#5b8cff;color:white;font-weight:900">팝업관리</a>
-        <div class="nav-group open">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
-          <a href="product_list.html">상품목록</a>
-          <a class="active" href="product_register.html">상품등록</a>
-          <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
-          <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
-          <a href="template_manage.html">템플릿관리</a>
+    <div class="brand"><strong>AviaNext</strong><small>AOS Admin Prototype</small></div>
+    <div class="nav-title">관리메뉴</div>
+    <nav class="nav nav-tree">
+      <a href="popup_manage.html">팝업관리</a>
+      <div class="nav-group open">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
+        <a href="product_list.html">상품목록</a>
+        <a class="active" href="product_register.html">상품등록</a>
+        <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
+        <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
+        <a href="template_manage.html">템플릿관리</a>
           <a href="attraction_manage.html">관광지관리</a>
-          <a href="#" onclick="msg('상품분류관리 화면은 준비 중입니다.');return false;">상품분류관리</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">📋 예약관리</div>
-          <a href="reservation_list.html">예약목록</a>
-          <a href="reservation_status.html">예약현황</a>
-          <a href="#" onclick="msg('좌석관리 화면은 준비 중입니다.');return false;">좌석관리</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">✈️ 항공예약관리</div>
-          <a href="#" onclick="msg('국제선예약 화면은 준비 중입니다.');return false;">국제선예약</a>
-          <a href="#" onclick="msg('국제선예약목록 화면은 준비 중입니다.');return false;">국제선예약목록</a>
-          <a href="#" onclick="msg('국내선예약 화면은 준비 중입니다.');return false;">국내선예약</a>
-          <a href="#" onclick="msg('국내선예약목록 화면은 준비 중입니다.');return false;">국내선예약목록</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">👤 회원관리</div>
-          <a href="#" onclick="msg('웹회원관리 화면은 준비 중입니다.');return false;">웹회원관리</a>
-          <a href="#" onclick="msg('관리자/직원 관리 화면은 준비 중입니다.');return false;">관리자/직원 관리</a>
-          <a href="#" onclick="msg('판매점관리 화면은 준비 중입니다.');return false;">판매점관리</a>
-          <a href="#" onclick="msg('거래처관리 화면은 준비 중입니다.');return false;">거래처관리</a>
-          <a href="#" onclick="msg('그룹관리 화면은 준비 중입니다.');return false;">그룹관리</a>
-          <a href="#" onclick="msg('탈퇴회원 화면은 준비 중입니다.');return false;">탈퇴회원</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">💰 정산관리</div>
-          <a href="#" onclick="msg('인보이스관리 화면은 준비 중입니다.');return false;">인보이스관리</a>
-          <a href="#" onclick="msg('입금/환불현황 화면은 준비 중입니다.');return false;">입금/환불현황</a>
-          <a href="#" onclick="msg('미수금관리 화면은 준비 중입니다.');return false;">미수금관리</a>
-          <a href="#" onclick="msg('국제선정산(항공) 화면은 준비 중입니다.');return false;">국제선정산(항공)</a>
-          <a href="#" onclick="msg('발권데이터(항공) 화면은 준비 중입니다.');return false;">발권데이터(항공)</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">📊 통계관리</div>
-          <a href="statistics_dashboard.html">통계 대시보드</a>
-          <a href="statistics_sales.html">매출통계</a>
-          <a href="statistics_reservation.html">예약통계</a>
-          <a href="statistics_product.html">상품별 통계</a>
-          <a href="statistics_seller.html">판매점별 통계</a>
-          <a href="statistics_region.html">지역별 통계</a>
-          <a href="statistics_settlement.html">정산통계</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">🎨 디자인설정</div>
-          <a href="#" onclick="msg('템플릿관리 화면은 준비 중입니다.');return false;">템플릿관리</a>
-          <a href="#" onclick="msg('섹션관리 화면은 준비 중입니다.');return false;">섹션관리</a>
-          <a href="#" onclick="msg('홈페이지 설정 화면은 준비 중입니다.');return false;">홈페이지 설정</a>
-          <a href="#" onclick="msg('메인메뉴관리 화면은 준비 중입니다.');return false;">메인메뉴관리</a>
-          <a href="popup_manage.html">팝업관리</a>
-          <a href="#" onclick="msg('상단띠배너 화면은 준비 중입니다.');return false;">상단띠배너</a>
-          <a href="#" onclick="msg('관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">💬 알림톡/문자관리</div>
-          <a href="#" onclick="msg('알림톡 설정 화면은 준비 중입니다.');return false;">알림톡 설정</a>
-          <a href="#" onclick="msg('이메일발송 화면은 준비 중입니다.');return false;">이메일발송</a>
-          <a href="#" onclick="msg('문자발송 화면은 준비 중입니다.');return false;">문자발송</a>
-          <a href="#" onclick="msg('발송내역 화면은 준비 중입니다.');return false;">발송내역</a>
-          <a href="#" onclick="msg('메크로설정 화면은 준비 중입니다.');return false;">메크로설정</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">📝 게시판관리</div>
-          <a href="#" onclick="msg('공지사항 화면은 준비 중입니다.');return false;">공지사항</a>
-          <a href="#" onclick="msg('고객문의 화면은 준비 중입니다.');return false;">고객문의</a>
-          <a href="#" onclick="msg('여행후기 화면은 준비 중입니다.');return false;">여행후기</a>
-          <a href="#" onclick="msg('자주묻는질문 화면은 준비 중입니다.');return false;">자주묻는질문</a>
-          <a href="#" onclick="msg('고객문의 화면은 준비 중입니다.');return false;">고객문의</a>
-          <a href="#" onclick="msg('스캔목록 화면은 준비 중입니다.');return false;">스캔목록</a>
-          <a href="#" onclick="msg('자료실 화면은 준비 중입니다.');return false;">자료실</a>
-        </div>
-        <div class="nav-group">
-          <div class="nav-depth1" onclick="toggleNavGroup(this)">⚙️ 기본설정</div>
-          <a href="#" onclick="msg('항공사 Bin관리 화면은 준비 중입니다.');return false;">항공사 Bin관리</a>
-          <a href="#" onclick="msg('노선관리 화면은 준비 중입니다.');return false;">노선관리</a>
-          <a href="#" onclick="msg('탑승역관리 화면은 준비 중입니다.');return false;">탑승역관리</a>
-          <a href="#" onclick="msg('열차관리 화면은 준비 중입니다.');return false;">열차관리</a>
-          <a href="#" onclick="msg('템플릿사이트관리 화면은 준비 중입니다.');return false;">템플릿사이트관리</a>
-        </div>
-      </nav>
-    </aside>
+        <a href="#" onclick="msg('상품분류관리 화면은 준비 중입니다.');return false;">상품분류관리</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">📋 예약관리</div>
+        <a href="reservation_list.html">예약목록</a>
+        <a href="reservation_status.html">예약현황</a>
+        <a href="#" onclick="msg('좌석관리 화면은 준비 중입니다.');return false;">좌석관리</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">✈️ 항공예약관리</div>
+        <a href="#" onclick="msg('국제선예약 화면은 준비 중입니다.');return false;">국제선예약</a>
+        <a href="#" onclick="msg('국제선예약목록 화면은 준비 중입니다.');return false;">국제선예약목록</a>
+        <a href="#" onclick="msg('국내선예약 화면은 준비 중입니다.');return false;">국내선예약</a>
+        <a href="#" onclick="msg('국내선예약목록 화면은 준비 중입니다.');return false;">국내선예약목록</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">👤 회원관리</div>
+        <a href="#" onclick="msg('웹회원관리 화면은 준비 중입니다.');return false;">웹회원관리</a>
+        <a href="#" onclick="msg('관리자/직원 관리 화면은 준비 중입니다.');return false;">관리자/직원 관리</a>
+        <a href="seller_list.html">판매점관리</a>
+        <a href="#" onclick="msg('거래처관리 화면은 준비 중입니다.');return false;">거래처관리</a>
+        <a href="#" onclick="msg('그룹관리 화면은 준비 중입니다.');return false;">그룹관리</a>
+        <a href="#" onclick="msg('탈퇴회원 화면은 준비 중입니다.');return false;">탈퇴회원</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">💰 정산관리</div>
+        <a href="#" onclick="msg('인보이스관리 화면은 준비 중입니다.');return false;">인보이스관리</a>
+        <a href="#" onclick="msg('입금/환불현황 화면은 준비 중입니다.');return false;">입금/환불현황</a>
+        <a href="#" onclick="msg('미수금관리 화면은 준비 중입니다.');return false;">미수금관리</a>
+        <a href="#" onclick="msg('국제선정산(항공) 화면은 준비 중입니다.');return false;">국제선정산(항공)</a>
+        <a href="#" onclick="msg('발권데이터(항공) 화면은 준비 중입니다.');return false;">발권데이터(항공)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">📊 통계관리</div>
+        <a href="statistics_dashboard.html">통계 대시보드</a>
+        <a href="statistics_sales.html">매출통계</a>
+        <a href="statistics_reservation.html">예약통계</a>
+        <a href="statistics_product.html">상품별 통계</a>
+        <a href="statistics_seller.html">판매점별 통계</a>
+        <a href="statistics_region.html">지역별 통계</a>
+        <a href="statistics_settlement.html">정산통계</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">🎨 디자인설정</div>
+        <a href="#" onclick="msg('템플릿관리 화면은 준비 중입니다.');return false;">템플릿관리</a>
+        <a href="#" onclick="msg('섹션관리 화면은 준비 중입니다.');return false;">섹션관리</a>
+        <a href="#" onclick="msg('홈페이지 설정 화면은 준비 중입니다.');return false;">홈페이지 설정</a>
+        <a href="#" onclick="msg('메인메뉴관리 화면은 준비 중입니다.');return false;">메인메뉴관리</a>
+        <a href="popup_manage.html">팝업관리</a>
+        <a href="#" onclick="msg('상단띠배너 화면은 준비 중입니다.');return false;">상단띠배너</a>
+        <a href="#" onclick="msg('관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">💬 알림톡/문자관리</div>
+        <a href="#" onclick="msg('알림톡 설정 화면은 준비 중입니다.');return false;">알림톡 설정</a>
+        <a href="#" onclick="msg('이메일발송 화면은 준비 중입니다.');return false;">이메일발송</a>
+        <a href="#" onclick="msg('문자발송 화면은 준비 중입니다.');return false;">문자발송</a>
+        <a href="#" onclick="msg('발송내역 화면은 준비 중입니다.');return false;">발송내역</a>
+        <a href="#" onclick="msg('메크로설정 화면은 준비 중입니다.');return false;">메크로설정</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">📝 게시판관리</div>
+        <a href="#" onclick="msg('공지사항 화면은 준비 중입니다.');return false;">공지사항</a>
+        <a href="#" onclick="msg('고객문의 화면은 준비 중입니다.');return false;">고객문의</a>
+        <a href="#" onclick="msg('여행후기 화면은 준비 중입니다.');return false;">여행후기</a>
+        <a href="#" onclick="msg('자주묻는질문 화면은 준비 중입니다.');return false;">자주묻는질문</a>
+        <a href="#" onclick="msg('고객문의 화면은 준비 중입니다.');return false;">고객문의</a>
+        <a href="#" onclick="msg('스캔목록 화면은 준비 중입니다.');return false;">스캔목록</a>
+        <a href="#" onclick="msg('자료실 화면은 준비 중입니다.');return false;">자료실</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">⚙️ 기본설정</div>
+        <a href="#" onclick="msg('항공사 Bin관리 화면은 준비 중입니다.');return false;">항공사 Bin관리</a>
+        <a href="#" onclick="msg('노선관리 화면은 준비 중입니다.');return false;">노선관리</a>
+        <a href="#" onclick="msg('탑승역관리 화면은 준비 중입니다.');return false;">탑승역관리</a>
+        <a href="#" onclick="msg('열차관리 화면은 준비 중입니다.');return false;">열차관리</a>
+        <a href="#" onclick="msg('템플릿사이트관리 화면은 준비 중입니다.');return false;">템플릿사이트관리</a>
+      </div>
+    </nav>
+  </aside>
 
     <main>
       <header class="topbar"><strong>상품등록</strong><span>윤호님 · 로그아웃</span></header>
@@ -292,7 +292,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
             </div>
           </section>
 
-          <!-- 판매점 수수료 설정: 회원관리의 판매점 그룹과 그룹관리 기본 수수료를 불러오고, 상품별 개별 값을 덮어쓸 수 있습니다. -->
+          <!-- 판매점 수수료 설정: 판매점관리의 A~D 그룹 기본 수수료를 불러오고, 상품별 개별 값을 덮어쓸 수 있습니다. -->
           <section class="panel commission-panel">
             <div class="panel-head">
               <span class="commission-title">판매점 수수료 설정</span>
@@ -301,7 +301,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
                 <label class="switch"><input id="commissionMode" type="checkbox" onchange="toggleCommissionMode()"><span class="slider"></span></label>
                 <span>수수료 %로 가변 지급</span>
               </div>
-              <button class="btn small green" onclick="msg('판매점 관리 화면으로 이동하는 샘플입니다.')">판매점 관리</button>
+              <button class="btn small green" onclick="location.href='seller_list.html'">판매점 관리</button>
             </div>
             <div class="panel-body">
               <div class="commission-body">
@@ -331,7 +331,7 @@ body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sa
                   <label class="commission-input">대인 <input value="0"> %</label>
                   <label class="commission-input">소인 <input value="0"> %</label>
                 </div>
-                <p class="commission-note">판매점은 회원관리에서 그룹을 지정하고, 그룹별 기본 수수료는 그룹관리 값을 불러옵니다. 이 화면의 입력값은 현재 상품에만 적용되는 개별 설정입니다.</p>
+                <p class="commission-note">판매점은 판매점관리에서 A~D 그룹을 지정하고, 그룹별 기본 수수료도 판매점관리 값을 불러옵니다. 이 화면의 입력값은 현재 상품에만 적용되는 개별 설정입니다.</p>
               </div>
             </div>
           </section>
@@ -487,6 +487,25 @@ function toggleCommissionMode(){
   document.getElementById('commissionFixedBox').classList.toggle('active',!isRate);
   document.getElementById('commissionRateBox').classList.toggle('active',isRate);
 }
+function loadProductCommissionDefaults(){
+  var defaults={
+    A:{amountAdult:10000,amountChild:8000,rateAdult:5,rateChild:5},
+    B:{amountAdult:8000,amountChild:6000,rateAdult:4,rateChild:4},
+    C:{amountAdult:5000,amountChild:4000,rateAdult:3,rateChild:3},
+    D:{amountAdult:3000,amountChild:2000,rateAdult:2,rateChild:2}
+  };
+  var groups=Object.assign({},defaults,JSON.parse(localStorage.getItem('aosPrototypeSellerCommissionGroups')||'{}'));
+  var fixedInputs=document.querySelectorAll('#commissionFixedBox input');
+  var rateInputs=document.querySelectorAll('#commissionRateBox input');
+  ['A','B','C','D'].forEach(function(code,index){
+    var data=groups[code]||defaults[code];
+    if(fixedInputs[index*2]) fixedInputs[index*2].value=data.amountAdult||0;
+    if(fixedInputs[index*2+1]) fixedInputs[index*2+1].value=data.amountChild||0;
+    if(rateInputs[index*2]) rateInputs[index*2].value=data.rateAdult||0;
+    if(rateInputs[index*2+1]) rateInputs[index*2+1].value=data.rateChild||0;
+  });
+}
+loadProductCommissionDefaults();
 var selectedPreviewTemplate=null;
 var selectedTemplateTarget=null;
 var selectedTemplateMode='detail';
@@ -640,6 +659,7 @@ toggleStayTypeByDuration();
   </script>
 </body>
 </html>
+
 
 
 

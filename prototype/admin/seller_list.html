@@ -1,0 +1,671 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>판매점관리</title>
+  <style>
+    body{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;font-size:13px}.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}.sidebar{background:#071122;color:#d7e1f0;padding:18px 0}.brand{padding:0 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}.brand strong{display:block;color:white;font-size:17px}.nav-title{padding:18px 18px 8px;color:#8ea0bb;font-size:11px}.nav a{display:block;padding:11px 18px;color:#cdd6e5;text-decoration:none;border-left:3px solid transparent}.nav a.active{background:rgba(255,255,255,.08);border-left-color:#5b8cff;color:white}.nav-tree{padding:8px 0 18px}.nav-group{border-bottom:1px solid rgba(255,255,255,.06);padding:6px 0}.nav-depth1{padding:10px 18px 8px;color:#fff;font-weight:900;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}.nav-depth1:after{content:'▾';font-size:10px;color:#8ea0bb}.nav-group:not(.open) .nav-depth1:after{content:'▸'}.nav-group:not(.open) a{display:none}.nav-group a{position:relative;padding:7px 18px 7px 46px;font-size:12px;color:#b9c6d8}.nav-group a:before{content:'├';position:absolute;left:26px;top:7px;color:rgba(185,198,216,.7);font-size:12px;line-height:1}.nav-group a.active{background:rgba(91,140,255,.18);border-left-color:#5b8cff;color:white}.nav-group.open .nav-depth1{color:#8fb3ff}.topbar{height:48px;background:white;border-bottom:1px solid #d9dde3;display:flex;align-items:center;justify-content:space-between;padding:0 16px}.page{padding:16px;max-width:1800px}.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}h1{font-size:24px;margin:0 0 6px}.desc{font-weight:700;color:#555}.btn{border:1px solid #cfd5dd;background:white;border-radius:4px;padding:8px 12px;font-weight:800;cursor:pointer;white-space:nowrap;text-decoration:none;color:#222}.btn:hover{background:#f7f9fb}.btn.green{background:#18a34a;border-color:#18a34a;color:white}.btn.green:hover{background:#138a3e}.btn.blue{background:#2f63f6;border-color:#2f63f6;color:white}.btn.red{background:#d92d20;border-color:#d92d20;color:white}.btn.gray{background:#667085;border-color:#667085;color:white}.btn.small{padding:6px 8px;font-size:12px}.panel{background:white;border:1px solid #d9dde3;border-radius:7px;margin-bottom:12px;overflow:hidden}.panel-head{background:#e6e6e6;padding:12px 14px;font-weight:900;border-bottom:1px solid #d9dde3;display:flex;align-items:center;justify-content:space-between;gap:8px}.panel-body{padding:14px;overflow:auto}input,select,textarea{border:1px solid #d6dbe1;border-radius:4px;padding:8px 9px;min-height:36px;box-sizing:border-box;background:white}textarea{min-height:86px;resize:vertical}label{font-weight:800;color:#344054}.field{display:flex;flex-direction:column;gap:6px}.summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:12px}.card{background:white;border:1px solid #d9dde3;border-radius:7px;padding:14px;min-width:0}.card span{display:block;color:#667085;font-weight:800;margin-bottom:8px}.card strong{font-size:20px;color:#2f63f6;word-break:keep-all}.card.good strong{color:#0f8738}.card.warn strong{color:#b45309}.card.danger strong{color:#d92d20}.filter-grid{display:grid;grid-template-columns:150px 130px 130px 120px 120px 130px 130px 130px 1fr auto auto;gap:8px 10px;align-items:end;min-width:1460px}.filter-grid input,.filter-grid select{width:100%;min-height:34px;padding:6px 7px;font-size:12px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:1680px}.table th{background:#e6e6e6;border:1px solid #cfd3d8;padding:10px;text-align:center;white-space:nowrap}.table td{border:1px solid #edf0f3;padding:9px;background:white;vertical-align:middle;white-space:nowrap}.table td.center{text-align:center}.table td.money{text-align:right}.seller-name{border:0;background:transparent;color:#2556d9;font-weight:900;text-decoration:underline;cursor:pointer;padding:0;text-align:left}.badge{display:inline-flex;border-radius:14px;padding:4px 8px;font-size:12px;font-weight:900;white-space:nowrap}.b-green{background:#e7f8ee;color:#0f8738}.b-blue{background:#eaf1ff;color:#2556d9}.b-orange{background:#fff4de;color:#b45309}.b-red{background:#fff0f0;color:#d92d20}.b-gray{background:#eef1f5;color:#475467}.b-purple{background:#f1ecff;color:#6941c6}.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.row-actions{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}.muted{color:#667085;font-size:12px}.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(7,17,34,.58);z-index:30;align-items:center;justify-content:center;padding:24px}.modal-backdrop.open{display:flex}.modal{width:min(1280px,calc(100vw - 48px));max-height:92vh;display:flex;flex-direction:column;background:white;border-radius:10px;border:1px solid #d9dde3;box-shadow:0 20px 58px rgba(16,24,40,.25);overflow:hidden}.modal.small{width:min(820px,calc(100vw - 48px))}.modal-head{padding:16px 18px;border-bottom:1px solid #edf0f3;font-weight:900;display:flex;justify-content:space-between;align-items:center}.modal-body{padding:16px;background:#f7f9fc;overflow:auto}.modal-actions{padding:12px 16px;border-top:1px solid #edf0f3;background:white;display:flex;justify-content:flex-end;gap:8px}.form-section{border:1px solid #e4e7ec;border-radius:8px;background:white;margin-bottom:12px;overflow:hidden}.form-section h3{margin:0;background:#f2f4f7;border-bottom:1px solid #e4e7ec;padding:10px 12px;font-size:14px}.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}.form-grid .wide{grid-column:1/-1}.form-grid input,.form-grid select,.form-grid textarea{width:100%}.radio-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:36px}.radio-row label{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:0 10px;border:1px solid #d9e0ea;border-radius:999px;background:#fff;color:#344054;font-size:12px;cursor:pointer;white-space:nowrap}.radio-row label:has(input:checked){border-color:#2f63f6;background:#edf3ff;color:#2556d9}.radio-row input{accent-color:#2f63f6}.help{font-size:12px;color:#667085;margin-top:4px;line-height:1.45}.disabled-field{background:#f2f4f7;color:#667085}.setting-note{padding:10px 12px;border:1px solid #cfe0ff;border-radius:6px;background:#eef5ff;color:#2556d9;font-weight:800;line-height:1.5;margin-bottom:12px}.pagination{display:flex;justify-content:center;gap:4px;margin-top:12px}.pagination button{min-width:32px;min-height:32px;border:1px solid #cfd5dd;background:white;border-radius:4px;cursor:pointer}.pagination button.active{background:#2f63f6;color:white;border-color:#2f63f6}.empty{height:80px;text-align:center;color:#667085;font-weight:900}.toast{display:none;position:fixed;right:18px;bottom:18px;z-index:50;background:#111827;color:white;border-radius:8px;padding:12px 14px;font-weight:900;box-shadow:0 12px 30px rgba(16,24,40,.24)}.toast.show{display:block}@media(max-width:1400px){.summary{grid-template-columns:repeat(3,minmax(0,1fr))}.filter-grid{grid-template-columns:repeat(4,minmax(120px,1fr));min-width:0}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:1000px){.app{grid-template-columns:1fr}.sidebar{display:none}.page-head{display:block}.top-actions{margin-top:10px}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.table{min-width:1500px}.form-grid{grid-template-columns:1fr}.modal-backdrop{padding:10px}.modal{width:100%;max-height:96vh}}    /* Compact seller list: keep all columns visible without horizontal scroll */
+    .filter-grid{grid-template-columns:2fr 1fr 1fr 1fr auto auto!important;min-width:0!important;align-items:end}
+    .panel-body{overflow:visible!important}
+    .table-wrap{overflow-x:hidden!important;overflow-y:visible!important;width:100%}
+    .table{width:100%!important;min-width:0!important;table-layout:fixed;font-size:11px}
+    .table th,.table td{padding:6px 4px!important;white-space:normal!important;word-break:keep-all;line-height:1.3}
+    .table th:nth-child(1),.table td:nth-child(1){width:2.4%}
+    .table th:nth-child(2),.table td:nth-child(2){width:2.8%}
+    .table th:nth-child(3),.table td:nth-child(3){width:9.0%}
+    .table th:nth-child(4),.table td:nth-child(4){width:5.8%}
+    .table th:nth-child(5),.table td:nth-child(5){width:4.8%}
+    .table th:nth-child(6),.table td:nth-child(6){width:4.6%}
+    .table th:nth-child(7),.table td:nth-child(7){width:6.7%}
+    .table th:nth-child(8),.table td:nth-child(8){width:6.7%}
+    .table th:nth-child(9),.table td:nth-child(9){width:4.6%}
+    .table th:nth-child(10),.table td:nth-child(10){width:5.5%}
+    .table th:nth-child(11),.table td:nth-child(11){width:4.6%}
+    .table th:nth-child(12),.table td:nth-child(12){width:6.0%}
+    .table th:nth-child(13),.table td:nth-child(13){width:4.6%}
+    .table th:nth-child(14),.table td:nth-child(14){width:4.2%}
+    .table th:nth-child(15),.table td:nth-child(15){width:4.6%}
+    .table th:nth-child(16),.table td:nth-child(16){width:5.5%}
+    .table th:nth-child(17),.table td:nth-child(17){width:3.8%}
+    .table th:nth-child(18),.table td:nth-child(18){width:10.5%}
+    .seller-name{white-space:normal;line-height:1.35;font-size:11px}
+    .badge{padding:3px 6px;font-size:11px;line-height:1.2}
+    .row-actions{gap:3px;align-items:center}
+    .row-actions .btn.small{padding:4px 5px;font-size:11px;line-height:1.2}
+    .top-actions .btn.small{padding:5px 7px;font-size:11px}
+    @media(max-width:1400px){.filter-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.table{font-size:10.5px}.table th,.table td{padding:5px 3px!important}.row-actions .btn.small{padding:3px 4px;font-size:10px}.badge{font-size:10px;padding:3px 5px}}
+    @media(max-width:1000px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.table{font-size:10px}.table th,.table td{padding:4px 2px!important}}    /* Seller list simplified columns */
+    .seller-list-actions{display:none!important}
+    .table{font-size:12px}
+    .table th:nth-child(1),.table td:nth-child(1){width:16%!important}
+    .table th:nth-child(2),.table td:nth-child(2){width:8%!important}
+    .table th:nth-child(3),.table td:nth-child(3){width:9%!important}
+    .table th:nth-child(4),.table td:nth-child(4){width:11%!important}
+    .table th:nth-child(5),.table td:nth-child(5){width:11%!important}
+    .table th:nth-child(6),.table td:nth-child(6){width:10%!important}
+    .table th:nth-child(7),.table td:nth-child(7){width:8%!important}
+    .table th:nth-child(8),.table td:nth-child(8){width:8%!important}
+    .table th:nth-child(9),.table td:nth-child(9){width:9%!important}
+    .table th:nth-child(10),.table td:nth-child(10){width:5%!important}
+    .table th:nth-child(11),.table td:nth-child(11){width:5%!important}
+    .seller-form-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .seller-form-grid .span2{grid-column:span 2}
+    .seller-form-grid input[type="file"]{padding:7px 8px}
+    .seller-form-grid .compact{gap:4px}
+    .seller-form-grid .compact label{font-size:11px}
+    .radio-row label{border:0!important;background:transparent!important;border-radius:0!important;padding:0!important;min-height:auto!important;color:#344054!important}
+    .radio-row label:has(input:checked){border:0!important;background:transparent!important;color:#344054!important}
+    .radio-row input{width:auto!important;min-height:auto!important;padding:0!important}
+    .commission-form-grid{grid-template-columns:140px 170px 118px 130px 130px!important;gap:8px 10px!important;align-items:start;width:max-content;max-width:100%}
+    .commission-form-grid input,.commission-form-grid select{min-height:34px;padding:6px 7px;font-size:12px}
+    .commission-form-grid .radio-row{min-height:34px;gap:8px}
+    .commission-form-grid .help{font-size:11px;margin-top:2px}
+    @media(max-width:1200px){.seller-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.seller-form-grid .span2{grid-column:span 2}}
+    @media(max-width:1200px){.commission-form-grid{grid-template-columns:140px 170px 118px 130px 130px!important;width:max-content}}
+    @media(max-width:820px){.commission-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%}}
+    @media(max-width:700px){.seller-form-grid{grid-template-columns:1fr}.seller-form-grid .span2{grid-column:1/-1}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><strong>AviaNext</strong><small>AOS Admin Prototype</small></div>
+    <div class="nav-title">관리메뉴</div>
+    <nav class="nav nav-tree">
+      <a href="popup_manage.html">팝업관리</a>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">📦 상품관리</div>
+        <a href="product_list.html">상품목록</a>
+        <a href="product_register.html">상품등록</a>
+        <a href="#" onclick="msg('재고관리 화면은 준비 중입니다.');return false;">재고관리</a>
+        <a href="#" onclick="msg('이미지관리 화면은 준비 중입니다.');return false;">이미지관리</a>
+        <a href="template_manage.html">템플릿관리</a>
+        <a href="attraction_manage.html">관광지관리</a>
+        <a href="#" onclick="msg('상품분류관리 화면은 준비 중입니다.');return false;">상품분류관리</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">📋 예약관리</div>
+        <a href="reservation_list.html">예약목록</a>
+        <a href="reservation_status.html">예약현황</a>
+        <a href="#" onclick="msg('좌석관리 화면은 준비 중입니다.');return false;">좌석관리</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">✈️ 항공예약관리</div>
+        <a href="#" onclick="msg('국제선예약 화면은 준비 중입니다.');return false;">국제선예약</a>
+        <a href="#" onclick="msg('국제선예약목록 화면은 준비 중입니다.');return false;">국제선예약목록</a>
+        <a href="#" onclick="msg('국내선예약 화면은 준비 중입니다.');return false;">국내선예약</a>
+        <a href="#" onclick="msg('국내선예약목록 화면은 준비 중입니다.');return false;">국내선예약목록</a>
+      </div>
+      <div class="nav-group open">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">👤 회원관리</div>
+        <a href="#" onclick="msg('웹회원관리 화면은 준비 중입니다.');return false;">웹회원관리</a>
+        <a href="#" onclick="msg('관리자/직원 관리 화면은 준비 중입니다.');return false;">관리자/직원 관리</a>
+        <a class="active" href="seller_list.html">판매점관리</a>
+        <a href="#" onclick="msg('거래처관리 화면은 준비 중입니다.');return false;">거래처관리</a>
+        <a href="#" onclick="msg('그룹관리 화면은 준비 중입니다.');return false;">그룹관리</a>
+        <a href="#" onclick="msg('탈퇴회원 화면은 준비 중입니다.');return false;">탈퇴회원</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">💰 정산관리</div>
+        <a href="#" onclick="msg('인보이스관리 화면은 준비 중입니다.');return false;">인보이스관리</a>
+        <a href="#" onclick="msg('입금/환불현황 화면은 준비 중입니다.');return false;">입금/환불현황</a>
+        <a href="#" onclick="msg('미수금관리 화면은 준비 중입니다.');return false;">미수금관리</a>
+        <a href="#" onclick="msg('국제선정산(항공) 화면은 준비 중입니다.');return false;">국제선정산(항공)</a>
+        <a href="#" onclick="msg('발권데이터(항공) 화면은 준비 중입니다.');return false;">발권데이터(항공)</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">📊 통계관리</div>
+        <a href="statistics_dashboard.html">통계 대시보드</a>
+        <a href="statistics_sales.html">매출통계</a>
+        <a href="statistics_reservation.html">예약통계</a>
+        <a href="statistics_product.html">상품별 통계</a>
+        <a href="statistics_seller.html">판매점별 통계</a>
+        <a href="statistics_region.html">지역별 통계</a>
+        <a href="statistics_settlement.html">정산통계</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">🎨 디자인설정</div>
+        <a href="#" onclick="msg('템플릿관리 화면은 준비 중입니다.');return false;">템플릿관리</a>
+        <a href="#" onclick="msg('섹션관리 화면은 준비 중입니다.');return false;">섹션관리</a>
+        <a href="#" onclick="msg('홈페이지 설정 화면은 준비 중입니다.');return false;">홈페이지 설정</a>
+        <a href="#" onclick="msg('메인메뉴관리 화면은 준비 중입니다.');return false;">메인메뉴관리</a>
+        <a href="popup_manage.html">팝업관리</a>
+        <a href="#" onclick="msg('상단띠배너 화면은 준비 중입니다.');return false;">상단띠배너</a>
+        <a href="#" onclick="msg('관리자메뉴관리 화면은 준비 중입니다.');return false;">관리자메뉴관리</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">💬 알림톡/문자관리</div>
+        <a href="#" onclick="msg('알림톡 설정 화면은 준비 중입니다.');return false;">알림톡 설정</a>
+        <a href="#" onclick="msg('이메일발송 화면은 준비 중입니다.');return false;">이메일발송</a>
+        <a href="#" onclick="msg('문자발송 화면은 준비 중입니다.');return false;">문자발송</a>
+        <a href="#" onclick="msg('발송내역 화면은 준비 중입니다.');return false;">발송내역</a>
+        <a href="#" onclick="msg('메크로설정 화면은 준비 중입니다.');return false;">메크로설정</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">📝 게시판관리</div>
+        <a href="#" onclick="msg('공지사항 화면은 준비 중입니다.');return false;">공지사항</a>
+        <a href="#" onclick="msg('고객문의 화면은 준비 중입니다.');return false;">고객문의</a>
+        <a href="#" onclick="msg('여행후기 화면은 준비 중입니다.');return false;">여행후기</a>
+        <a href="#" onclick="msg('자주묻는질문 화면은 준비 중입니다.');return false;">자주묻는질문</a>
+        <a href="#" onclick="msg('스캔목록 화면은 준비 중입니다.');return false;">스캔목록</a>
+        <a href="#" onclick="msg('자료실 화면은 준비 중입니다.');return false;">자료실</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-depth1" onclick="toggleNavGroup(this)">⚙️ 기본설정</div>
+        <a href="#" onclick="msg('항공사 Bin관리 화면은 준비 중입니다.');return false;">항공사 Bin관리</a>
+        <a href="#" onclick="msg('노선관리 화면은 준비 중입니다.');return false;">노선관리</a>
+        <a href="#" onclick="msg('탑승역관리 화면은 준비 중입니다.');return false;">탑승역관리</a>
+        <a href="#" onclick="msg('열차관리 화면은 준비 중입니다.');return false;">열차관리</a>
+        <a href="#" onclick="msg('템플릿사이트관리 화면은 준비 중입니다.');return false;">템플릿사이트관리</a>
+      </div>
+    </nav>
+  </aside>
+  <main>
+    <header class="topbar"><strong>판매점관리</strong><span>윤호님 · 로그아웃</span></header>
+    <div class="page">
+      <div class="page-head">
+        <div>
+          <h1>판매점관리</h1>
+          <div class="desc">판매점 목록, 가입승인, 로그인/정산/커미션/추천인코드 정보를 관리합니다.</div>
+        </div>
+        <div class="top-actions">
+          <button class="btn" onclick="openSettings()">가입승인 설정</button>
+          <button class="btn" onclick="openCommissionGroupSettings()">커미션 그룹 설정</button>
+          <button class="btn blue" onclick="openSellerForm()">+ 판매점 신규등록</button>
+        </div>
+      </div>
+
+      <section class="summary" aria-label="판매점 요약">
+        <div class="card"><span>전체 판매점</span><strong id="sumTotal">0개</strong></div>
+        <div class="card warn"><span>승인대기</span><strong id="sumPending">0개</strong></div>
+        <div class="card good"><span>승인완료</span><strong id="sumApproved">0개</strong></div>
+        <div class="card"><span>상품공유 수</span><strong id="sumShared">0건</strong></div>
+        <div class="card"><span>예약건수</span><strong id="sumReserve">0건</strong></div>
+        <div class="card danger"><span>정산대기</span><strong id="sumSettle">0개</strong></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">판매점 검색</div>
+        <div class="panel-body">
+          <div class="filter-grid">
+            <div class="field"><label>통합검색</label><input id="filterKeyword" placeholder="판매점명, 대표자명, 담당자명, 연락처"></div>
+            <div class="field"><label>사업자유형</label><select id="filterBusinessType"><option value="">전체</option><option value="corporation">법인</option><option value="sole">개인사업자</option><option value="individual">개인</option></select></div>
+            <div class="field"><label>휴대폰번호</label><input id="filterMobilePhone" placeholder="010"></div>
+            <div class="field"><label>승인자</label><input id="filterApprovedBy" placeholder="승인자"></div>
+            <div class="field"><label>&nbsp;</label><button class="btn green" onclick="renderSellers()">검색</button></div>
+            <div class="field"><label>&nbsp;</label><button class="btn" onclick="resetFilters()">초기화</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span>판매점 목록 <span class="muted" id="listCountText"></span></span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>판매점명</th>
+                <th>대표자명</th>
+                <th>담당자명</th>
+                <th>연락처</th>
+                <th>휴대폰번호</th>
+                <th>기본커미션</th>
+                <th>상품공유수</th>
+                <th>예약건수</th>
+                <th>가입일</th>
+                <th>승인자</th>
+                <th>삭제</th>
+              </tr>
+            </thead>
+            <tbody id="sellerRows"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="sellerModal" role="dialog" aria-modal="true" aria-labelledby="sellerModalTitle">
+  <div class="modal">
+    <div class="modal-head"><span id="sellerModalTitle">판매점 등록</span><button class="btn small" onclick="closeSellerForm()">닫기</button></div>
+    <div class="modal-body">
+      <form id="sellerForm" onsubmit="saveSeller(event)">
+        <input type="hidden" id="sellerId">
+        <section class="form-section">
+          <h3>기본정보</h3>
+          <div class="form-grid seller-form-grid">
+            <div class="field"><label>판매점명 *</label><input id="agencyName" required></div>
+            <div class="field"><label>판매점코드</label><input id="agencyCode" placeholder="미입력 시 자동생성"><div class="help">중복 불가</div></div>
+            <div class="field"><label>사업자유형</label><div class="radio-row compact"><label><input type="radio" name="businessType" value="corporation" checked> 법인</label><label><input type="radio" name="businessType" value="sole"> 개인사업자</label><label><input type="radio" name="businessType" value="individual"> 개인</label></div></div>
+            <div class="field"><label>사용여부</label><div class="radio-row compact"><label><input type="radio" name="isActive" value="Y" checked> 사용</label><label><input type="radio" name="isActive" value="N"> 미사용</label></div></div>
+            <div class="field"><label>대표자명</label><input id="ceoName"></div>
+            <div class="field"><label>대표전화번호</label><input id="companyPhone"></div>
+            <div class="field"><label>휴대폰번호(추천인코드) *</label><input id="mobilePhone" required oninput="syncReferralCode()"></div>
+            <div class="field"><label>이메일</label><input id="email" type="email"></div>
+            <div class="field"><label>가입상태</label><select id="status"><option value="pending">승인대기</option><option value="approved">승인완료</option><option value="rejected">반려</option><option value="hold">보류</option></select></div>
+            <div class="field"><label>사업자등록번호</label><input id="businessNumber"></div>
+            <div class="field"><label>관광사업자등록번호</label><input id="tourismBusinessNumber"></div>
+            <div class="field"><label>통신판매업번호</label><input id="ecommerceNumber"></div>
+            <div class="field span2"><label>주소</label><input id="address" placeholder="주소"></div>
+            <div class="field span2"><label>상세주소</label><input id="addressDetail"></div>
+            <div class="field"><label>홈페이지 URL</label><input id="homepageUrl"></div>
+            <div class="field"><label>판매점로고 파일첨부</label><input id="logoUrl" type="file"></div>
+            <div class="field"><label>사업자등록증 첨부</label><input id="businessLicenseFileUrl" type="file"></div>
+            <div class="field"><label>관광등록업증 첨부</label><input id="tourismLicenseFileUrl" type="file"></div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>담당자 로그인</h3>
+          <div class="form-grid seller-form-grid">
+            <div class="field"><label>아이디</label><input id="loginId"></div>
+            <div class="field"><label>비밀번호</label><input id="password" type="password" placeholder="프로토타입 UI 필드"></div>
+            <div class="field"><label>로그인허용여부</label><div class="radio-row compact"><label><input type="radio" name="allowLogin" value="Y"> 허용</label><label><input type="radio" name="allowLogin" value="N" checked> 차단</label></div></div>
+            <div class="field"><label>마지막 로그인일</label><input id="lastLoginAt" class="disabled-field" readonly placeholder="추후 연동"></div>
+            <div class="field"><label>담당자명</label><input id="managerName"></div>
+            <div class="field"><label>담당자직책</label><input id="managerPosition"></div>
+            <div class="field"><label>담당자 휴대폰번호</label><input id="managerPhone"></div>
+            <div class="field"><label>담당자 이메일</label><input id="managerEmail" type="email"></div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>정산정보</h3>
+          <div class="form-grid seller-form-grid">
+            <div class="field"><label>은행명</label><input id="bankName"></div>
+            <div class="field"><label>계좌번호</label><input id="bankAccount"></div>
+            <div class="field"><label>예금주</label><input id="bankHolder"></div>
+            <div class="field"><label>세금계산서 이메일</label><input id="invoiceEmail" type="email"></div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <h3>커미션설정</h3>
+          <div class="form-grid seller-form-grid commission-form-grid">
+            <div class="field"><label>판매점그룹</label><select id="commissionGroup" onchange="applyGroupCommission(false)"><option value="A">A그룹 판매점</option><option value="B">B그룹 판매점</option><option value="C">C그룹 판매점</option><option value="D">D그룹 판매점</option></select></div>
+            <div class="field"><label>커미션 적용방식</label><div class="radio-row compact"><label><input type="radio" name="commissionOverride" value="N" checked onchange="applyGroupCommission(false)"> 그룹 기본값</label><label><input type="radio" name="commissionOverride" value="Y" onchange="applyGroupCommission(true)"> 개별 수정</label></div><div class="help">기본은 선택한 그룹의 커미션을 적용합니다.</div></div>
+            <div class="field"><label>커미션유형</label><div class="radio-row compact"><label><input type="radio" name="commissionType" value="amount" checked> 정액</label><label><input type="radio" name="commissionType" value="rate"> 정률</label></div></div>
+            <div class="field"><label>기본커미션(원)</label><input id="commissionAmount" type="number" min="0" step="1000"></div>
+            <div class="field"><label>기본커미션율(%)</label><input id="commissionRate" type="number" min="0" max="100" step="0.1"></div>
+          </div>
+        </section>
+      </form>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeSellerForm()">취소</button>
+      <button class="btn blue" onclick="document.getElementById('sellerForm').requestSubmit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="commissionGroupModal" role="dialog" aria-modal="true" aria-labelledby="commissionGroupTitle">
+  <div class="modal small">
+    <div class="modal-head"><span id="commissionGroupTitle">커미션 그룹 설정</span><button class="btn small" onclick="closeCommissionGroupSettings()">닫기</button></div>
+    <div class="modal-body">
+      <div class="setting-note">A~D그룹별 기본 수수료를 설정합니다. 판매점 등록 시 그룹을 지정하면 기본값이 자동 적용되고, 판매점별 개별 수정도 가능합니다.</div>
+      <form id="commissionGroupForm" onsubmit="saveCommissionGroupSettings(event)">
+        <section class="form-section">
+          <h3>그룹 기본 수수료</h3>
+          <div class="form-grid seller-form-grid">
+            <div class="field"><label>A그룹 고정 대인(원)</label><input id="groupAAmountAdult" type="number" min="0" step="1000"></div>
+            <div class="field"><label>A그룹 고정 소인(원)</label><input id="groupAAmountChild" type="number" min="0" step="1000"></div>
+            <div class="field"><label>A그룹 정률 대인(%)</label><input id="groupARateAdult" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>A그룹 정률 소인(%)</label><input id="groupARateChild" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>B그룹 고정 대인(원)</label><input id="groupBAmountAdult" type="number" min="0" step="1000"></div>
+            <div class="field"><label>B그룹 고정 소인(원)</label><input id="groupBAmountChild" type="number" min="0" step="1000"></div>
+            <div class="field"><label>B그룹 정률 대인(%)</label><input id="groupBRateAdult" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>B그룹 정률 소인(%)</label><input id="groupBRateChild" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>C그룹 고정 대인(원)</label><input id="groupCAmountAdult" type="number" min="0" step="1000"></div>
+            <div class="field"><label>C그룹 고정 소인(원)</label><input id="groupCAmountChild" type="number" min="0" step="1000"></div>
+            <div class="field"><label>C그룹 정률 대인(%)</label><input id="groupCRateAdult" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>C그룹 정률 소인(%)</label><input id="groupCRateChild" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>D그룹 고정 대인(원)</label><input id="groupDAmountAdult" type="number" min="0" step="1000"></div>
+            <div class="field"><label>D그룹 고정 소인(원)</label><input id="groupDAmountChild" type="number" min="0" step="1000"></div>
+            <div class="field"><label>D그룹 정률 대인(%)</label><input id="groupDRateAdult" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>D그룹 정률 소인(%)</label><input id="groupDRateChild" type="number" min="0" max="100" step="0.1"></div>
+          </div>
+        </section>
+      </form>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeCommissionGroupSettings()">취소</button>
+      <button class="btn blue" onclick="document.getElementById('commissionGroupForm').requestSubmit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="modal small">
+    <div class="modal-head"><span id="settingsTitle">판매점 가입승인 설정</span><button class="btn small" onclick="closeSettings()">닫기</button></div>
+    <div class="modal-body">
+      <div class="setting-note">실제 판매점 가입신청 페이지가 생기기 전까지 관리자 설정 UI와 데이터 구조만 준비합니다.</div>
+      <form id="settingsForm" onsubmit="saveSettings(event)">
+        <section class="form-section">
+          <h3>가입신청 설정</h3>
+          <div class="form-grid">
+            <div class="field"><label>판매점 가입신청 사용여부</label><div class="radio-row"><label><input type="radio" name="sellerSignupEnabled" value="Y" checked> 사용</label><label><input type="radio" name="sellerSignupEnabled" value="N"> 미사용</label></div></div>
+            <div class="field"><label>가입승인 방식</label><div class="radio-row"><label><input type="radio" name="sellerApprovalMode" value="auto"> 자동승인</label><label><input type="radio" name="sellerApprovalMode" value="manual" checked> 수동승인</label></div></div>
+            <div class="field"><label>자동승인 후 기본 계정상태</label><select id="defaultAccountStatusAfterAutoApproval"><option value="normal">정상</option><option value="loginBlocked">로그인차단</option></select></div>
+            <div class="field"><label>수동승인 가입 직후 상태</label><select id="defaultStatusAfterManualSignup"><option value="pending">승인대기</option></select></div>
+            <div class="field wide"><label>가입신청 완료 안내문구</label><textarea id="signupCompleteMessage"></textarea></div>
+            <div class="field wide"><label>반려 시 안내문구</label><textarea id="rejectMessage"></textarea></div>
+          </div>
+        </section>
+      </form>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeSettings()">취소</button>
+      <button class="btn blue" onclick="document.getElementById('settingsForm').requestSubmit()">설정 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const storageKey = 'aosPrototypeSellerData';
+  const settingsKey = 'aosPrototypeSellerSettings';
+  const commissionGroupKey = 'aosPrototypeSellerCommissionGroups';
+  const defaultCommissionGroups = {
+    A:{amountAdult:10000,amountChild:8000,rateAdult:5,rateChild:5},
+    B:{amountAdult:8000,amountChild:6000,rateAdult:4,rateChild:4},
+    C:{amountAdult:5000,amountChild:4000,rateAdult:3,rateChild:3},
+    D:{amountAdult:3000,amountChild:2000,rateAdult:2,rateChild:2}
+  };
+  const defaultSettings = {
+    sellerSignupEnabled:'Y',
+    sellerApprovalMode:'manual',
+    defaultAccountStatusAfterAutoApproval:'normal',
+    defaultStatusAfterManualSignup:'pending',
+    signupCompleteMessage:'판매점 가입신청이 접수되었습니다. 관리자 승인 후 로그인이 가능합니다.',
+    rejectMessage:'판매점 가입신청이 반려되었습니다. 입력 정보를 확인한 뒤 다시 신청해 주세요.'
+  };
+  const defaultSellers = [
+    {id:'seller_001',agencyName:'에이비아 강남여행사',agencyCode:'AGN-0001',businessType:'corporation',businessNumber:'123-81-45678',tourismBusinessNumber:'관광-2026-001',ecommerceNumber:'제2026-서울강남-0001호',ceoName:'김대표',companyPhone:'02-1234-5678',mobilePhone:'010-1234-5678',email:'sales@gangnam.example',address:'서울특별시 강남구 테헤란로',addressDetail:'10층',homepageUrl:'https://gangnam.example',logoUrl:'',businessLicenseFileUrl:'',tourismLicenseFileUrl:'',status:'approved',approvalStatus:'approved',accountStatus:'normal',isActive:'Y',managerName:'박담당',managerPosition:'팀장',managerPhone:'010-2222-3333',managerEmail:'manager@gangnam.example',loginId:'gangnam_seller',password:'',allowLogin:'Y',lastLoginAt:'',settlementType:'monthly',bankName:'국민은행',bankAccount:'123456-01-123456',bankHolder:'에이비아강남',invoiceEmail:'tax@gangnam.example',commissionGroup:'A',commissionOverride:'N',commissionType:'amount',commissionAmount:10000,commissionRate:0,referralEnabled:'Y',referralCode:'01012345678',sharedProductCount:0,reservationCount:0,settlementStatus:'none',createdAt:'2026-06-29',updatedAt:'2026-06-29',approvedAt:'2026-06-29',approvedBy:'admin'},
+    {id:'seller_002',agencyName:'수원 파트너투어',agencyCode:'AGN-0002',businessType:'sole',businessNumber:'234-02-56789',tourismBusinessNumber:'관광-2026-002',ecommerceNumber:'제2026-수원팔달-0002호',ceoName:'이대표',companyPhone:'031-222-1234',mobilePhone:'010-9876-5432',email:'partner@suwon.example',address:'경기도 수원시 팔달구',addressDetail:'2층',homepageUrl:'',logoUrl:'',businessLicenseFileUrl:'',tourismLicenseFileUrl:'',status:'pending',approvalStatus:'pending',accountStatus:'loginBlocked',isActive:'Y',managerName:'최담당',managerPosition:'매니저',managerPhone:'010-3333-4444',managerEmail:'manager@suwon.example',loginId:'suwon_partner',password:'',allowLogin:'N',lastLoginAt:'',settlementType:'weekly',bankName:'신한은행',bankAccount:'110-111-222222',bankHolder:'이대표',invoiceEmail:'tax@suwon.example',commissionGroup:'B',commissionOverride:'N',commissionType:'rate',commissionAmount:0,commissionRate:4,referralEnabled:'Y',referralCode:'01098765432',sharedProductCount:0,reservationCount:0,settlementStatus:'pending',createdAt:'2026-06-28',updatedAt:'2026-06-28',approvedAt:'',approvedBy:''},
+    {id:'seller_003',agencyName:'기업복지몰 제휴센터',agencyCode:'AGN-0003',businessType:'corporation',businessNumber:'345-86-67890',tourismBusinessNumber:'관광-2026-003',ecommerceNumber:'제2026-서울중구-0003호',ceoName:'정대표',companyPhone:'02-7777-8888',mobilePhone:'010-5555-7777',email:'bizmall@example.com',address:'서울특별시 중구 세종대로',addressDetail:'5층',homepageUrl:'https://bizmall.example.com',logoUrl:'',businessLicenseFileUrl:'',tourismLicenseFileUrl:'',status:'rejected',approvalStatus:'rejected',accountStatus:'loginBlocked',isActive:'N',managerName:'홍담당',managerPosition:'과장',managerPhone:'010-7777-8888',managerEmail:'hong@bizmall.example.com',loginId:'bizmall',password:'',allowLogin:'N',lastLoginAt:'',settlementType:'case',bankName:'우리은행',bankAccount:'1002-000-000000',bankHolder:'기업복지몰',invoiceEmail:'tax@bizmall.example.com',commissionGroup:'C',commissionOverride:'Y',commissionType:'amount',commissionAmount:8000,commissionRate:0,referralEnabled:'N',referralCode:'',sharedProductCount:0,reservationCount:0,settlementStatus:'hold',createdAt:'2026-06-20',updatedAt:'2026-06-24',approvedAt:'',approvedBy:'admin'}
+  ];
+  let sellers = loadSellers();
+  let page = 1;
+  const pageSize = 15;
+
+  function msg(text){alert(text)}
+  function toggleNavGroup(el){el.closest('.nav-group').classList.toggle('open')}
+  function loadSellers(){return JSON.parse(localStorage.getItem(storageKey) || JSON.stringify(defaultSellers))}
+  function saveSellers(){localStorage.setItem(storageKey, JSON.stringify(sellers))}
+  function loadSettings(){return {...defaultSettings, ...JSON.parse(localStorage.getItem(settingsKey) || '{}')}}
+  function saveSettingsData(data){localStorage.setItem(settingsKey, JSON.stringify(data))}
+  function loadCommissionGroups(){return {...defaultCommissionGroups, ...JSON.parse(localStorage.getItem(commissionGroupKey) || '{}')}}
+  function saveCommissionGroups(data){localStorage.setItem(commissionGroupKey, JSON.stringify(data))}
+  function money(value){return Number(value || 0).toLocaleString('ko-KR')}
+  function selectedRadio(name){return document.querySelector(`input[name="${name}"]:checked`)?.value || ''}
+  function setRadio(name,value){const el=document.querySelector(`input[name="${name}"][value="${value}"]`); if(el) el.checked=true}
+  function onlyDigits(input){input.value=String(input.value||'').replace(/\D/g,'')}
+  function toast(text){const el=document.getElementById('toast');el.textContent=text;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}
+  function statusBadge(status){return {approved:'<span class="badge b-green">승인완료</span>',pending:'<span class="badge b-orange">승인대기</span>',rejected:'<span class="badge b-red">반려</span>',hold:'<span class="badge b-gray">보류</span>'}[status] || status}
+  function accountLabel(status){return {normal:'정상',loginBlocked:'로그인차단',suspended:'중지',withdrawn:'탈퇴'}[status] || status}
+  function settlementLabel(status){return {none:'-',pending:'정산대기',completed:'정산완료',hold:'보류'}[status] || '-'}
+  function commissionText(row){
+    const groups = loadCommissionGroups();
+    const groupCode = row.commissionGroup || 'A';
+    const base = groups[groupCode] || groups.A;
+    if(row.commissionOverride !== 'Y') return `${groupCode}그룹 ${money(base.amountAdult)}원 / ${base.rateAdult || 0}%`;
+    return row.commissionType === 'rate' ? `개별 ${row.commissionRate || 0}%` : `개별 ${money(row.commissionAmount)}원`;
+  }
+  function generateCode(){const max=sellers.reduce((m,s)=>Math.max(m,Number(String(s.agencyCode||'').replace(/\D/g,''))||0),0)+1;return `AGN-${String(max).padStart(4,'0')}`}
+
+  function getFiltered(){
+    const keyword = filterKeyword.value.trim();
+    const businessType = filterBusinessType.value;
+    const mobile = filterMobilePhone.value.trim();
+    const approvedBy = filterApprovedBy.value.trim();
+    return sellers.filter(row => {
+      const keywordMatched = !keyword || [row.agencyName, row.ceoName, row.managerName, row.companyPhone].some(value => String(value || '').includes(keyword));
+      return keywordMatched
+        && (!businessType || row.businessType === businessType)
+        && (!mobile || String(row.mobilePhone || '').includes(mobile))
+        && (!approvedBy || String(row.approvedBy || '').includes(approvedBy));
+    }).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  }
+
+  function renderSummary(){
+    sumTotal.textContent = `${sellers.length}개`;
+    sumPending.textContent = `${sellers.filter(s=>s.status==='pending').length}개`;
+    sumApproved.textContent = `${sellers.filter(s=>s.status==='approved').length}개`;
+    sumShared.textContent = `${sellers.reduce((t,s)=>t+Number(s.sharedProductCount||0),0)}건`;
+    sumReserve.textContent = `${sellers.reduce((t,s)=>t+Number(s.reservationCount||0),0)}건`;
+    sumSettle.textContent = `${sellers.filter(s=>s.settlementStatus==='pending').length}개`;
+  }
+
+  function renderSellers(){
+    const rows = getFiltered();
+    const totalPage = Math.max(1, Math.ceil(rows.length / pageSize));
+    page = Math.min(page, totalPage);
+    const start = (page - 1) * pageSize;
+    const current = rows.slice(start, start + pageSize);
+    listCountText.textContent = `총 ${rows.length}건`;
+    sellerRows.innerHTML = current.length ? current.map((row) => `
+      <tr>
+        <td><button class="seller-name" onclick="openSellerForm('${row.id}')">${row.agencyName}</button></td>
+        <td class="center">${row.ceoName || '-'}</td>
+        <td class="center">${row.managerName || '-'}</td>
+        <td class="center">${row.companyPhone || '-'}</td>
+        <td class="center">${row.mobilePhone || '-'}</td>
+        <td class="money">${commissionText(row)}</td>
+        <td class="center">${money(row.sharedProductCount)}</td>
+        <td class="center">${money(row.reservationCount)}</td>
+        <td class="center">${row.createdAt || '-'}</td>
+        <td class="center">${row.approvedBy || '-'}</td>
+        <td class="center"><button class="btn small red" onclick="deleteSeller('${row.id}')">삭제</button></td>
+      </tr>`).join('') : `<tr><td colspan="11" class="empty">검색된 판매점이 없습니다.</td></tr>`;
+    pagination.innerHTML = Array.from({length:totalPage},(_,i)=>`<button class="${i+1===page?'active':''}" onclick="page=${i+1};renderSellers()">${i+1}</button>`).join('');
+    renderSummary();
+  }
+
+  function resetFilters(){
+    document.querySelectorAll('.filter-grid input').forEach(el=>el.value='');
+    document.querySelectorAll('.filter-grid select').forEach(el=>el.value='');
+    page = 1;
+    renderSellers();
+  }
+
+  function openSellerForm(id=''){
+    const row = sellers.find(s=>s.id===id) || {};
+    sellerModal.classList.add('open');
+    sellerModalTitle.textContent = id ? '판매점 수정' : '판매점 신규등록';
+    sellerForm.reset();
+    sellerId.value = row.id || '';
+    const fields = ['agencyName','agencyCode','businessNumber','tourismBusinessNumber','ecommerceNumber','ceoName','companyPhone','mobilePhone','email','address','addressDetail','homepageUrl','managerName','managerPosition','managerPhone','managerEmail','loginId','password','lastLoginAt','bankName','bankAccount','bankHolder','invoiceEmail','commissionAmount','commissionRate'];
+    fields.forEach(key => { if(document.getElementById(key)) document.getElementById(key).value = row[key] || ''; });
+    commissionGroup.value = row.commissionGroup || 'A';
+    setRadio('businessType', row.businessType || 'corporation');
+    setRadio('isActive', row.isActive || 'Y');
+    setRadio('allowLogin', row.allowLogin || 'N');
+    setRadio('commissionOverride', row.commissionOverride || 'N');
+    setRadio('commissionType', row.commissionType || 'amount');
+    status.value = row.status || 'pending';
+    applyGroupCommission(row.commissionOverride === 'Y');
+  }
+
+  function closeSellerForm(){sellerModal.classList.remove('open')}
+  function syncReferralCode(){}
+  function applyGroupCommission(forceEditable){
+    const editable = forceEditable || selectedRadio('commissionOverride') === 'Y';
+    const groups = loadCommissionGroups();
+    const base = groups[commissionGroup.value || 'A'] || groups.A;
+    if(!editable){
+      setRadio('commissionType','amount');
+      commissionAmount.value = base.amountAdult || 0;
+      commissionRate.value = base.rateAdult || 0;
+    }
+    commissionAmount.readOnly = !editable;
+    commissionRate.readOnly = !editable;
+    commissionAmount.classList.toggle('disabled-field', !editable);
+    commissionRate.classList.toggle('disabled-field', !editable);
+  }
+  function fileValue(id, existingValue = '') {
+    const input = document.getElementById(id);
+    return input?.files?.[0]?.name || existingValue || '';
+  }
+
+  function validateSeller(row){
+    if(!row.agencyName) return '판매점명을 입력해 주세요.';
+    if(!row.mobilePhone) return '휴대폰번호를 입력해 주세요.';
+    if((row.businessType === 'corporation' || row.businessType === 'sole') && !row.businessNumber) return '법인 또는 개인사업자는 사업자등록번호를 입력해 주세요.';
+    if(row.referralCode && sellers.some(s=>s.id!==row.id && s.referralCode===row.referralCode)) return '이미 사용 중인 추천인코드입니다.';
+    if(row.agencyCode && sellers.some(s=>s.id!==row.id && s.agencyCode===row.agencyCode)) return '이미 사용 중인 판매점코드입니다.';
+    return '';
+  }
+
+  function saveSeller(event){
+    event.preventDefault();
+    const id = sellerId.value || `seller_${Date.now()}`;
+    const existing = sellers.find(s=>s.id===id) || {};
+    const row = {
+      ...existing,
+      id,
+      agencyName:agencyName.value.trim(),
+      agencyCode:agencyCode.value.trim() || existing.agencyCode || generateCode(),
+      businessType:selectedRadio('businessType'),
+      businessNumber:businessNumber.value.trim(),
+      tourismBusinessNumber:tourismBusinessNumber.value.trim(),
+      ecommerceNumber:ecommerceNumber.value.trim(),
+      ceoName:ceoName.value.trim(),
+      companyPhone:companyPhone.value.trim(),
+      mobilePhone:mobilePhone.value.trim(),
+      email:email.value.trim(),
+      address:address.value.trim(),
+      addressDetail:addressDetail.value.trim(),
+      homepageUrl:homepageUrl.value.trim(),
+      logoUrl:fileValue('logoUrl', existing.logoUrl),
+      businessLicenseFileUrl:fileValue('businessLicenseFileUrl', existing.businessLicenseFileUrl),
+      tourismLicenseFileUrl:fileValue('tourismLicenseFileUrl', existing.tourismLicenseFileUrl),
+      status:status.value,
+      approvalStatus:status.value,
+      accountStatus:existing.accountStatus || (status.value === 'approved' ? 'normal' : 'loginBlocked'),
+      isActive:selectedRadio('isActive'),
+      managerName:managerName.value.trim(),
+      managerPosition:managerPosition.value.trim(),
+      managerPhone:managerPhone.value.trim(),
+      managerEmail:managerEmail.value.trim(),
+      loginId:loginId.value.trim(),
+      password:password.value,
+      allowLogin:selectedRadio('allowLogin'),
+      lastLoginAt:lastLoginAt.value,
+      settlementType:existing.settlementType || 'monthly',
+      bankName:bankName.value.trim(),
+      bankAccount:bankAccount.value.trim(),
+      bankHolder:bankHolder.value.trim(),
+      invoiceEmail:invoiceEmail.value.trim(),
+      commissionGroup:commissionGroup.value || 'A',
+      commissionOverride:selectedRadio('commissionOverride') || 'N',
+      commissionType:selectedRadio('commissionType') || 'amount',
+      commissionAmount:Number(commissionAmount.value || 0),
+      commissionRate:Number(commissionRate.value || 0),
+      referralEnabled:'Y',
+      referralCode:String(mobilePhone.value || '').replace(/\D/g,''),
+      sharedProductCount:Number(existing.sharedProductCount || 0),
+      reservationCount:Number(existing.reservationCount || 0),
+      settlementStatus:existing.settlementStatus || 'none',
+      createdAt:existing.createdAt || new Date().toISOString().slice(0,10),
+      updatedAt:new Date().toISOString().slice(0,10),
+      approvedAt:status.value==='approved' ? (existing.approvedAt || new Date().toISOString().slice(0,10)) : '',
+      approvedBy:status.value==='approved' ? (existing.approvedBy || 'admin') : ''
+    };
+    const error = validateSeller(row);
+    if(error){msg(error);return}
+    const index = sellers.findIndex(s=>s.id===id);
+    if(index >= 0) sellers[index] = row; else sellers.push(row);
+    saveSellers();
+    closeSellerForm();
+    renderSellers();
+    toast('판매점 정보가 저장되었습니다.');
+  }
+
+  function changeStatus(id,nextStatus){
+    const row = sellers.find(s=>s.id===id);
+    if(!row) return;
+    row.status = nextStatus;
+    row.approvalStatus = nextStatus;
+    if(nextStatus === 'approved'){row.accountStatus='normal';row.allowLogin='Y';row.approvedAt=new Date().toISOString().slice(0,10);row.approvedBy='admin'}
+    if(nextStatus === 'rejected'){row.accountStatus='loginBlocked';row.allowLogin='N'}
+    row.updatedAt = new Date().toISOString().slice(0,10);
+    saveSellers();
+    renderSellers();
+    toast(nextStatus === 'approved' ? '판매점을 승인했습니다.' : '판매점을 반려했습니다.');
+  }
+  function toggleActive(id){const row=sellers.find(s=>s.id===id); if(!row)return; row.isActive=row.isActive==='Y'?'N':'Y'; saveSellers(); renderSellers(); toast('사용여부가 변경되었습니다.')}
+  function deleteSeller(id){if(!confirm('삭제하시겠습니까? 삭제된 판매점은 복구할 수 없습니다.'))return; sellers=sellers.filter(s=>s.id!==id); saveSellers(); renderSellers(); toast('판매점이 삭제되었습니다.')}
+
+  function openCommissionGroupSettings(){
+    const groups = loadCommissionGroups();
+    ['A','B','C','D'].forEach(code => {
+      const data = groups[code] || defaultCommissionGroups[code];
+      document.getElementById(`group${code}AmountAdult`).value = data.amountAdult || 0;
+      document.getElementById(`group${code}AmountChild`).value = data.amountChild || 0;
+      document.getElementById(`group${code}RateAdult`).value = data.rateAdult || 0;
+      document.getElementById(`group${code}RateChild`).value = data.rateChild || 0;
+    });
+    commissionGroupModal.classList.add('open');
+  }
+  function closeCommissionGroupSettings(){commissionGroupModal.classList.remove('open')}
+  function saveCommissionGroupSettings(event){
+    event.preventDefault();
+    const data = {};
+    ['A','B','C','D'].forEach(code => {
+      data[code] = {
+        amountAdult:Number(document.getElementById(`group${code}AmountAdult`).value || 0),
+        amountChild:Number(document.getElementById(`group${code}AmountChild`).value || 0),
+        rateAdult:Number(document.getElementById(`group${code}RateAdult`).value || 0),
+        rateChild:Number(document.getElementById(`group${code}RateChild`).value || 0)
+      };
+    });
+    saveCommissionGroups(data);
+    closeCommissionGroupSettings();
+    renderSellers();
+    toast('커미션 그룹 설정이 저장되었습니다.');
+  }
+
+  function openSettings(){
+    const data = loadSettings();
+    settingsModal.classList.add('open');
+    setRadio('sellerSignupEnabled', data.sellerSignupEnabled);
+    setRadio('sellerApprovalMode', data.sellerApprovalMode);
+    defaultAccountStatusAfterAutoApproval.value = data.defaultAccountStatusAfterAutoApproval;
+    defaultStatusAfterManualSignup.value = data.defaultStatusAfterManualSignup;
+    signupCompleteMessage.value = data.signupCompleteMessage;
+    rejectMessage.value = data.rejectMessage;
+  }
+  function closeSettings(){settingsModal.classList.remove('open')}
+  function saveSettings(event){
+    event.preventDefault();
+    saveSettingsData({
+      sellerSignupEnabled:selectedRadio('sellerSignupEnabled'),
+      sellerApprovalMode:selectedRadio('sellerApprovalMode'),
+      defaultAccountStatusAfterAutoApproval:defaultAccountStatusAfterAutoApproval.value,
+      defaultStatusAfterManualSignup:defaultStatusAfterManualSignup.value,
+      signupCompleteMessage:signupCompleteMessage.value.trim(),
+      rejectMessage:rejectMessage.value.trim()
+    });
+    closeSettings();
+    toast('가입승인 설정이 저장되었습니다.');
+  }
+
+  document.addEventListener('click', (e) => {
+    if(e.target.id === 'sellerModal') closeSellerForm();
+    if(e.target.id === 'settingsModal') closeSettings();
+  });
+  renderSellers();
+</script>
+</body>
+</html>
+
+
+
+
+
+
