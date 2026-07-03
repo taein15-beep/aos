@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>웹회원관리</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/member-web.css">
+</head>
+<body data-page="member_web_list">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong>웹회원관리</strong><span>홈페이지 가입 고객과 예약 고객을 CRM 형태로 관리합니다.</span></header>
+    <div class="page">
+      <div class="page-head">
+        <div>
+          <div class="muted">회원관리 &gt; 웹회원관리</div>
+          <h1>웹회원관리</h1>
+          <div class="desc">홈페이지 가입 회원, 예약 고객, 추천 판매점 연결 고객을 관리합니다.</div>
+        </div>
+        <div class="top-actions">
+          <a class="btn blue" href="member_web_form.html">+ 웹회원 등록</a>
+          <button class="btn" type="button" data-web-action="excel">엑셀 다운로드</button>
+          <button class="btn" type="button" data-web-action="bulk-status">선택회원 상태변경</button>
+        </div>
+      </div>
+
+      <section class="summary-grid" aria-label="웹회원 현황 요약">
+        <div class="summary-card"><span>전체 웹회원</span><strong>1,248명</strong></div>
+        <div class="summary-card"><span>정상회원</span><strong>1,102명</strong></div>
+        <div class="summary-card"><span>휴면회원</span><strong>86명</strong></div>
+        <div class="summary-card"><span>탈퇴회원</span><strong>42명</strong></div>
+        <div class="summary-card"><span>차단회원</span><strong>18명</strong></div>
+        <div class="summary-card"><span>최근 7일 가입</span><strong>34명</strong></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">웹회원 검색</div>
+        <div class="panel-body">
+          <form id="memberSearchForm" class="filter-grid member-web-search-grid">
+            <div class="field"><label>검색어</label><input placeholder="이름, 아이디, 이메일, 휴대폰 검색"></div>
+            <div class="field"><label>회원상태</label><select><option>전체</option><option>정상</option><option>휴면</option><option>탈퇴</option><option>차단</option></select></div>
+            <div class="field"><label>가입경로</label><select><option>전체</option><option>홈페이지 일반가입</option><option>카카오 간편가입</option><option>네이버 간편가입</option><option>구글 간편가입</option><option>애플 간편가입</option><option>판매점 추천가입</option><option>관리자 등록</option></select></div>
+            <div class="field"><label>추천 판매점</label><input placeholder="판매점명 또는 추천코드 검색"></div>
+            <div class="field action-row">
+              <button class="btn green" type="button" data-web-action="search">검색</button>
+              <button class="btn" type="button" data-web-action="reset-search">초기화</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <span>웹회원 목록 <span class="muted">총 1,248명</span></span>
+          <span class="muted">휴대폰과 이메일에는 추후 마스킹 처리를 위한 class가 적용되어 있습니다.</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th><input id="checkAllMembers" type="checkbox" aria-label="전체 선택"></th>
+                <th>No.</th>
+                <th>회원명</th>
+                <th>아이디</th>
+                <th>이메일</th>
+                <th>휴대폰</th>
+                <th>추천 판매점</th>
+                <th>예약건수</th>
+                <th>최근 예약일</th>
+                <th>가입일</th>
+                <th>최근 로그인</th>
+                <th>상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="center"><input type="checkbox" data-member-check="M000001"></td>
+                <td>1</td><td><a href="member_web_detail.html?id=M000001">홍길동</a></td>
+                <td>hong</td><td><a class="privacy-email" href="mailto:hong@test.com">hong@test.com</a></td>
+                <td class="privacy-phone">010-1234-5678</td><td>행복투어</td><td class="center">3건</td><td>2026-07-01</td><td>2026-06-12</td><td>2026-07-03</td><td><span class="badge b-green">정상</span></td>
+                <td><div class="manage-actions"><a class="btn small" href="member_web_detail.html?id=M000001">상세</a><a class="btn small" href="member_web_form.html?mode=edit&id=M000001">수정</a><a class="btn small" href="member_web_detail.html?id=M000001&tab=reservation">예약내역</a></div></td>
+              </tr>
+              <tr>
+                <td class="center"><input type="checkbox" data-member-check="M000002"></td>
+                <td>2</td><td><a href="member_web_detail.html?id=M000002">김민지</a></td>
+                <td>minji</td><td><a class="privacy-email" href="mailto:minji@test.com">minji@test.com</a></td>
+                <td class="privacy-phone">010-2222-3333</td><td>직접가입</td><td class="center">1건</td><td>2026-06-20</td><td>2026-06-01</td><td>2026-06-25</td><td><span class="badge b-green">정상</span></td>
+                <td><div class="manage-actions"><a class="btn small" href="member_web_detail.html?id=M000002">상세</a><a class="btn small" href="member_web_form.html?mode=edit&id=M000002">수정</a><a class="btn small" href="member_web_detail.html?id=M000002&tab=reservation">예약내역</a></div></td>
+              </tr>
+              <tr>
+                <td class="center"><input type="checkbox" data-member-check="M000003"></td>
+                <td>3</td><td><a href="member_web_detail.html?id=M000003">이성호</a></td>
+                <td>sungho</td><td><a class="privacy-email" href="mailto:sungho@test.com">sungho@test.com</a></td>
+                <td class="privacy-phone">010-3333-4444</td><td>우리여행사</td><td class="center">0건</td><td>-</td><td>2026-05-18</td><td>2026-05-19</td><td><span class="badge b-orange">휴면</span></td>
+                <td><div class="manage-actions"><a class="btn small" href="member_web_detail.html?id=M000003">상세</a><a class="btn small" href="member_web_form.html?mode=edit&id=M000003">수정</a><a class="btn small" href="member_web_detail.html?id=M000003&tab=reservation">예약내역</a></div></td>
+              </tr>
+              <tr>
+                <td class="center"><input type="checkbox" data-member-check="M000004"></td>
+                <td>4</td><td><a href="member_web_detail.html?id=M000004">박준영</a></td>
+                <td>junpark</td><td><a class="privacy-email" href="mailto:jun@test.com">jun@test.com</a></td>
+                <td class="privacy-phone">010-4444-5555</td><td>행복투어</td><td class="center">5건</td><td>2026-07-02</td><td>2026-04-03</td><td>2026-07-02</td><td><span class="badge b-green">정상</span></td>
+                <td><div class="manage-actions"><a class="btn small" href="member_web_detail.html?id=M000004">상세</a><a class="btn small" href="member_web_form.html?mode=edit&id=M000004">수정</a><a class="btn small" href="member_web_detail.html?id=M000004&tab=reservation">예약내역</a></div></td>
+              </tr>
+              <tr>
+                <td class="center"><input type="checkbox" data-member-check="M000005"></td>
+                <td>5</td><td><a href="member_web_detail.html?id=M000005">최유나</a></td>
+                <td>yuna</td><td><a class="privacy-email" href="mailto:yuna@test.com">yuna@test.com</a></td>
+                <td class="privacy-phone">010-5555-6666</td><td>관리자 등록</td><td class="center">2건</td><td>2026-06-28</td><td>2026-06-21</td><td>2026-06-29</td><td><span class="badge b-green">정상</span></td>
+                <td><div class="manage-actions"><a class="btn small" href="member_web_detail.html?id=M000005">상세</a><a class="btn small" href="member_web_form.html?mode=edit&id=M000005">수정</a><a class="btn small" href="member_web_detail.html?id=M000005&tab=reservation">예약내역</a></div></td>
+              </tr>
+              <tr>
+                <td class="center"><input type="checkbox" data-member-check="M000006"></td>
+                <td>6</td><td><a href="member_web_detail.html?id=M000006">정다은</a></td>
+                <td>daeun</td><td><a class="privacy-email" href="mailto:daeun@test.com">daeun@test.com</a></td>
+                <td class="privacy-phone">010-6666-7777</td><td>직접가입</td><td class="center">0건</td><td>-</td><td>2026-03-10</td><td>2026-03-11</td><td><span class="badge b-gray">탈퇴</span></td>
+                <td><div class="manage-actions"><a class="btn small" href="member_web_detail.html?id=M000006">상세</a><a class="btn small" href="member_web_form.html?mode=edit&id=M000006">수정</a><a class="btn small" href="member_web_detail.html?id=M000006&tab=reservation">예약내역</a></div></td>
+              </tr>
+              <tr>
+                <td class="center"><input type="checkbox" data-member-check="M000007"></td>
+                <td>7</td><td><a href="member_web_detail.html?id=M000007">오세훈</a></td>
+                <td>sehun</td><td><a class="privacy-email" href="mailto:sehun@test.com">sehun@test.com</a></td>
+                <td class="privacy-phone">010-7777-8888</td><td>우리여행사</td><td class="center">4건</td><td>2026-06-30</td><td>2026-02-15</td><td>2026-07-01</td><td><span class="badge b-red">차단</span></td>
+                <td><div class="manage-actions"><a class="btn small" href="member_web_detail.html?id=M000007">상세</a><a class="btn small" href="member_web_form.html?mode=edit&id=M000007">수정</a><a class="btn small" href="member_web_detail.html?id=M000007&tab=reservation">예약내역</a></div></td>
+              </tr>
+              <tr>
+                <td class="center"><input type="checkbox" data-member-check="M000008"></td>
+                <td>8</td><td><a href="member_web_detail.html?id=M000008">한소라</a></td>
+                <td>sora</td><td><a class="privacy-email" href="mailto:sora@test.com">sora@test.com</a></td>
+                <td class="privacy-phone">010-8888-9999</td><td>행복투어</td><td class="center">1건</td><td>2026-07-03</td><td>2026-07-03</td><td>2026-07-03</td><td><span class="badge b-green">정상</span></td>
+                <td><div class="manage-actions"><a class="btn small" href="member_web_detail.html?id=M000008">상세</a><a class="btn small" href="member_web_form.html?mode=edit&id=M000008">수정</a><a class="btn small" href="member_web_detail.html?id=M000008&tab=reservation">예약내역</a></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="./js/common.js"></script>
+<script src="./js/components.js"></script>
+<script src="./js/member-web.js"></script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>웹회원 등록/수정</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/member-web.css">
+</head>
+<body data-page="member_web_form">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong id="memberTopbarTitle">웹회원 등록/수정</strong><span>웹회원은 관리자 로그인 계정과 별도로 관리합니다.</span></header>
+    <div class="page">
+      <div class="page-head">
+        <div>
+          <div class="muted">회원관리 &gt; 웹회원관리</div>
+          <h1 id="memberFormTitle">웹회원 등록/수정</h1>
+          <div class="desc">기본 회원정보, 가입경로, 추천 판매점, 수신동의, 회원상태를 관리합니다.</div>
+        </div>
+        <div class="top-actions">
+          <button class="btn" type="button" data-web-action="list">목록</button>
+          <button class="btn blue" type="button" data-web-action="save-member">저장</button>
+          <button class="btn" type="button" data-web-action="cancel">취소</button>
+          <button class="btn red" type="button" data-edit-only data-web-action="password-reset" hidden>비밀번호 초기화</button>
+        </div>
+      </div>
+
+      <form id="memberWebForm">
+        <section class="panel">
+          <div class="panel-head">A. 기본정보</div>
+          <div class="panel-body form-grid">
+            <div class="field" data-edit-only hidden><label>회원번호</label><input value="M000001" readonly></div>
+            <div class="field"><label>회원명 <span class="required">*</span></label><input value="홍길동" required></div>
+            <div class="field"><label>아이디 <span class="required">*</span></label><input id="memberLoginId" value="hong" required><div class="help">로그인에 사용되는 아이디입니다.</div></div>
+            <div class="field"><label>이메일</label><input type="email" class="privacy-email" value="hong@test.com"></div>
+            <div class="field"><label>휴대폰 <span class="required">*</span></label><input class="privacy-phone" value="010-1234-5678" required></div>
+            <div class="field password-field" data-create-only><label>비밀번호 <span class="required">*</span></label><input type="password" autocomplete="new-password"><div class="help">수정 모드에서는 비밀번호를 노출하지 않고 초기화 기능으로만 처리합니다.</div></div>
+            <div class="field"><label>생년월일</label><input type="date" value="1988-03-15"></div>
+            <div class="field"><label>성별</label><select><option>선택안함</option><option selected>남성</option><option>여성</option></select></div>
+            <div class="field"><label>우편번호</label><input placeholder="우편번호" value="04524"></div>
+            <div class="field span2"><label>기본주소</label><input placeholder="기본주소" value="서울특별시 중구 세종대로 110"></div>
+            <div class="field"><label>상세주소</label><input placeholder="상세주소" value="5층"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">B. 가입/추천 정보</div>
+          <div class="panel-body form-grid">
+            <div class="field"><label>가입경로</label><select><option>홈페이지 직접가입</option><option selected>판매점 추천가입</option><option>관리자 등록</option></select></div>
+            <div class="field"><label>추천인코드</label><input id="referralCode" value="HAPPYAOS" placeholder="판매점 추천코드 입력"></div>
+            <div class="field span2"><label>연결 판매점</label><div id="matchedSeller" class="readonly-box">행복투어 / 담당자: 김담당 / 010-0000-0000</div></div>
+            <div class="field span4"><label>유입메모</label><textarea rows="3" placeholder="전화 상담 후 관리자 등록">행복투어 추천코드로 유입된 회원입니다.</textarea></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">C. 수신동의</div>
+          <div class="panel-body form-grid">
+            <div class="field"><label><input type="checkbox" checked> SMS 수신동의</label><div class="help">동의일: 2026-07-03</div></div>
+            <div class="field"><label><input type="checkbox" checked> 알림톡 수신동의</label><div class="help">동의일: 2026-07-03</div></div>
+            <div class="field"><label><input type="checkbox" checked> 이메일 수신동의</label><div class="help">동의일: 2026-07-03</div></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">D. 회원상태</div>
+          <div class="panel-body form-grid">
+            <div class="field span4">
+              <label>회원상태</label>
+              <div class="radio-row">
+                <label><input type="radio" name="memberStatus" value="정상" checked> 정상</label>
+                <label><input type="radio" name="memberStatus" value="휴면"> 휴면</label>
+                <label><input type="radio" name="memberStatus" value="탈퇴"> 탈퇴</label>
+                <label><input type="radio" name="memberStatus" value="차단"> 차단</label>
+              </div>
+            </div>
+            <div class="field span2 conditional-field hidden" data-status-extra="blocked"><label>차단사유</label><input placeholder="차단 사유를 입력하세요"></div>
+            <div class="field conditional-field hidden" data-status-extra="withdrawn"><label>탈퇴일</label><input type="date"></div>
+            <div class="field conditional-field hidden" data-status-extra="withdrawn"><label>탈퇴사유</label><input placeholder="탈퇴 사유를 입력하세요"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">E. 관리자 메모</div>
+          <div class="panel-body">
+            <div class="field">
+              <label>관리자 메모</label>
+              <textarea rows="5" placeholder="회원 특이사항, 상담 참고사항, 예약 시 유의사항 등을 입력하세요.">부모님 동반 예약 문의 이력이 있습니다. 좌석 앞쪽 요청 가능 여부 확인 필요.</textarea>
+            </div>
+          </div>
+        </section>
+
+        <div class="panel">
+          <div class="panel-body top-actions">
+            <button class="btn" type="button" data-web-action="list">목록</button>
+            <button class="btn blue" type="button" data-web-action="save-member">저장</button>
+            <button class="btn" type="button" data-web-action="cancel">취소</button>
+            <button class="btn red" type="button" data-edit-only data-web-action="password-reset" hidden>비밀번호 초기화</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script src="./js/common.js"></script>
+<script src="./js/components.js"></script>
+<script src="./js/member-web.js"></script>
+</body>
+</html>

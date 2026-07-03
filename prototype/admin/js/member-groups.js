@@ -1,6 +1,11 @@
-(function () {
-  var typeLabel = { admin: '관리자/직원', seller: '판매점', partner: '거래처', web: '웹회원' };
-  var typeOrder = { admin: 1, seller: 2, partner: 3, web: 4 };
+﻿(function () {
+  var currentAdmin = { id: 'superadmin', name: '최고관리자', isSuperAdmin: true };
+  var groupTypes = [
+    { value: 'admin', name: '관리자/직원', order: 1, locked: true },
+    { value: 'seller', name: '판매점', order: 2, locked: true },
+    { value: 'partner', name: '거래처', order: 3, locked: true },
+    { value: 'web', name: '웹회원', order: 4, locked: true }
+  ];
 
   var groups = [
     { id: 'g1', type: 'admin', name: '최고관리자', code: 'SUPER_ADMIN', description: '전체 메뉴와 전체 데이터에 접근 가능한 시스템 최고 권한 그룹', isDefault: 'N', active: 'Y', members: 1, sort: 1, updatedAt: '2026-07-01', systemLocked: true },
@@ -58,7 +63,9 @@
 
   var selectedDeleteId = '';
   var selectedPermissionGroupId = '';
+  var selectedPermissionTypeValue = '';
   var selectedAccountId = '';
+  var draggingTypeValue = '';
 
   function $(id) { return document.getElementById(id); }
   function notify(message) { if (typeof window.msg === 'function') window.msg(message); else window.alert(message); }
@@ -66,6 +73,10 @@
   function badge(text, cls) { return '<span class="badge ' + cls + '">' + esc(text) + '</span>'; }
   function groupById(id) { return groups.find(function (group) { return group.id === id; }); }
   function canDelete(group) { return group && !group.systemLocked && Number(group.members || 0) < 1; }
+  function typeByValue(value) { return groupTypes.find(function (type) { return type.value === value; }); }
+  function typeName(value) { var type = typeByValue(value); return type ? type.name : value; }
+  function typeOrder(value) { var type = typeByValue(value); return type ? Number(type.order || 99) : 99; }
+  function typeBadgeClass(value) { return value === 'admin' ? 'b-blue' : value === 'web' ? 'b-green' : value === 'seller' ? 'b-purple' : 'b-orange'; }
 
   function deleteReason(group) {
     if (!group) return '그룹 정보를 찾을 수 없습니다.';
@@ -77,10 +88,21 @@
   function groupPriority(group) { return group.systemLocked || group.isDefault === 'Y' ? 0 : 1; }
   function sortedGroups(list) {
     return list.slice().sort(function (a, b) {
-      return (typeOrder[a.type] || 99) - (typeOrder[b.type] || 99)
+      return typeOrder(a.type) - typeOrder(b.type)
         || groupPriority(a) - groupPriority(b)
         || a.name.localeCompare(b.name, 'ko');
     });
+  }
+
+  function renderTypeOptions() {
+    var filterOptions = '<option value="">전체</option>' + groupTypes
+      .slice()
+      .sort(function (a, b) { return Number(a.order || 99) - Number(b.order || 99) || a.name.localeCompare(b.name, 'ko'); })
+      .map(function (type) { return '<option value="' + esc(type.value) + '">' + esc(type.name) + '</option>'; })
+      .join('');
+    var formOptions = '<option value="">선택</option>' + filterOptions.replace('<option value="">전체</option>', '');
+    $('filterType').innerHTML = filterOptions;
+    $('groupType').innerHTML = formOptions;
   }
 
   function filteredGroups() {
@@ -107,11 +129,11 @@
       return '<tr>'
         + '<td class="center"><input type="checkbox" data-group-check="' + group.id + '" ' + (locked ? 'disabled title="' + esc(lockTitle) + '"' : '') + '></td>'
         + '<td class="center">' + (index + 1) + '</td>'
-        + '<td class="center">' + badge(typeLabel[group.type], group.type === 'admin' ? 'b-blue' : group.type === 'web' ? 'b-green' : group.type === 'seller' ? 'b-purple' : 'b-orange') + '</td>'
+        + '<td class="center">' + badge(typeName(group.type), typeBadgeClass(group.type)) + '</td>'
         + '<td><div class="group-name-cell"><strong>' + esc(group.name) + '</strong>' + groupBadges(group) + '</div></td>'
         + '<td class="desc-cell">' + esc(group.description) + '</td>'
         + '<td class="center">' + Number(group.members || 0).toLocaleString() + '명</td>'
-        + '<td class="center">' + (group.active === 'Y' ? badge('사용중', 'b-green') : badge('비활성', 'b-gray')) + '</td>'
+        + '<td class="center"><button class="status-toggle ' + (group.active === 'Y' ? 'active' : 'inactive') + '" type="button" role="switch" aria-checked="' + (group.active === 'Y' ? 'true' : 'false') + '" data-group-action="toggle-status" data-id="' + group.id + '"><span class="status-toggle-track"><span class="status-toggle-knob"></span></span><span class="status-toggle-text">' + (group.active === 'Y' ? '사용중' : '비활성') + '</span></button></td>'
         + '<td class="center"><button class="btn small" type="button" data-group-action="permission" data-id="' + group.id + '" ' + (group.type === 'web' ? 'title="웹회원 그룹은 관리자 메뉴 권한 대상이 아닙니다."' : '') + '>권한설정</button></td>'
         + '<td class="center"><button class="btn small" type="button" data-group-action="edit" data-id="' + group.id + '">수정</button></td>'
         + '<td class="center"><button class="btn small red" type="button" data-group-action="delete" data-id="' + group.id + '" ' + (locked ? 'disabled title="' + esc(lockTitle) + '"' : '') + '>삭제</button></td>'
@@ -127,7 +149,7 @@
       return '<tr>'
         + '<td><strong>' + esc(account.name) + '</strong></td>'
         + '<td>' + esc(account.login) + '</td>'
-        + '<td class="center">' + badge(typeLabel[account.type], account.type === 'admin' ? 'b-blue' : account.type === 'seller' ? 'b-purple' : 'b-orange') + '</td>'
+        + '<td class="center">' + badge(typeName(account.type), typeBadgeClass(account.type)) + '</td>'
         + '<td>' + esc(account.groupStatus) + '</td>'
         + '<td class="center">' + overrideBadge + '</td>'
         + '<td class="center">' + esc(account.updatedAt) + '</td>'
@@ -153,8 +175,6 @@
     $('groupName').value = group ? group.name : '';
     $('groupCode').value = group ? group.code : '';
     $('groupDescription').value = group ? group.description : '';
-    $('groupDefault').value = group ? group.isDefault : 'N';
-    $('groupActive').value = group ? group.active : 'Y';
     $('advancedGroupInfo').classList.add('hidden');
     document.querySelector('[data-group-action="toggle-advanced"]').textContent = '고급정보 보기';
     $('groupLockNotice').classList.toggle('hidden', !(group && group.systemLocked));
@@ -173,8 +193,8 @@
       name: name,
       code: existing ? existing.code : generateCode(type, name),
       description: $('groupDescription').value.trim(),
-      isDefault: $('groupDefault').value,
-      active: $('groupActive').value,
+      isDefault: existing ? existing.isDefault : 'N',
+      active: existing ? existing.active : 'Y',
       members: existing ? existing.members : 0,
       sort: existing ? existing.sort : 999,
       updatedAt: new Date().toISOString().slice(0, 10)
@@ -213,13 +233,42 @@
     return 'read';
   }
 
-  function renderPermissionTree(targetId, group) {
-    $(targetId).innerHTML = menuTree.map(function (menu) { return renderNode(menu, group, true); }).join('');
+  function defaultTypePermissionLevel(typeValue, menuId) {
+    if (typeValue === 'admin') return menuId.indexOf('system') >= 0 ? 'read' : 'edit';
+    if (typeValue === 'seller' && (menuId.indexOf('settlement') >= 0 || menuId.indexOf('seller') >= 0 || menuId.indexOf('product') >= 0 || menuId.indexOf('reservation') >= 0)) return 'read';
+    if (typeValue === 'partner' && (menuId.indexOf('partner') >= 0 || menuId.indexOf('settlement') >= 0)) return 'read';
+    return menuId === 'dashboard' ? 'read' : 'none';
   }
 
-  function renderNode(menu, group, isParent) {
-    var children = (menu.children || []).map(function (child) { return renderNode(child, group, false); }).join('');
-    var level = defaultPermissionLevel(group, menu.id);
+  function typePermissionLevel(typeValue, menuId) {
+    var type = typeByValue(typeValue);
+    return type && type.permissions && type.permissions[menuId] ? type.permissions[menuId] : defaultTypePermissionLevel(typeValue, menuId);
+  }
+
+  function groupPermissionLevel(group, menuId) {
+    if (group && group.permissions && group.permissions[menuId]) return group.permissions[menuId];
+    if (group && group.code === 'SUPER_ADMIN') return 'edit';
+    return group ? typePermissionLevel(group.type, menuId) : defaultPermissionLevel(group, menuId);
+  }
+
+  function accountPermissionLevel(account, group, menuId) {
+    if (account && account.permissions && account.permissions[menuId]) return account.permissions[menuId];
+    return groupPermissionLevel(group, menuId);
+  }
+
+  function renderPermissionTree(targetId, subject, scope) {
+    $(targetId).innerHTML = menuTree.map(function (menu) { return renderNode(menu, subject, true, scope); }).join('');
+  }
+
+  function permissionLevelFor(menuId, subject, scope) {
+    if (scope === 'type') return typePermissionLevel(subject.value, menuId);
+    if (scope === 'account') return accountPermissionLevel(subject.account, subject.group, menuId);
+    return groupPermissionLevel(subject, menuId);
+  }
+
+  function renderNode(menu, subject, isParent, scope) {
+    var children = (menu.children || []).map(function (child) { return renderNode(child, subject, false, scope); }).join('');
+    var level = permissionLevelFor(menu.id, subject, scope);
     return '<div class="permission-node ' + (isParent ? 'parent' : 'child') + '" data-node-id="' + menu.id + '">'
       + '<div class="permission-row simple">'
       + '<div class="permission-menu-title"><strong>' + esc(menu.name) + '</strong>' + (isParent && menu.children.length ? '<small>하위 ' + menu.children.length + '개</small>' : '') + '</div>'
@@ -235,10 +284,28 @@
     return '<label class="permission-radio"><input type="radio" name="perm_' + menuId + '" data-menu-id="' + menuId + '" value="' + value + '" ' + (selected === value ? 'checked' : '') + '> ' + label + '</label>';
   }
 
+  function collectPermissions(rootId) {
+    var permissions = {};
+    $(rootId).querySelectorAll('input[type="radio"]:checked').forEach(function (input) {
+      permissions[input.getAttribute('data-menu-id')] = input.value;
+    });
+    return permissions;
+  }
+
+  function applyBulkPermission(actionEl) {
+    var value = actionEl.getAttribute('data-permission-value');
+    var container = actionEl.closest('.tab-panel') || actionEl.closest('.modal-body');
+    var tree = container ? container.querySelector('.permission-tree') : null;
+    if (!tree || !value) return;
+    tree.querySelectorAll('input[type="radio"][value="' + value + '"]').forEach(function (input) {
+      input.checked = true;
+    });
+  }
+
   function renderBasicInfo(group) {
     $('groupBasicInfo').innerHTML = [
       ['그룹명', group.name + (group.systemLocked ? ' [시스템 보호]' : '') + (group.isDefault === 'Y' ? ' [가입 기본]' : '')],
-      ['그룹유형', typeLabel[group.type]],
+      ['그룹유형', typeName(group.type)],
       ['설명', group.description || '-'],
       ['가입수', Number(group.members || 0).toLocaleString() + '명'],
       ['상태', group.active === 'Y' ? '사용중' : '비활성'],
@@ -259,13 +326,13 @@
     if (group.type === 'web') { openModal('webGroupNoticeModal'); return; }
     selectedPermissionGroupId = group.id;
     $('permGroupName').textContent = group.name;
-    $('permGroupType').textContent = typeLabel[group.type];
+    $('permGroupType').textContent = typeName(group.type);
     $('permissionNotice').textContent = '권한없음은 메뉴가 노출되지 않습니다. 읽기는 조회만 가능하며, 등록/수정은 데이터 생성과 수정이 가능합니다.';
     renderBasicInfo(group);
-    renderPermissionTree('permissionTree', group);
+    renderPermissionTree('permissionTree', group, 'group');
     renderAccounts(group.id);
     renderHistory(group);
-    setActiveTab('basicTab');
+    setActiveTab('menuPermissionTab');
     openModal('permissionModal');
   }
 
@@ -287,7 +354,7 @@
     $('accountPermGroup').textContent = group ? group.name : '-';
     var radio = document.querySelector('input[name="accountOverrideMode"][value="' + account.override + '"]');
     if (radio) radio.checked = true;
-    renderPermissionTree('accountPermissionTree', group);
+    renderPermissionTree('accountPermissionTree', { account: account, group: group }, 'account');
     openModal('accountPermissionModal');
   }
 
@@ -296,6 +363,7 @@
     var selected = document.querySelector('input[name="accountOverrideMode"]:checked');
     if (account && selected) {
       account.override = selected.value;
+      account.permissions = selected.value === 'group' ? {} : collectPermissions('accountPermissionTree');
       account.updatedAt = new Date().toISOString().slice(0, 10);
       renderAccounts(selectedPermissionGroupId);
     }
@@ -325,9 +393,211 @@
     document.querySelector('[data-group-action="toggle-advanced"]').textContent = open ? '고급정보 닫기' : '고급정보 보기';
   }
 
+  function resetTypeForm() {
+    $('groupTypeForm').reset();
+    $('typeOriginalValue').value = '';
+    $('typeValue').readOnly = false;
+  }
+
+  function renderGroupTypes() {
+    $('typeRows').innerHTML = groupTypes
+      .slice()
+      .sort(function (a, b) { return Number(a.order || 99) - Number(b.order || 99) || a.name.localeCompare(b.name, 'ko'); })
+      .map(function (type) {
+        var usedCount = groups.filter(function (group) { return group.type === type.value; }).length;
+        var canRemove = !type.locked && usedCount === 0;
+        return '<tr draggable="true" data-type-row="' + esc(type.value) + '">'
+          + '<td><span class="drag-handle" title="드래그로 순서 변경">&#9776;</span><strong>' + esc(type.name) + '</strong>' + (type.locked ? ' ' + badge('기본 그룹유형', 'b-gray') : '') + '</td>'
+          + '<td>' + esc(type.value) + '</td>'
+          + '<td class="center">' + usedCount + '개</td>'
+          + '<td class="center"><button class="btn small blue" type="button" data-group-action="type-permission" data-type-value="' + esc(type.value) + '">권한설정</button></td>'
+          + '<td class="center"><button class="btn small" type="button" data-group-action="edit-type" data-type-value="' + esc(type.value) + '">수정</button></td>'
+          + '<td class="center"><button class="btn small red" type="button" data-group-action="delete-type" data-type-value="' + esc(type.value) + '" ' + (canRemove ? '' : 'disabled title="기본 그룹유형 또는 사용 중인 그룹유형은 삭제할 수 없습니다."') + '>삭제</button></td>'
+          + '</tr>';
+      }).join('');
+  }
+
+  function openTypeManager() {
+    if (!currentAdmin.isSuperAdmin) {
+      notify('그룹유형 추가 및 수정은 최고관리자만 가능합니다.');
+      return;
+    }
+    resetTypeForm();
+    renderGroupTypes();
+    openModal('groupTypeModal');
+  }
+
+  function openTypePermission(value) {
+    if (!currentAdmin.isSuperAdmin) {
+      notify('그룹유형별 권한설정은 최고관리자만 가능합니다.');
+      return;
+    }
+    var type = typeByValue(value);
+    if (!type) return;
+    selectedPermissionTypeValue = value;
+    $('typePermName').textContent = type.name;
+    $('typePermCode').textContent = type.value;
+    renderPermissionTree('typePermissionTree', type, 'type');
+    openModal('typePermissionModal');
+  }
+
+  function saveTypePermission() {
+    var type = typeByValue(selectedPermissionTypeValue);
+    if (!type) return;
+    type.permissions = collectPermissions('typePermissionTree');
+    closeModal('typePermissionModal');
+    renderGroupTypes();
+    notify('그룹유형 기본권한이 저장되었습니다. 해당 유형 그룹의 기본 권한으로 적용됩니다.');
+  }
+
+  function saveGroupType(event) {
+    event.preventDefault();
+    if (!currentAdmin.isSuperAdmin) {
+      notify('그룹유형 추가 및 수정은 최고관리자만 가능합니다.');
+      return;
+    }
+    var originalValue = $('typeOriginalValue').value;
+    var value = $('typeValue').value.trim().replace(/\s+/g, '_').replace(/[^A-Za-z0-9_]/g, '').toLowerCase();
+    var name = $('typeName').value.trim();
+    if (!value || !name) {
+      notify('그룹코드와 그룹유형을 입력해 주세요.');
+      return;
+    }
+    var duplicate = groupTypes.some(function (type) { return type.value === value && type.value !== originalValue; });
+    if (duplicate) {
+      notify('이미 사용 중인 그룹코드입니다.');
+      return;
+    }
+    var existing = originalValue ? typeByValue(originalValue) : null;
+    if (existing) {
+      existing.name = name;
+      if (!existing.locked && existing.value !== value) {
+        groups.forEach(function (group) { if (group.type === existing.value) group.type = value; });
+        accounts.forEach(function (account) { if (account.type === existing.value) account.type = value; });
+        existing.value = value;
+      }
+    } else {
+      groupTypes.push({ value: value, name: name, order: nextTypeOrder(), locked: false });
+    }
+    renderTypeOptions();
+    renderGroupTypes();
+    renderGroups();
+    resetTypeForm();
+    notify('그룹유형이 저장되었습니다.');
+  }
+
+  function editGroupType(value) {
+    if (!currentAdmin.isSuperAdmin) {
+      notify('그룹유형 추가 및 수정은 최고관리자만 가능합니다.');
+      return;
+    }
+    var type = typeByValue(value);
+    if (!type) return;
+    $('typeOriginalValue').value = type.value;
+    $('typeValue').value = type.value;
+    $('typeValue').readOnly = !!type.locked;
+    $('typeName').value = type.name;
+  }
+
+  function deleteGroupType(value) {
+    if (!currentAdmin.isSuperAdmin) {
+      notify('그룹유형 추가 및 수정은 최고관리자만 가능합니다.');
+      return;
+    }
+    var type = typeByValue(value);
+    var usedCount = groups.filter(function (group) { return group.type === value; }).length;
+    if (!type || type.locked || usedCount > 0) {
+      notify('기본 그룹유형 또는 사용 중인 그룹유형은 삭제할 수 없습니다.');
+      return;
+    }
+    groupTypes = groupTypes.filter(function (item) { return item.value !== value; });
+    renderTypeOptions();
+    renderGroupTypes();
+    renderGroups();
+    resetTypeForm();
+    notify('그룹유형이 삭제되었습니다.');
+  }
+
+  function toggleStatus(group) {
+    group.active = group.active === 'Y' ? 'N' : 'Y';
+    group.updatedAt = new Date().toISOString().slice(0, 10);
+    renderGroups();
+    notify('상태가 변경되었습니다.');
+  }
+
+  function nextTypeOrder() {
+    return groupTypes.reduce(function (max, type) { return Math.max(max, Number(type.order || 0)); }, 0) + 1;
+  }
+
+  function reorderGroupType(sourceValue, targetValue) {
+    if (!sourceValue || !targetValue || sourceValue === targetValue) return;
+    var ordered = groupTypes.slice().sort(function (a, b) {
+      return Number(a.order || 99) - Number(b.order || 99) || a.name.localeCompare(b.name, 'ko');
+    });
+    var sourceIndex = ordered.findIndex(function (type) { return type.value === sourceValue; });
+    var targetIndex = ordered.findIndex(function (type) { return type.value === targetValue; });
+    if (sourceIndex < 0 || targetIndex < 0) return;
+    var moved = ordered.splice(sourceIndex, 1)[0];
+    ordered.splice(targetIndex, 0, moved);
+    ordered.forEach(function (type, index) { type.order = index + 1; });
+    groupTypes = ordered;
+    renderTypeOptions();
+    renderGroupTypes();
+    renderGroups();
+  }
+
+  function handleTypeDragStart(event) {
+    var row = event.target.closest('[data-type-row]');
+    if (!row) return;
+    draggingTypeValue = row.getAttribute('data-type-row');
+    row.classList.add('dragging');
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', draggingTypeValue);
+    }
+  }
+
+  function handleTypeDragOver(event) {
+    var row = event.target.closest('[data-type-row]');
+    if (!row) return;
+    event.preventDefault();
+    row.classList.add('drag-over');
+  }
+
+  function handleTypeDragLeave(event) {
+    var row = event.target.closest('[data-type-row]');
+    if (row) row.classList.remove('drag-over');
+  }
+
+  function handleTypeDrop(event) {
+    var row = event.target.closest('[data-type-row]');
+    if (!row) return;
+    event.preventDefault();
+    row.classList.remove('drag-over');
+    reorderGroupType(draggingTypeValue || (event.dataTransfer && event.dataTransfer.getData('text/plain')), row.getAttribute('data-type-row'));
+  }
+
+  function handleTypeDragEnd(event) {
+    var row = event.target.closest('[data-type-row]');
+    if (row) row.classList.remove('dragging');
+    document.querySelectorAll('[data-type-row].drag-over').forEach(function (item) { item.classList.remove('drag-over'); });
+    draggingTypeValue = '';
+  }
+
   function init() {
+    renderTypeOptions();
     renderGroups();
     $('groupForm').addEventListener('submit', saveGroup);
+    $('groupTypeForm').addEventListener('submit', saveGroupType);
+    $('typeRows').addEventListener('dragstart', handleTypeDragStart);
+    $('typeRows').addEventListener('dragover', handleTypeDragOver);
+    $('typeRows').addEventListener('dragleave', handleTypeDragLeave);
+    $('typeRows').addEventListener('drop', handleTypeDrop);
+    $('typeRows').addEventListener('dragend', handleTypeDragEnd);
+    if (!currentAdmin.isSuperAdmin) {
+      var typeButton = document.querySelector('[data-group-action="open-type-manager"]');
+      if (typeButton) typeButton.classList.add('hidden');
+    }
     document.addEventListener('click', function (event) {
       var tabEl = event.target.closest('[data-tab-target]');
       if (tabEl) { setActiveTab(tabEl.getAttribute('data-tab-target')); return; }
@@ -340,19 +610,34 @@
       var account = id ? accounts.find(function (item) { return item.id === id; }) : null;
 
       if (action === 'open-create') openGroupForm();
+      if (action === 'open-type-manager') openTypeManager();
       if (action === 'edit' && group) openGroupForm(group);
+      if (action === 'toggle-status' && group) toggleStatus(group);
       if (action === 'delete' && group) openDelete(group);
       if (action === 'permission' && group) openPermission(group);
+      if (action === 'type-permission') openTypePermission(actionEl.getAttribute('data-type-value'));
       if (action === 'account-permission' && account) openAccountPermission(account);
       if (action === 'search') renderGroups();
       if (action === 'reset') resetFilters();
       if (action === 'bulk-delete') bulkDelete();
       if (action === 'confirm-delete') confirmDelete();
       if (action === 'toggle-advanced') toggleAdvancedInfo();
-      if (action === 'save-permission') { closeModal('permissionModal'); notify('그룹 권한 설정이 저장되었습니다.'); }
+      if (action === 'bulk-permission') applyBulkPermission(actionEl);
+      if (action === 'reset-type-form') resetTypeForm();
+      if (action === 'edit-type') editGroupType(actionEl.getAttribute('data-type-value'));
+      if (action === 'delete-type') deleteGroupType(actionEl.getAttribute('data-type-value'));
+      if (action === 'save-permission') {
+        var selectedGroup = groupById(selectedPermissionGroupId);
+        if (selectedGroup) selectedGroup.permissions = collectPermissions('permissionTree');
+        closeModal('permissionModal');
+        notify('그룹명별 권한 설정이 저장되었습니다.');
+      }
+      if (action === 'save-type-permission') saveTypePermission();
       if (action === 'save-account-permission') saveAccountPermission();
       if (action === 'close-group') closeModal('groupModal');
       if (action === 'close-delete') closeModal('deleteModal');
+      if (action === 'close-type-manager') closeModal('groupTypeModal');
+      if (action === 'close-type-permission') closeModal('typePermissionModal');
       if (action === 'close-permission') closeModal('permissionModal');
       if (action === 'close-account-permission') closeModal('accountPermissionModal');
       if (action === 'close-web-notice') closeModal('webGroupNoticeModal');

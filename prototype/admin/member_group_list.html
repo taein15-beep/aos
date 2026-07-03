@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
@@ -21,6 +21,7 @@
           <div class="desc">시스템 값은 숨기고, 가입 기본과 시스템 보호 여부를 중심으로 그룹을 관리합니다.</div>
         </div>
         <div class="top-actions">
+          <button class="btn" type="button" data-group-action="open-type-manager">그룹유형 관리</button>
           <button class="btn blue" type="button" data-group-action="open-create">+ 그룹등록</button>
           <button class="btn red" type="button" data-group-action="bulk-delete">선택삭제</button>
         </div>
@@ -32,13 +33,7 @@
           <div class="group-filter-grid compact">
             <div class="field">
               <label>그룹유형</label>
-              <select id="filterType">
-                <option value="">전체</option>
-                <option value="admin">관리자/직원</option>
-                <option value="seller">판매점</option>
-                <option value="partner">거래처</option>
-                <option value="web">웹회원</option>
-              </select>
+              <select id="filterType"></select>
             </div>
             <div class="field keyword">
               <label>검색어</label>
@@ -90,17 +85,9 @@
       <div class="form-grid two">
         <div class="field">
           <label>그룹유형 <span class="required">*</span></label>
-          <select id="groupType" required>
-            <option value="">선택</option>
-            <option value="admin">관리자/직원</option>
-            <option value="seller">판매점</option>
-            <option value="partner">거래처</option>
-            <option value="web">웹회원</option>
-          </select>
+          <select id="groupType" required></select>
         </div>
         <div class="field"><label>그룹명 <span class="required">*</span></label><input id="groupName" required></div>
-        <div class="field"><label>가입 기본</label><select id="groupDefault"><option value="N">아님</option><option value="Y">가입 기본</option></select><p class="help">신규 계정 생성 또는 가입 승인 시 자동 적용되는 그룹입니다.</p></div>
-        <div class="field"><label>상태</label><select id="groupActive"><option value="Y">사용중</option><option value="N">비활성</option></select></div>
         <div class="field wide"><label>설명</label><textarea id="groupDescription" rows="3"></textarea></div>
       </div>
       <div id="advancedGroupInfo" class="advanced-box hidden">
@@ -113,6 +100,70 @@
         <button class="btn" type="button" data-group-action="close-group">취소</button>
       </div>
     </form>
+  </div>
+</div>
+
+<div id="groupTypeModal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <strong>그룹유형 관리</strong>
+      <button type="button" class="modal-close" data-group-action="close-type-manager">x</button>
+    </div>
+    <div class="modal-body">
+      <div class="notice info">그룹유형 추가 및 수정은 최고관리자만 가능합니다. 기본 그룹유형은 삭제할 수 없습니다.</div>
+      <form id="groupTypeForm" class="type-form">
+        <div class="form-grid two">
+          <input id="typeOriginalValue" type="hidden">
+          <div class="field"><label>그룹코드</label><input id="typeValue" placeholder="예: operator" required></div>
+          <div class="field"><label>그룹유형</label><input id="typeName" placeholder="예: 운영대행사" required></div>
+        </div>
+        <div class="modal-actions inline">
+          <button class="btn blue" type="submit">그룹유형 저장</button>
+          <button class="btn" type="button" data-group-action="reset-type-form">초기화</button>
+        </div>
+      </form>
+      <div class="table-wrap">
+        <table class="table type-table">
+          <thead><tr><th>그룹유형</th><th>그룹코드</th><th>사용 그룹</th><th>기본권한</th><th>수정</th><th>삭제</th></tr></thead>
+          <tbody id="typeRows"></tbody>
+        </table>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" type="button" data-group-action="close-type-manager">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="typePermissionModal" class="modal permission-modal" aria-hidden="true">
+  <div class="modal-card large">
+    <div class="modal-head">
+      <strong>그룹유형 기본권한 설정</strong>
+      <button type="button" class="modal-close" data-group-action="close-type-permission">x</button>
+    </div>
+    <div class="modal-body">
+      <div class="permission-summary two">
+        <div><span>그룹유형</span><strong id="typePermName">-</strong></div>
+        <div><span>그룹코드</span><strong id="typePermCode">-</strong></div>
+      </div>
+      <div class="notice info">그룹유형별 권한은 해당 유형에 속한 그룹의 기본 권한으로 적용됩니다. 이후 그룹명별 권한설정, 마지막으로 소속계정 개별권한이 우선 적용됩니다.</div>
+      <div class="permission-flow">
+        <span class="active">1. 그룹유형 기본권한</span>
+        <span>2. 그룹명별 권한</span>
+        <span>3. 소속계정 개별권한</span>
+      </div>
+      <div class="permission-bulk-actions">
+        <strong>전체선택</strong>
+        <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="none">권한없음</button>
+        <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="read">읽기</button>
+        <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="edit">등록/수정</button>
+      </div>
+      <div id="typePermissionTree" class="permission-tree"></div>
+      <div class="modal-actions">
+        <button class="btn blue" type="button" data-group-action="save-type-permission">저장</button>
+        <button class="btn" type="button" data-group-action="close-type-permission">취소</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -145,16 +196,24 @@
         <div><span>그룹유형</span><strong id="permGroupType">-</strong></div>
       </div>
       <div id="permissionNotice" class="notice info">권한없음은 메뉴가 노출되지 않습니다. 읽기는 조회만 가능하며, 등록/수정은 데이터 생성과 수정이 가능합니다.</div>
+      <div class="permission-flow">
+        <span>1. 그룹유형 기본권한</span>
+        <span class="active">2. 그룹명별 권한</span>
+        <span>3. 소속계정 개별권한</span>
+      </div>
       <div class="detail-tabs" role="tablist">
-        <button class="active" type="button" data-tab-target="basicTab">기본정보</button>
-        <button type="button" data-tab-target="menuPermissionTab">메뉴권한</button>
+        <button class="active" type="button" data-tab-target="menuPermissionTab">메뉴권한</button>
         <button type="button" data-tab-target="accountTab">소속계정</button>
+        <button type="button" data-tab-target="basicTab">기본정보</button>
         <button type="button" data-tab-target="historyTab">권한변경이력</button>
       </div>
-      <section id="basicTab" class="tab-panel active">
-        <dl class="info-list" id="groupBasicInfo"></dl>
-      </section>
-      <section id="menuPermissionTab" class="tab-panel">
+      <section id="menuPermissionTab" class="tab-panel active">
+        <div class="permission-bulk-actions">
+          <strong>전체선택</strong>
+          <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="none">권한없음</button>
+          <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="read">읽기</button>
+          <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="edit">등록/수정</button>
+        </div>
         <div id="permissionTree" class="permission-tree"></div>
         <details class="advanced-permission-box">
           <summary>고급권한 보기</summary>
@@ -179,6 +238,9 @@
             <tbody id="accountRows"></tbody>
           </table>
         </div>
+      </section>
+      <section id="basicTab" class="tab-panel">
+        <dl class="info-list" id="groupBasicInfo"></dl>
       </section>
       <section id="historyTab" class="tab-panel">
         <div class="table-wrap">
@@ -227,6 +289,17 @@
         <label><input type="radio" name="accountOverrideMode" value="deny"> 개별 차단</label>
       </div>
       <div class="notice info">개별권한이 있으면 그룹권한보다 우선 적용됩니다. 개별권한이 없으면 그룹권한을 그대로 적용합니다.</div>
+      <div class="permission-flow">
+        <span>1. 그룹유형 기본권한</span>
+        <span>2. 그룹명별 권한</span>
+        <span class="active">3. 소속계정 개별권한</span>
+      </div>
+      <div class="permission-bulk-actions">
+        <strong>전체선택</strong>
+        <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="none">권한없음</button>
+        <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="read">읽기</button>
+        <button class="btn small" type="button" data-group-action="bulk-permission" data-permission-value="edit">등록/수정</button>
+      </div>
       <div id="accountPermissionTree" class="permission-tree"></div>
       <div class="modal-actions">
         <button class="btn blue" type="button" data-group-action="save-account-permission">저장</button>
@@ -236,7 +309,7 @@
   </div>
 </div>
 
-<script src="./js/common.js"></script>
+<script src="./js/common.js?v=web-member-link"></script>
 <script src="./js/components.js"></script>
 <script src="./js/member-groups.js"></script>
 </body>
