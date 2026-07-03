@@ -81,12 +81,29 @@
 
 <div class="modal-backdrop" id="sellerModal" role="dialog" aria-modal="true" aria-labelledby="sellerModalTitle">
   <div class="modal">
-    <div class="modal-head"><span id="sellerModalTitle">판매점 등록</span><button class="btn small" onclick="closeSellerForm()">닫기</button></div>
+    <div class="modal-head">
+      <div>
+        <span id="sellerModalTitle">판매점 등록</span>
+        <div class="section-desc">판매점의 기본정보, 담당자 로그인, 사업자 정보와 첨부파일을 관리합니다.</div>
+      </div>
+      <button class="btn small" onclick="closeSellerForm()">닫기</button>
+    </div>
     <div class="modal-body">
-      <form id="sellerForm" onsubmit="saveSeller(event)">
+      <form id="sellerForm" data-ui-tabscope="seller-form" onsubmit="saveSeller(event)">
         <input type="hidden" id="sellerId">
-        <section class="form-section">
-          <h3>기본정보</h3>
+        <nav class="admin-tabs seller-form-tabs" aria-label="판매점 수정 탭">
+          <button class="admin-tab active" type="button" data-ui-tab-target="seller-basic">기본정보</button>
+          <button class="admin-tab" type="button" data-ui-tab-target="seller-account">담당자/계정</button>
+          <button class="admin-tab" type="button" data-ui-tab-target="seller-business">사업자정보</button>
+          <button class="admin-tab" type="button" data-ui-tab-target="seller-files">첨부파일</button>
+          <button class="admin-tab" type="button" data-ui-tab-target="seller-memo">관리자 메모</button>
+        </nav>
+        <section class="form-section section-card tab-panel active" data-ui-tab-panel="seller-basic">
+          <div class="section-header">
+            <h3 class="section-title">기본정보</h3>
+            <p class="section-desc">판매점 기본 식별 정보와 대표 연락처를 입력합니다.</p>
+          </div>
+          <div class="section-body">
           <div class="form-grid seller-form-grid seller-basic-grid">
             <div class="field"><label>판매점명 *</label><input id="agencyName" required></div>
             <div class="field"><label>판매점코드</label><input id="agencyCode" placeholder="미입력 시 자동생성"><div class="help">중복 불가</div></div>
@@ -105,14 +122,13 @@
             <div class="field span3"><label>주소</label><input id="address" placeholder="주소" oninput="syncRegionFromAddress()"></div>
             <div class="field span2"><label>상세주소</label><input id="addressDetail"></div>
             <div class="field"><label>홈페이지 URL</label><input id="homepageUrl"></div>
-            <div class="field"><label>판매점로고 파일첨부</label><input id="logoUrl" type="file"></div>
-            <div class="field"><label>사업자등록증 첨부</label><input id="businessLicenseFileUrl" type="file"></div>
-            <div class="field"><label>관광등록업증 첨부</label><input id="tourismLicenseFileUrl" type="file"></div>
+          </div>
           </div>
         </section>
 
-        <section class="form-section">
-          <h3 class="section-title-row"><span>담당자 로그인</span><label class="same-info-check"><input id="sameAsBasicInfo" type="checkbox" onchange="copyBasicInfoToManager(this.checked)"> 기본정보와 동일</label></h3>
+        <section class="form-section section-card tab-panel" data-ui-tab-panel="seller-account">
+          <div class="section-header section-title-row"><div><h3 class="section-title">담당자/계정</h3><p class="section-desc">판매점 담당자 로그인 계정과 연락처를 관리합니다.</p></div><label class="same-info-check"><input id="sameAsBasicInfo" type="checkbox" onchange="copyBasicInfoToManager(this.checked)"> 기본정보와 동일</label></div>
+          <div class="section-body">
           <div class="form-grid seller-form-grid">
             <div class="field"><label>아이디</label><input id="loginId"></div>
             <div class="field"><label>비밀번호</label><input id="password" type="password" placeholder="프로토타입 UI 필드"></div>
@@ -123,20 +139,22 @@
             <div class="field"><label>담당자 휴대폰번호</label><input id="managerPhone"></div>
             <div class="field"><label>담당자 이메일</label><input id="managerEmail" type="email"></div>
           </div>
+          </div>
         </section>
 
-        <section class="form-section">
-          <h3>정산정보</h3>
+        <section class="form-section section-card tab-panel" data-ui-tab-panel="seller-business">
+          <div class="section-header">
+            <h3 class="section-title">사업자정보</h3>
+            <p class="section-desc">정산 계좌와 커미션 그룹 정보를 관리합니다.</p>
+          </div>
+          <div class="section-body">
           <div class="form-grid seller-form-grid">
             <div class="field"><label>은행명</label><input id="bankName"></div>
             <div class="field"><label>계좌번호</label><input id="bankAccount"></div>
             <div class="field"><label>예금주</label><input id="bankHolder"></div>
             <div class="field"><label>세금계산서 이메일</label><input id="invoiceEmail" type="email"></div>
           </div>
-        </section>
-
-        <section class="form-section">
-          <h3>커미션설정</h3>
+          <div class="section-subtitle">커미션설정</div>
           <div class="form-grid seller-form-grid commission-form-grid">
             <div class="field"><label>판매점그룹</label><select id="commissionGroup" onchange="syncCommissionGroupGrade();applyGroupCommission(false)"><option value="A">A그룹 판매점</option><option value="B">B그룹 판매점</option><option value="C">C그룹 판매점</option><option value="D">D그룹 판매점</option></select></div>
             <div class="field"><label>커미션 적용방식</label><div class="radio-row compact"><label><input type="radio" name="commissionOverride" value="N" checked onchange="applyGroupCommission(false)"> 그룹 기본값</label><label><input type="radio" name="commissionOverride" value="Y" onchange="applyGroupCommission(true)"> 개별 수정</label></div><div class="help">기본은 선택한 그룹의 커미션을 적용합니다.</div></div>
@@ -144,10 +162,50 @@
             <div class="field"><label>기본커미션(원)</label><input id="commissionAmount" type="number" min="0" step="1000"></div>
             <div class="field"><label>기본커미션율(%)</label><input id="commissionRate" type="number" min="0" max="100" step="0.1"></div>
           </div>
+          </div>
+        </section>
+
+        <section class="form-section section-card tab-panel" data-ui-tab-panel="seller-files">
+          <div class="section-header">
+            <h3 class="section-title">첨부파일</h3>
+            <p class="section-desc">판매점 로고와 사업자 증빙 파일을 등록합니다.</p>
+          </div>
+          <div class="section-body">
+            <div class="file-upload-grid">
+              <label class="file-upload-card">
+                <span class="file-upload-title">판매점 로고</span>
+                <p class="file-upload-desc">홈페이지와 판매점 관리 화면에서 사용할 로고 파일입니다.</p>
+                <input id="logoUrl" type="file">
+              </label>
+              <label class="file-upload-card">
+                <span class="file-upload-title">사업자등록증</span>
+                <p class="file-upload-desc">사업자 확인용 등록증 파일을 첨부합니다.</p>
+                <input id="businessLicenseFileUrl" type="file">
+              </label>
+              <label class="file-upload-card">
+                <span class="file-upload-title">관광등록증</span>
+                <p class="file-upload-desc">관광사업자 등록 증빙 파일을 첨부합니다.</p>
+                <input id="tourismLicenseFileUrl" type="file">
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section section-card tab-panel" data-ui-tab-panel="seller-memo">
+          <div class="section-header">
+            <h3 class="section-title">관리자 메모</h3>
+            <p class="section-desc">내부 직원만 확인하는 관리 메모입니다.</p>
+          </div>
+          <div class="section-body">
+            <div class="form-grid cols-2">
+              <div class="field full"><label>관리자 메모</label><textarea id="adminMemo" placeholder="판매점 관리 참고사항을 입력하세요."></textarea></div>
+            </div>
+          </div>
         </section>
       </form>
     </div>
     <div class="modal-actions">
+      <button class="btn" onclick="closeSellerForm()">목록</button>
       <button class="btn" onclick="closeSellerForm()">취소</button>
       <button class="btn blue" onclick="document.getElementById('sellerForm').requestSubmit()">저장</button>
     </div>
@@ -218,6 +276,7 @@
 
 <div class="toast" id="toast"></div>
   <script src="./js/common.js"></script>
+  <script src="./js/admin-ui.js"></script>
   <script src="./js/components.js"></script>
 </body>
 </html>

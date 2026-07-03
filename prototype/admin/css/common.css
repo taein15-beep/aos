@@ -457,3 +457,42 @@ body[data-page="member_vendor_list"] .b-orange,body[data-page="member_vendor_for
 body[data-page="member_vendor_list"] .b-red,body[data-page="member_vendor_form"] .b-red{background:#fff0f0;color:#d92d20}
 body[data-page="member_vendor_list"] .b-gray,body[data-page="member_vendor_form"] .b-gray{background:#eef1f5;color:#475467}
 body[data-page="member_vendor_list"] .b-purple,body[data-page="member_vendor_form"] .b-purple{background:#f1ecff;color:#6941c6}
+/* SaaS admin design tokens */
+:root{
+  --admin-bg:#f5f7fb;
+  --admin-card:#ffffff;
+  --admin-primary:#2563eb;
+  --admin-primary-dark:#1d4ed8;
+  --admin-navy:#1e293b;
+  --admin-text:#111827;
+  --admin-muted:#6b7280;
+  --admin-line:#e5e7eb;
+  --admin-success:#16a34a;
+  --admin-warning:#f59e0b;
+  --admin-danger:#dc2626;
+  --admin-info:#2563eb;
+  --admin-radius:8px;
+  --admin-card-radius:12px;
+  --admin-shadow:0 10px 30px rgba(15,23,42,.06);
+  --admin-font:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;
+  --admin-fs-xs:12px;
+  --admin-fs-sm:13px;
+  --admin-fs-base:14px;
+  --admin-fs-lg:18px;
+  --admin-fs-xl:24px;
+}
+
+body{
+  background:var(--admin-bg);
+  color:var(--admin-text);
+  font-family:var(--admin-font);
+}
+
+.text-muted,.muted,.desc{
+  color:var(--admin-muted);
+}
+
+.required{
+  color:var(--admin-danger);
+  font-weight:800;
+}

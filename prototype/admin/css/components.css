@@ -4238,3 +4238,445 @@ body[data-page="member_vendor_form"] input[type="file"]{padding:7px 8px}
   body[data-page="member_vendor_form"] .vendor-form-grid .span2,body[data-page="member_vendor_form"] .vendor-form-grid .span3,body[data-page="member_vendor_form"] .vendor-form-grid .span4{grid-column:1/-1}
   body[data-page="member_vendor_form"] .top-actions{justify-content:flex-start}
 }
+/* SaaS admin shared components */
+body[data-page="seller_list"] .btn,
+body[data-page="member_vendor_list"] .btn,
+body[data-page="member_vendor_form"] .btn,
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:40px;
+  padding:0 14px;
+  border:1px solid var(--admin-line);
+  border-radius:var(--admin-radius);
+  background:#fff;
+  color:var(--admin-navy);
+  font-size:13px;
+  font-weight:700;
+  line-height:1;
+  text-decoration:none;
+  cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s,box-shadow .15s;
+}
+
+body[data-page="seller_list"] .btn:hover,
+body[data-page="member_vendor_list"] .btn:hover,
+body[data-page="member_vendor_form"] .btn:hover,
+.btn:hover{
+  background:#f8fafc;
+  border-color:#cbd5e1;
+}
+
+.btn-primary,
+body[data-page="seller_list"] .btn.blue,
+body[data-page="seller_list"] .btn.green,
+body[data-page="member_vendor_list"] .btn.blue,
+body[data-page="member_vendor_list"] .btn.green,
+body[data-page="member_vendor_form"] .btn.blue,
+body[data-page="member_vendor_form"] .btn.green{
+  background:var(--admin-primary);
+  border-color:var(--admin-primary);
+  color:#fff;
+}
+
+.btn-primary:hover,
+body[data-page="seller_list"] .btn.blue:hover,
+body[data-page="seller_list"] .btn.green:hover,
+body[data-page="member_vendor_list"] .btn.blue:hover,
+body[data-page="member_vendor_list"] .btn.green:hover,
+body[data-page="member_vendor_form"] .btn.blue:hover,
+body[data-page="member_vendor_form"] .btn.green:hover{
+  background:var(--admin-primary-dark);
+  border-color:var(--admin-primary-dark);
+}
+
+.btn-secondary{background:#eef2f7;border-color:#e2e8f0;color:var(--admin-navy)}
+.btn-outline{background:#fff;border-color:#cbd5e1;color:var(--admin-navy)}
+.btn-danger,
+body[data-page="seller_list"] .btn.red,
+body[data-page="member_vendor_list"] .btn.red,
+body[data-page="member_vendor_form"] .btn.red{background:var(--admin-danger);border-color:var(--admin-danger);color:#fff}
+.btn-sm,
+body[data-page="seller_list"] .btn.small,
+body[data-page="member_vendor_list"] .btn.small,
+body[data-page="member_vendor_form"] .btn.small{min-height:32px;padding:0 10px;font-size:12px}
+
+body[data-page="seller_list"] input,
+body[data-page="seller_list"] select,
+body[data-page="seller_list"] textarea,
+body[data-page="member_vendor_list"] input,
+body[data-page="member_vendor_list"] select,
+body[data-page="member_vendor_list"] textarea,
+body[data-page="member_vendor_form"] input,
+body[data-page="member_vendor_form"] select,
+body[data-page="member_vendor_form"] textarea{
+  width:100%;
+  min-height:42px;
+  border:1px solid #d1d5db;
+  border-radius:var(--admin-radius);
+  background:#fff;
+  color:var(--admin-text);
+  padding:9px 11px;
+  font-size:13px;
+  box-sizing:border-box;
+}
+
+body[data-page="seller_list"] textarea,
+body[data-page="member_vendor_form"] textarea{min-height:104px;resize:vertical}
+
+body[data-page="seller_list"] input:focus,
+body[data-page="seller_list"] select:focus,
+body[data-page="seller_list"] textarea:focus,
+body[data-page="member_vendor_list"] input:focus,
+body[data-page="member_vendor_list"] select:focus,
+body[data-page="member_vendor_list"] textarea:focus,
+body[data-page="member_vendor_form"] input:focus,
+body[data-page="member_vendor_form"] select:focus,
+body[data-page="member_vendor_form"] textarea:focus{
+  outline:0;
+  border-color:var(--admin-primary);
+  box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+
+body[data-page="seller_list"] input[readonly],
+body[data-page="seller_list"] input:disabled,
+body[data-page="seller_list"] select:disabled,
+body[data-page="member_vendor_form"] input[readonly],
+body[data-page="member_vendor_form"] input:disabled,
+body[data-page="member_vendor_form"] select:disabled,
+.disabled-field{
+  background:#f3f4f6!important;
+  color:#6b7280;
+}
+
+body[data-page="seller_list"] label,
+body[data-page="member_vendor_list"] label,
+body[data-page="member_vendor_form"] label{
+  color:#374151;
+  font-size:13px;
+  font-weight:600;
+  line-height:1.35;
+}
+
+body[data-page="seller_list"] .field,
+body[data-page="member_vendor_list"] .field,
+body[data-page="member_vendor_form"] .field,
+.form-field{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+body[data-page="seller_list"] .help,
+body[data-page="member_vendor_form"] .help{
+  color:var(--admin-muted);
+  font-size:12px;
+  line-height:1.45;
+}
+
+body[data-page="seller_list"] .table,
+body[data-page="member_vendor_list"] .table,
+body[data-page="member_vendor_form"] .table{
+  border-collapse:separate;
+  border-spacing:0;
+  width:100%;
+  background:#fff;
+  border:1px solid var(--admin-line);
+  border-radius:var(--admin-card-radius);
+  overflow:hidden;
+}
+
+body[data-page="seller_list"] .table th,
+body[data-page="member_vendor_list"] .table th,
+body[data-page="member_vendor_form"] .table th{
+  background:#f8fafc;
+  border-bottom:1px solid var(--admin-line);
+  color:#475569;
+  font-size:12px;
+  font-weight:800;
+  padding:11px 10px;
+}
+
+body[data-page="seller_list"] .table td,
+body[data-page="member_vendor_list"] .table td,
+body[data-page="member_vendor_form"] .table td{
+  border-bottom:1px solid #eef2f7;
+  color:#1f2937;
+  padding:11px 10px;
+  vertical-align:middle;
+}
+
+body[data-page="seller_list"] .table tr:last-child td,
+body[data-page="member_vendor_list"] .table tr:last-child td,
+body[data-page="member_vendor_form"] .table tr:last-child td{border-bottom:0}
+
+.badge,
+body[data-page="seller_list"] .badge,
+body[data-page="member_vendor_list"] .badge,
+body[data-page="member_vendor_form"] .badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  padding:4px 9px;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.2;
+  white-space:nowrap;
+}
+
+.badge-success,.b-green{background:#dcfce7!important;color:#166534!important}
+.badge-muted,.b-gray{background:#f1f5f9!important;color:#475569!important}
+.badge-warning,.b-orange,.b-warn{background:#fef3c7!important;color:#92400e!important}
+.badge-danger,.b-red{background:#fee2e2!important;color:#991b1b!important}
+.badge-info,.b-blue{background:#dbeafe!important;color:#1d4ed8!important}
+
+.admin-tabs,
+body[data-page="member_vendor_form"] .tabs{
+  display:flex;
+  gap:4px;
+  border-bottom:1px solid var(--admin-line);
+  margin:0 0 18px;
+  overflow:auto;
+}
+
+.admin-tab,
+body[data-page="member_vendor_form"] .tab{
+  appearance:none;
+  border:0;
+  border-bottom:3px solid transparent;
+  background:transparent;
+  color:var(--admin-muted);
+  padding:13px 16px 11px;
+  font-size:14px;
+  font-weight:800;
+  white-space:nowrap;
+  cursor:pointer;
+}
+
+.admin-tab.active,
+body[data-page="member_vendor_form"] .tab.active{
+  color:var(--admin-primary);
+  border-bottom-color:var(--admin-primary);
+}
+
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+.file-upload-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+
+.file-upload-card{
+  border:1px dashed #cbd5e1;
+  border-radius:var(--admin-card-radius);
+  background:#f8fafc;
+  padding:18px;
+}
+
+.file-upload-title{
+  display:block;
+  color:var(--admin-navy);
+  font-size:14px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+
+.file-upload-desc{
+  color:var(--admin-muted);
+  font-size:12px;
+  line-height:1.45;
+  margin:0 0 12px;
+}
+
+.info-box{
+  border:1px solid #bfdbfe;
+  border-radius:var(--admin-radius);
+  background:#eff6ff;
+  color:#1e40af;
+  padding:12px 14px;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.5;
+}
+
+@media(max-width:1199px){
+  .file-upload-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:767px){
+  .file-upload-grid{grid-template-columns:1fr}
+}
+
+body[data-page="seller_list"] .modal{
+  border-radius:var(--admin-card-radius);
+  border:1px solid var(--admin-line);
+  box-shadow:0 24px 70px rgba(15,23,42,.18);
+}
+
+body[data-page="seller_list"] .modal-head{
+  background:#fff;
+  border-bottom:1px solid var(--admin-line);
+  padding:18px 22px;
+  align-items:flex-start;
+}
+
+body[data-page="seller_list"] .modal-head #sellerModalTitle{
+  display:block;
+  color:var(--admin-text);
+  font-size:20px;
+  font-weight:900;
+  margin-bottom:4px;
+}
+
+body[data-page="seller_list"] .modal-body{
+  background:var(--admin-bg);
+  padding:20px;
+}
+
+body[data-page="seller_list"] .modal-actions{
+  background:#fff;
+  border-top:1px solid var(--admin-line);
+  padding:14px 20px;
+}
+
+body[data-page="seller_list"] .form-section.section-card{
+  margin:0;
+}
+
+body[data-page="seller_list"] .form-section.section-card h3{
+  background:transparent;
+  border:0;
+  padding:0;
+}
+
+body[data-page="seller_list"] .section-subtitle{
+  margin:20px 0 12px;
+  color:var(--admin-navy);
+  font-size:14px;
+  font-weight:900;
+}
+
+body[data-page="seller_list"] .seller-form-tabs{
+  margin-bottom:16px;
+}
+
+body[data-page="seller_list"] .seller-form-grid,
+body[data-page="member_vendor_form"] .vendor-form-grid{
+  gap:16px;
+}
+
+body[data-page="seller_list"] .seller-basic-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+body[data-page="seller_list"] .seller-form-grid .span2{grid-column:span 2}
+body[data-page="seller_list"] .seller-form-grid .span3{grid-column:span 3}
+
+body[data-page="seller_list"] .radio-row,
+body[data-page="seller_list"] .check-row,
+body[data-page="member_vendor_form"] .radio-row,
+body[data-page="member_vendor_form"] .check-row{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px 14px;
+  min-height:42px;
+}
+
+body[data-page="seller_list"] .radio-row label,
+body[data-page="seller_list"] .check-row label,
+body[data-page="member_vendor_form"] .radio-row label,
+body[data-page="member_vendor_form"] .check-row label{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin:0;
+}
+
+body[data-page="seller_list"] input[type=radio],
+body[data-page="seller_list"] input[type=checkbox],
+body[data-page="member_vendor_list"] input[type=checkbox],
+body[data-page="member_vendor_form"] input[type=radio],
+body[data-page="member_vendor_form"] input[type=checkbox]{
+  width:16px;
+  min-height:16px;
+  padding:0;
+  accent-color:var(--admin-primary);
+}
+
+body[data-page="seller_list"] .summary{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:14px;
+}
+
+body[data-page="seller_list"] .summary .card{
+  border-radius:var(--admin-card-radius);
+  border:1px solid var(--admin-line);
+  box-shadow:var(--admin-shadow);
+}
+
+body[data-page="seller_list"] .filter-grid,
+body[data-page="member_vendor_list"] .vendor-filter-grid{
+  min-width:0!important;
+  grid-template-columns:2fr 150px 150px 150px auto auto!important;
+  gap:12px;
+}
+
+body[data-page="seller_list"] .table-wrap,
+body[data-page="member_vendor_list"] .table-wrap,
+body[data-page="member_vendor_form"] .table-wrap{
+  border-radius:var(--admin-card-radius);
+}
+
+body[data-page="member_vendor_form"] .vendor-tab-panel{
+  display:none;
+}
+
+body[data-page="member_vendor_form"] .vendor-tab-panel.active{
+  display:block;
+}
+
+body[data-page="member_vendor_form"] .vendor-form-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+body[data-page="member_vendor_form"] .vendor-form-grid .span2{grid-column:span 2}
+body[data-page="member_vendor_form"] .vendor-form-grid .span3{grid-column:span 3}
+body[data-page="member_vendor_form"] .vendor-form-grid .span4{grid-column:1/-1}
+
+body[data-page="member_vendor_form"] .panel-head{
+  font-size:15px;
+}
+
+body[data-page="member_vendor_form"] input[type=file]{
+  padding:9px;
+}
+
+@media(max-width:1199px){
+  body[data-page="seller_list"] .summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body[data-page="seller_list"] .seller-basic-grid,
+  body[data-page="member_vendor_form"] .vendor-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body[data-page="seller_list"] .seller-form-grid .span2,
+  body[data-page="seller_list"] .seller-form-grid .span3,
+  body[data-page="member_vendor_form"] .vendor-form-grid .span2,
+  body[data-page="member_vendor_form"] .vendor-form-grid .span3{grid-column:span 2}
+  body[data-page="seller_list"] .filter-grid,
+  body[data-page="member_vendor_list"] .vendor-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+@media(max-width:767px){
+  body[data-page="seller_list"] .summary{grid-template-columns:1fr}
+  body[data-page="seller_list"] .seller-basic-grid,
+  body[data-page="member_vendor_form"] .vendor-form-grid{grid-template-columns:1fr}
+  body[data-page="seller_list"] .seller-form-grid .span2,
+  body[data-page="seller_list"] .seller-form-grid .span3,
+  body[data-page="member_vendor_form"] .vendor-form-grid .span2,
+  body[data-page="member_vendor_form"] .vendor-form-grid .span3{grid-column:1/-1}
+  body[data-page="seller_list"] .filter-grid,
+  body[data-page="member_vendor_list"] .vendor-filter-grid{grid-template-columns:1fr!important}
+}

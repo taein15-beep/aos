@@ -13,12 +13,12 @@
 <div class="app">
   <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
   <main>
-    <header class="topbar"><strong>그룹관리</strong><span>권한 그룹과 계정별 권한을 관리합니다.</span></header>
+    <header class="topbar"><strong>그룹관리</strong><span>권한 그룹과 소속 계정의 예외 권한을 관리합니다.</span></header>
     <div class="page member-groups-page">
       <div class="page-head">
         <div>
           <h1>그룹관리</h1>
-          <div class="desc">웹회원, 관리자/직원, 판매점, 거래처 그룹과 관리자 메뉴 권한을 샘플 데이터 기준으로 관리합니다.</div>
+          <div class="desc">시스템 값은 숨기고, 가입 기본과 시스템 보호 여부를 중심으로 그룹을 관리합니다.</div>
         </div>
         <div class="top-actions">
           <button class="btn blue" type="button" data-group-action="open-create">+ 그룹등록</button>
@@ -29,36 +29,20 @@
       <section class="panel">
         <div class="panel-head">그룹 검색</div>
         <div class="panel-body">
-          <div class="group-filter-grid">
+          <div class="group-filter-grid compact">
             <div class="field">
               <label>그룹유형</label>
               <select id="filterType">
                 <option value="">전체</option>
-                <option value="web">웹회원</option>
                 <option value="admin">관리자/직원</option>
                 <option value="seller">판매점</option>
                 <option value="partner">거래처</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>사용여부</label>
-              <select id="filterActive">
-                <option value="">전체</option>
-                <option value="Y">사용</option>
-                <option value="N">미사용</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>기본그룹 여부</label>
-              <select id="filterDefault">
-                <option value="">전체</option>
-                <option value="Y">기본그룹</option>
-                <option value="N">일반그룹</option>
+                <option value="web">웹회원</option>
               </select>
             </div>
             <div class="field keyword">
               <label>검색어</label>
-              <input id="filterKeyword" placeholder="그룹명 또는 그룹코드 검색">
+              <input id="filterKeyword" placeholder="그룹명 검색">
             </div>
             <div class="field action"><label>&nbsp;</label><button class="btn green" type="button" data-group-action="search">검색</button></div>
             <div class="field action"><label>&nbsp;</label><button class="btn" type="button" data-group-action="reset">초기화</button></div>
@@ -69,7 +53,7 @@
       <section class="panel">
         <div class="panel-head">
           <span>그룹 목록 <span id="groupCountText" class="muted">총 0개</span></span>
-          <span class="muted">시스템 기본그룹과 가입자가 있는 그룹은 삭제할 수 없습니다.</span>
+          <span class="muted">시스템 보호 그룹 또는 가입자가 있는 그룹은 삭제할 수 없습니다.</span>
         </div>
         <div class="table-wrap">
           <table class="table group-table">
@@ -79,43 +63,15 @@
                 <th>번호</th>
                 <th>그룹유형</th>
                 <th>그룹명</th>
-                <th>그룹코드</th>
                 <th>설명</th>
-                <th>기본그룹</th>
-                <th>사용여부</th>
                 <th>가입수</th>
-                <th>정렬순서</th>
-                <th>최근수정일</th>
+                <th>상태</th>
                 <th>권한설정</th>
                 <th>수정</th>
                 <th>삭제</th>
               </tr>
             </thead>
             <tbody id="groupRows"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head">
-          <span>소속 계정 및 개별권한</span>
-          <span class="muted">개별권한이 있으면 그룹권한보다 우선 적용됩니다.</span>
-        </div>
-        <div class="table-wrap">
-          <table class="table account-permission-table">
-            <thead>
-              <tr>
-                <th>이름/상호</th>
-                <th>아이디</th>
-                <th>계정유형</th>
-                <th>소속그룹</th>
-                <th>그룹권한 적용 상태</th>
-                <th>개별권한 상태</th>
-                <th>최근수정일</th>
-                <th>개별권한 설정</th>
-              </tr>
-            </thead>
-            <tbody id="accountRows"></tbody>
           </table>
         </div>
       </section>
@@ -127,7 +83,7 @@
   <div class="modal-card">
     <div class="modal-head">
       <strong id="groupModalTitle">그룹등록</strong>
-      <button type="button" class="modal-close" data-group-action="close-group">×</button>
+      <button type="button" class="modal-close" data-group-action="close-group">x</button>
     </div>
     <form id="groupForm" class="modal-body">
       <input id="groupId" type="hidden">
@@ -136,20 +92,22 @@
           <label>그룹유형 <span class="required">*</span></label>
           <select id="groupType" required>
             <option value="">선택</option>
-            <option value="web">웹회원</option>
             <option value="admin">관리자/직원</option>
             <option value="seller">판매점</option>
             <option value="partner">거래처</option>
+            <option value="web">웹회원</option>
           </select>
         </div>
         <div class="field"><label>그룹명 <span class="required">*</span></label><input id="groupName" required></div>
-        <div class="field"><label>그룹코드 <span class="required">*</span></label><input id="groupCode" required></div>
-        <div class="field"><label>정렬순서</label><input id="groupSort" type="number" min="1"></div>
-        <div class="field"><label>기본그룹 여부</label><select id="groupDefault"><option value="N">일반그룹</option><option value="Y">기본그룹</option></select></div>
-        <div class="field"><label>사용여부</label><select id="groupActive"><option value="Y">사용</option><option value="N">미사용</option></select></div>
+        <div class="field"><label>가입 기본</label><select id="groupDefault"><option value="N">아님</option><option value="Y">가입 기본</option></select><p class="help">신규 계정 생성 또는 가입 승인 시 자동 적용되는 그룹입니다.</p></div>
+        <div class="field"><label>상태</label><select id="groupActive"><option value="Y">사용중</option><option value="N">비활성</option></select></div>
         <div class="field wide"><label>설명</label><textarea id="groupDescription" rows="3"></textarea></div>
       </div>
-      <div id="groupLockNotice" class="notice warning hidden">시스템 기본 그룹은 삭제할 수 없도록 처리됩니다.</div>
+      <div id="advancedGroupInfo" class="advanced-box hidden">
+        <div class="field"><label>그룹코드</label><input id="groupCode" readonly></div>
+      </div>
+      <button class="btn small" type="button" data-group-action="toggle-advanced">고급정보 보기</button>
+      <div id="groupLockNotice" class="notice warning hidden">시스템에서 삭제하면 안 되는 그룹은 시스템 보호로 표시됩니다.</div>
       <div class="modal-actions">
         <button class="btn blue" type="submit">저장</button>
         <button class="btn" type="button" data-group-action="close-group">취소</button>
@@ -162,7 +120,7 @@
   <div class="modal-card small">
     <div class="modal-head">
       <strong>그룹 삭제 확인</strong>
-      <button type="button" class="modal-close" data-group-action="close-delete">×</button>
+      <button type="button" class="modal-close" data-group-action="close-delete">x</button>
     </div>
     <div class="modal-body">
       <p id="deleteMessage">선택한 그룹을 삭제하시겠습니까?</p>
@@ -178,36 +136,58 @@
 <div id="permissionModal" class="modal permission-modal" aria-hidden="true">
   <div class="modal-card large">
     <div class="modal-head">
-      <strong>그룹별 메뉴 권한 설정</strong>
-      <button type="button" class="modal-close" data-group-action="close-permission">×</button>
+      <strong>그룹 상세 및 권한설정</strong>
+      <button type="button" class="modal-close" data-group-action="close-permission">x</button>
     </div>
     <div class="modal-body">
-      <div class="permission-summary">
+      <div class="permission-summary two">
         <div><span>그룹명</span><strong id="permGroupName">-</strong></div>
         <div><span>그룹유형</span><strong id="permGroupType">-</strong></div>
-        <div><span>그룹코드</span><strong id="permGroupCode">-</strong></div>
       </div>
-      <div id="permissionNotice" class="notice info">메뉴사용을 해제하면 하위 메뉴와 조회/등록·수정/삭제 권한이 함께 비활성화됩니다.</div>
-      <div id="permissionTree" class="permission-tree"></div>
-      <div class="data-scope-box">
-        <strong>데이터 접근 범위 안내</strong>
-        <ul>
-          <li>최고관리자: 전체 데이터 접근</li>
-          <li>관리자/직원: 부여된 메뉴와 업무 범위 내 접근</li>
-          <li>판매점: 본인 판매점의 상품, 예약, 정산 데이터만 접근</li>
-          <li>거래처: 본인 거래처가 연결된 출발일, 인원, 가이드, 기사 정보만 접근</li>
-        </ul>
-        <p>현재 화면은 안내 UI이며 실제 데이터 제한 로직은 추후 백엔드 연동 시 적용됩니다.</p>
+      <div id="permissionNotice" class="notice info">권한없음은 메뉴가 노출되지 않습니다. 읽기는 조회만 가능하며, 등록/수정은 데이터 생성과 수정이 가능합니다.</div>
+      <div class="detail-tabs" role="tablist">
+        <button class="active" type="button" data-tab-target="basicTab">기본정보</button>
+        <button type="button" data-tab-target="menuPermissionTab">메뉴권한</button>
+        <button type="button" data-tab-target="accountTab">소속계정</button>
+        <button type="button" data-tab-target="historyTab">권한변경이력</button>
       </div>
-      <div class="history-box">
-        <strong>권한 변경 이력</strong>
+      <section id="basicTab" class="tab-panel active">
+        <dl class="info-list" id="groupBasicInfo"></dl>
+      </section>
+      <section id="menuPermissionTab" class="tab-panel">
+        <div id="permissionTree" class="permission-tree"></div>
+        <details class="advanced-permission-box">
+          <summary>고급권한 보기</summary>
+          <p>삭제권한, 엑셀다운로드, 정산승인 등 고급권한은 추후 확장 예정입니다.</p>
+        </details>
+      </section>
+      <section id="accountTab" class="tab-panel">
+        <div class="notice info">개별권한이 있으면 그룹권한보다 우선 적용됩니다. 개별권한이 없으면 그룹권한을 그대로 적용합니다.</div>
         <div class="table-wrap">
-          <table class="table">
-            <thead><tr><th>변경일시</th><th>변경자</th><th>변경대상</th><th>변경내용</th><th>변경전</th><th>변경후</th></tr></thead>
+          <table class="table account-permission-table">
+            <thead>
+              <tr>
+                <th>이름/상호</th>
+                <th>아이디</th>
+                <th>계정유형</th>
+                <th>그룹권한 적용 상태</th>
+                <th>개별권한 상태</th>
+                <th>최근수정일</th>
+                <th>개별권한 설정</th>
+              </tr>
+            </thead>
+            <tbody id="accountRows"></tbody>
+          </table>
+        </div>
+      </section>
+      <section id="historyTab" class="tab-panel">
+        <div class="table-wrap">
+          <table class="table history-table">
+            <thead><tr><th>변경일시</th><th>변경자</th><th>변경메뉴</th><th>변경내용</th><th>변경전</th><th>변경후</th></tr></thead>
             <tbody id="historyRows"></tbody>
           </table>
         </div>
-      </div>
+      </section>
       <div class="modal-actions">
         <button class="btn blue" type="button" data-group-action="save-permission">저장</button>
         <button class="btn" type="button" data-group-action="close-permission">취소</button>
@@ -216,11 +196,24 @@
   </div>
 </div>
 
+<div id="webGroupNoticeModal" class="modal" aria-hidden="true">
+  <div class="modal-card small">
+    <div class="modal-head">
+      <strong>권한설정 안내</strong>
+      <button type="button" class="modal-close" data-group-action="close-web-notice">x</button>
+    </div>
+    <div class="modal-body">
+      <p>웹회원 그룹은 관리자 메뉴 권한 설정 대상이 아닙니다. 웹회원 등급 및 혜택 관리는 별도 정책에서 관리합니다.</p>
+      <div class="modal-actions"><button class="btn blue" type="button" data-group-action="close-web-notice">확인</button></div>
+    </div>
+  </div>
+</div>
+
 <div id="accountPermissionModal" class="modal permission-modal" aria-hidden="true">
   <div class="modal-card large">
     <div class="modal-head">
       <strong>개별권한 설정</strong>
-      <button type="button" class="modal-close" data-group-action="close-account-permission">×</button>
+      <button type="button" class="modal-close" data-group-action="close-account-permission">x</button>
     </div>
     <div class="modal-body">
       <div class="permission-summary">
@@ -233,7 +226,7 @@
         <label><input type="radio" name="accountOverrideMode" value="allow"> 개별 허용</label>
         <label><input type="radio" name="accountOverrideMode" value="deny"> 개별 차단</label>
       </div>
-      <div class="notice info">개별권한이 있으면 개별권한이 그룹권한보다 우선 적용됩니다. 개별권한이 없으면 그룹권한을 그대로 적용합니다.</div>
+      <div class="notice info">개별권한이 있으면 그룹권한보다 우선 적용됩니다. 개별권한이 없으면 그룹권한을 그대로 적용합니다.</div>
       <div id="accountPermissionTree" class="permission-tree"></div>
       <div class="modal-actions">
         <button class="btn blue" type="button" data-group-action="save-account-permission">저장</button>
