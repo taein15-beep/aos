@@ -419,15 +419,24 @@
     var month = viewDate.getMonth();
     title.textContent = year + '년 ' + (month + 1) + '월';
     if (picker) picker.value = year + '-' + String(month + 1).padStart(2, '0');
-    var start = new Date(year, month, 1);
-    start.setDate(start.getDate() - start.getDay());
+    var firstDay = new Date(year, month, 1).getDay();
+    var lastDay = new Date(year, month + 1, 0).getDate();
     var cells = [];
-    for (var i = 0; i < 42; i++) {
-      var date = new Date(start);
-      date.setDate(start.getDate() + i);
-      cells.push(renderDay(date, month));
+    for (var blank = 0; blank < firstDay; blank++) {
+      cells.push(renderEmptyDay());
+    }
+    for (var day = 1; day <= lastDay; day++) {
+      cells.push(renderDay(new Date(year, month, day), month));
+    }
+    var trailingBlanks = (7 - (cells.length % 7)) % 7;
+    for (var tail = 0; tail < trailingBlanks; tail++) {
+      cells.push(renderEmptyDay());
     }
     grid.innerHTML = cells.join('');
+  }
+
+  function renderEmptyDay() {
+    return '<div class="calendar-day calendar-empty" aria-hidden="true"></div>';
   }
 
   function renderDay(date, activeMonth) {

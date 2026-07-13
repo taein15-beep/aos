@@ -60,41 +60,6 @@
             </div>
           </section>
 
-          <section class="panel calendar-panel">
-            <div class="panel-head calendar-head">
-              <span>출발일별 요금·좌석 관리</span>
-              <div class="calendar-actions">
-                <button class="btn small" id="calendarTodayBtn" type="button">오늘</button>
-                <button class="btn small" id="calendarPrevBtn" type="button">이전 달</button>
-                <button class="btn small" id="calendarNextBtn" type="button">다음 달</button>
-                <input id="calendarMonthPicker" type="month" aria-label="표시 월 선택">
-                <select id="calendarStatusFilter" aria-label="상태 필터">
-                  <option value="all">전체</option>
-                  <option value="available">예약가능</option>
-                  <option value="confirmed">출발확정</option>
-                  <option value="waiting">대기</option>
-                  <option value="closed">예약마감</option>
-                  <option value="cancelled">취소</option>
-                </select>
-                <button class="btn green small" id="openBulkModalBtn" type="button">일괄설정</button>
-              </div>
-            </div>
-            <div class="calendar-toolbar">
-              <strong id="calendarTitle">2026년 7월</strong>
-              <div class="display-options" aria-label="표시 옵션">
-                <label><input id="togglePrice" type="checkbox" checked>요금 표시</label>
-                <label><input id="toggleSeat" type="checkbox" checked>좌석 표시</label>
-                <label><input id="toggleStatus" type="checkbox" checked>상태 표시</label>
-              </div>
-            </div>
-            <div id="calendarMessage" class="calendar-message" role="status" aria-live="polite"></div>
-            <div class="calendar-scroll">
-              <div class="calendar-weekdays" aria-hidden="true">
-                <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
-              </div>
-              <div id="departureCalendar" class="departure-calendar"></div>
-            </div>
-          </section>
         </div>
 
         <aside class="panel preview-panel">
@@ -111,6 +76,41 @@
           </div>
         </aside>
       </div>
+      <section class="panel calendar-panel">
+        <div class="panel-head calendar-head">
+          <span>출발일별 요금·좌석 관리</span>
+          <div class="calendar-actions">
+            <button class="btn small" id="calendarTodayBtn" type="button">오늘</button>
+            <button class="btn small" id="calendarPrevBtn" type="button">이전 달</button>
+            <button class="btn small" id="calendarNextBtn" type="button">다음 달</button>
+            <input id="calendarMonthPicker" type="month" aria-label="표시 월 선택">
+            <select id="calendarStatusFilter" aria-label="상태 필터">
+              <option value="all">전체</option>
+              <option value="available">예약가능</option>
+              <option value="confirmed">출발확정</option>
+              <option value="waiting">대기</option>
+              <option value="closed">예약마감</option>
+              <option value="cancelled">취소</option>
+            </select>
+            <button class="btn green small" id="openBulkModalBtn" type="button">일괄설정</button>
+          </div>
+        </div>
+        <div class="calendar-toolbar">
+          <strong id="calendarTitle">2026년 7월</strong>
+          <div class="display-options" aria-label="표시 옵션">
+            <label><input id="togglePrice" type="checkbox" checked>요금 표시</label>
+            <label><input id="toggleSeat" type="checkbox" checked>좌석 표시</label>
+            <label><input id="toggleStatus" type="checkbox" checked>상태 표시</label>
+          </div>
+        </div>
+        <div id="calendarMessage" class="calendar-message" role="status" aria-live="polite"></div>
+        <div class="calendar-scroll">
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+          </div>
+          <div id="departureCalendar" class="departure-calendar"></div>
+        </div>
+      </section>
       <div class="save-bar"><span class="hint">상품상세 상단 탭 구조와 저장 버튼 위치는 유지됩니다.</span><button class="btn green" onclick="saveAll()">저장</button></div>
     </div>
   </main>

@@ -1,14 +1,24 @@
 body[data-page="price_setting"] .calendar-panel {
   overflow: visible;
+  width: 100%;
 }
 
 body[data-page="price_setting"] .layout {
   grid-template-columns: minmax(0, 1fr) 390px;
+  align-items: stretch;
 }
 
 body[data-page="price_setting"] .preview-panel {
-  position: sticky;
-  top: 12px;
+  position: static;
+  top: auto;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+body[data-page="price_setting"] .preview-panel .panel-body {
+  flex: 1;
 }
 
 body[data-page="price_setting"] .preview-row {
@@ -446,6 +456,12 @@ body[data-page="price_setting"] .calendar-day:focus {
 body[data-page="price_setting"] .calendar-day.other-month {
   background: #fafbfc;
   color: #98a2b3;
+}
+
+body[data-page="price_setting"] .calendar-day.calendar-empty {
+  background: #fff;
+  cursor: default;
+  pointer-events: none;
 }
 
 body[data-page="price_setting"] .calendar-day.no-departure {
