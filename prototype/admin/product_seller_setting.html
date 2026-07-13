@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>상품상세 - 판매점설정</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/product-seller-setting.css">
+</head>
+<body data-page="product_seller_setting">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong>상품상세</strong><span>윤호님 · 로그아웃</span></header>
+    <div class="page product-seller-setting-page">
+      <div class="page-head">
+        <div>
+          <h1>판매점설정</h1>
+          <div class="desc">해당 상품을 판매할 수 있는 판매점을 선택하고 관리합니다.</div>
+        </div>
+        <button class="btn green" id="topSaveBtn" type="button">판매점 설정 저장</button>
+      </div>
+
+      <nav class="tabs" aria-label="상품 관리 탭">
+        <a class="tab" href="product_detail.html">상품기본설정</a>
+        <a class="tab" href="schedule_register.html">일정표</a>
+        <a class="tab" href="price_setting.html">요금설정</a>
+        <a class="tab active" href="product_seller_setting.html">판매점설정</a>
+        <a class="tab" href="#">거래처설정</a>
+      </nav>
+
+      <section class="product-summary" aria-label="상품 정보">
+        <div>
+          <span>상품명</span>
+          <strong id="productName" title="[팔도장터열차] 공주 유구 색동수국정원 / 계룡산 동학사">[팔도장터열차] 공주 유구 색동수국정원 / 계룡산 동학사</strong>
+        </div>
+        <div>
+          <span>상품코드</span>
+          <strong id="productCode">PRD-2026-0611</strong>
+        </div>
+        <div>
+          <span>상품상태</span>
+          <strong><span class="badge b-green">판매중</span></strong>
+        </div>
+        <div>
+          <span>선택된 판매점</span>
+          <strong id="summarySelectedCount">0개</strong>
+        </div>
+        <div>
+          <span>최종 수정일</span>
+          <strong id="lastSavedAt">2026-07-13 14:30</strong>
+        </div>
+      </section>
+
+      <section class="panel seller-search-section">
+        <div class="panel-head">판매점 검색</div>
+        <div class="panel-body">
+          <div class="filter-grid seller-filter-grid">
+            <div class="field search-field search-name-field"><label for="filterName">판매점명</label><input id="filterName" placeholder="판매점명"></div>
+            <div class="field search-field"><label for="filterSido">시·도</label><select id="filterSido"></select></div>
+            <div class="field search-field"><label for="filterSigungu">시·군·구</label><select id="filterSigungu"></select></div>
+            <div class="field search-field"><label for="filterGrade">커미션등급</label><select id="filterGrade"><option value="">전체</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option></select></div>
+            <div class="field search-field"><label for="filterCeo">대표자명</label><input id="filterCeo" placeholder="대표자명"></div>
+            <div class="field search-field"><label for="filterManager">담당자명</label><input id="filterManager" placeholder="담당자명"></div>
+            <div class="field search-field"><label for="filterPhone">연락처</label><input id="filterPhone" placeholder="010 또는 지역번호"></div>
+            <div class="search-actions">
+              <button class="btn" id="resetFilterBtn" type="button">검색조건 초기화</button>
+              <button class="btn green" id="searchBtn" type="button">검색</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="seller-management-grid">
+      <section class="panel seller-result-section">
+        <div class="panel-head result-head result-toolbar">
+          <span class="result-title">판매점 <span class="muted" id="resultCountText">총 0개</span></span>
+          <div class="table-actions result-actions">
+            <label class="per-page"><span>페이지당</span><select id="pageSizeSelect"><option value="5">5개</option><option value="10" selected>10개</option><option value="20">20개</option></select></label>
+            <button class="btn green small" id="addSelectedBtn" type="button">선택항목 추가</button>
+          </div>
+        </div>
+        <div class="table-wrap seller-table-wrap table-scroll">
+          <table class="table seller-result-table">
+            <colgroup>
+              <col class="col-check">
+              <col class="col-seller">
+              <col class="col-region">
+              <col class="col-grade">
+              <col class="col-public">
+            </colgroup>
+            <thead>
+              <tr>
+                <th><input id="resultSelectAll" type="checkbox" aria-label="현재 페이지 전체 선택"></th>
+                <th>판매점명</th>
+                <th>지역</th>
+                <th>커미션등급</th>
+                <th>공개상태</th>
+              </tr>
+            </thead>
+            <tbody id="sellerResultRows"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="resultPagination" aria-label="판매점 페이지"></div>
+      </section>
+
+      <section class="panel selected-panel selected-seller-section">
+        <div class="panel-head result-head selected-toolbar">
+          <span class="result-title">선택된 판매점 <span class="badge b-blue" id="selectedCountBadge">0개</span></span>
+          <div class="table-actions selected-actions">
+            <input id="selectedSearchName" class="selected-search" placeholder="선택된 판매점명 검색">
+            <button class="btn small" id="sortSelectedBtn" type="button">가나다순 정렬</button>
+            <button class="btn small red" id="releaseCheckedBtn" type="button">선택 공개해제</button>
+          </div>
+        </div>
+        <div id="selectedEmpty" class="empty-state">
+          <strong>현재 이 상품에 공개된 판매점이 없습니다.</strong>
+          <span>위 판매점 목록에서 판매점을 선택한 후 추가해주세요.</span>
+        </div>
+        <div class="table-wrap seller-table-wrap table-scroll" id="selectedTableWrap">
+          <table class="table selected-seller-table">
+            <colgroup>
+              <col class="col-check">
+              <col class="col-seller">
+              <col class="col-region">
+              <col class="col-grade">
+              <col class="col-date">
+              <col class="col-manage">
+            </colgroup>
+            <thead>
+              <tr>
+                <th><input id="selectedSelectAll" type="checkbox" aria-label="선택된 판매점 전체 선택"></th>
+                <th>판매점명</th>
+                <th>지역</th>
+                <th>커미션등급</th>
+                <th>설정일</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="selectedSellerRows"></tbody>
+          </table>
+        </div>
+      </section>
+      </div>
+
+      <div class="save-bar page-action-bar">
+        <span class="hint" id="changeHint">저장 전까지 추가 및 삭제 내용은 임시상태로 유지됩니다.</span>
+        <div class="save-actions">
+          <button class="btn" id="cancelBtn" type="button">취소</button>
+          <button class="btn" id="resetChangesBtn" type="button">변경사항 초기화</button>
+          <button class="btn green" id="saveBtn" type="button">판매점 설정 저장</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="sellerEditModal" class="modal-backdrop seller-edit-modal" role="dialog" aria-modal="true" aria-labelledby="sellerEditTitle">
+  <div class="modal-box seller-edit-box">
+    <div class="modal-head">
+      <span id="sellerEditTitle">판매점 수정</span>
+      <button class="btn small" id="sellerEditCloseBtn" type="button">닫기</button>
+    </div>
+    <div class="modal-body">
+      <input id="editSellerId" type="hidden">
+      <div class="seller-edit-grid">
+        <div class="field"><label for="editSellerName">판매점명</label><input id="editSellerName"></div>
+        <div class="field"><label for="editSellerGrade">커미션등급</label><select id="editSellerGrade"><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option></select></div>
+        <div class="field"><label for="editSellerSido">시·도</label><select id="editSellerSido"></select></div>
+        <div class="field"><label for="editSellerSigungu">시·군·구</label><select id="editSellerSigungu"></select></div>
+        <div class="field"><label for="editSellerCeo">대표자명</label><input id="editSellerCeo"></div>
+        <div class="field"><label for="editSellerManager">담당자명</label><input id="editSellerManager"></div>
+        <div class="field"><label for="editSellerPhone">연락처</label><input id="editSellerPhone"></div>
+        <div class="field"><label for="editSellerStatus">상태</label><select id="editSellerStatus"><option>정상</option><option>승인대기</option><option>사용중지</option></select></div>
+      </div>
+      <p class="seller-edit-help">샘플 데이터 기반 수정 화면입니다. 저장 시 현재 화면의 판매점 목록에 즉시 반영됩니다.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="sellerEditCancelBtn" type="button">취소</button>
+      <button class="btn green" id="sellerEditSaveBtn" type="button">판매점 정보 저장</button>
+    </div>
+  </div>
+</div>
+
+<div id="zeroSaveModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="zeroSaveTitle">
+  <div class="modal-box">
+    <div class="modal-head"><span id="zeroSaveTitle">판매점 공개 해제 확인</span></div>
+    <div class="modal-body">
+      선택된 판매점이 없습니다. 저장하면 해당 상품이 모든 판매점에서 비공개 처리됩니다. 계속하시겠습니까?
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="zeroSaveCancelBtn" type="button">취소</button>
+      <button class="btn green" id="zeroSaveConfirmBtn" type="button">비공개로 저장</button>
+    </div>
+  </div>
+</div>
+
+<script src="./js/common.js"></script>
+<script src="./js/product-seller-setting.js"></script>
+</body>
+</html>
