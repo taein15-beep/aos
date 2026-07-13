@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   var currentAdmin = { id: 'superadmin', name: '최고관리자', isSuperAdmin: true };
   var groupTypes = [
     { value: 'admin', name: '관리자/직원', order: 1, locked: true },
@@ -44,7 +44,7 @@
       { id: 'web_member', name: '웹회원관리' },
       { id: 'admin_member', name: '관리자/직원관리' },
       { id: 'seller_member', name: '판매점관리' },
-      { id: 'partner_member', name: '거래처관리' },
+      { id: 'partner_member', name: '랜드사관리' },
       { id: 'group_member', name: '그룹관리' }
     ] },
     { id: 'settlement', name: '정산관리', children: [

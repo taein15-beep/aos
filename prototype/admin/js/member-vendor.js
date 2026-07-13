@@ -12,13 +12,13 @@
     document.querySelectorAll('[data-vendor-action]').forEach(function (button) {
       button.addEventListener('click', function () {
         var action = button.getAttribute('data-vendor-action');
-        if (action === 'search') notify('현재 조건으로 거래처를 검색합니다.');
+        if (action === 'search') notify('현재 조건으로 랜드사를 검색합니다.');
         if (action === 'reset') {
           document.querySelectorAll('.vendor-filter-grid input').forEach(function (input) { input.value = ''; });
           document.querySelectorAll('.vendor-filter-grid select').forEach(function (select) { select.selectedIndex = 0; });
           notify('검색조건을 초기화했습니다.');
         }
-        if (action === 'detail') notify('거래처 상세 샘플입니다.');
+        if (action === 'detail') notify('랜드사 상세 샘플입니다.');
         if (action === 'rate') notify('요금관리 샘플입니다. 등록/수정 화면의 요금정보 탭에서 관리합니다.');
       });
     });
@@ -44,7 +44,7 @@
 
   function validateRequired() {
     var required = [
-      { id: 'vendorName', label: '거래처명' },
+      { id: 'vendorName', label: '랜드사명' },
       { id: 'mainCategory', label: '주 카테고리' },
       { id: 'region', label: '지역' },
       { id: 'managerName', label: '담당자명' },
@@ -83,9 +83,9 @@
   function initForm() {
     var params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'edit') {
-      document.title = '거래처 수정';
+      document.title = '랜드사 수정';
       var title = document.getElementById('vendorPageTitle');
-      if (title) title.textContent = '거래처 수정';
+      if (title) title.textContent = '랜드사 수정';
     }
 
     document.querySelectorAll('[data-vendor-tab]').forEach(function (tab) {
@@ -114,7 +114,7 @@
         var action = button.getAttribute('data-vendor-action');
         if (action === 'list' || action === 'cancel') goList();
         if (action === 'password') notify('임시비밀번호가 재발급되었습니다.');
-        if (action === 'save' && validateRequired()) notify('거래처 정보가 저장되었습니다.');
+        if (action === 'save' && validateRequired()) notify('랜드사 정보가 저장되었습니다.');
       });
     });
   }

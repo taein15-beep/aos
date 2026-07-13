@@ -1,0 +1,657 @@
+body[data-page="price_setting"] .calendar-panel {
+  overflow: visible;
+}
+
+body[data-page="price_setting"] .layout {
+  grid-template-columns: minmax(0, 1fr) 390px;
+}
+
+body[data-page="price_setting"] .preview-panel {
+  position: sticky;
+  top: 12px;
+}
+
+body[data-page="price_setting"] .preview-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+body[data-page="price_setting"] .calc-box {
+  border: 1px solid #edf0f3;
+  border-radius: 6px;
+  background: #fafbfc;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+body[data-page="price_setting"] .rate-color-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #475467;
+}
+
+body[data-page="price_setting"] .rate-color-cell input,
+body[data-page="price_setting"] .rate-color-input {
+  width: 42px;
+  min-width: 42px;
+  height: 32px;
+  min-height: 32px;
+  padding: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+body[data-page="price_setting"] .rate-color-input {
+  display: inline-block;
+}
+
+body[data-page="price_setting"] .rate-title-link {
+  color: #175cd3;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+body[data-page="price_setting"] .rate-title-link:hover,
+body[data-page="price_setting"] .rate-title-link:focus {
+  text-decoration: underline;
+}
+
+body[data-page="price_setting"] .rate-rule-focused td {
+  background: #fffbea;
+  box-shadow: inset 0 1px 0 #f6c343, inset 0 -1px 0 #f6c343;
+}
+
+body[data-page="price_setting"] .rate-config-table th {
+  width: 150px;
+}
+
+body[data-page="price_setting"] .rate-config-table td {
+  min-width: 0;
+}
+
+body[data-page="price_setting"] .rate-config-table .rate-title-input {
+  max-width: none;
+}
+
+body[data-page="price_setting"] .rate-config-table .rate-days-row,
+body[data-page="price_setting"] .rate-config-table .rate-status-row {
+  gap: 10px;
+}
+
+body[data-page="price_setting"] .rate-config-table .rate-period-wrap {
+  gap: 12px;
+}
+
+body[data-page="price_setting"] .rate-config-table .rate-color-input {
+  width: 56px;
+  min-width: 56px;
+  height: 40px;
+}
+
+body[data-page="price_setting"] #rateModal {
+  background: rgba(7, 17, 34, .34);
+  padding: 20px;
+}
+
+body[data-page="price_setting"] #rateModal .modal-box {
+  width: min(1040px, 94vw);
+  max-height: 90vh;
+  border-color: #cfd5dd;
+  box-shadow: 0 18px 42px rgba(7, 17, 34, .18);
+}
+
+body[data-page="price_setting"] #rateModal .modal-head {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e5e9ef;
+  font-size: 16px;
+}
+
+body[data-page="price_setting"] #rateModal .modal-body {
+  padding: 16px 18px 18px;
+}
+
+body[data-page="price_setting"] #rateModal .modal-foot {
+  padding: 12px 16px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-config-table {
+  width: 100%;
+  table-layout: auto;
+  border: 1px solid #dfe5ec;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+body[data-page="price_setting"] #rateModal .rate-config-table th {
+  width: 104px;
+  min-width: 104px;
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+body[data-page="price_setting"] #rateModal .rate-config-table td {
+  height: 44px;
+  padding: 8px 12px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-title-input {
+  width: 100%;
+  max-width: 380px;
+  height: 34px;
+  min-height: 34px;
+  border-radius: 5px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-member-row {
+  gap: 7px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-member-row input {
+  width: 78px;
+  height: 34px;
+  min-height: 34px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-days-row,
+body[data-page="price_setting"] #rateModal .rate-status-row,
+body[data-page="price_setting"] #rateModal .rate-term-row,
+body[data-page="price_setting"] #rateModal .rate-range-row {
+  gap: 8px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-days-row label,
+body[data-page="price_setting"] #rateModal .rate-status-row label,
+body[data-page="price_setting"] #rateModal .rate-term-row label {
+  gap: 5px;
+  font-size: 13px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-range-row input[type=date] {
+  width: 142px;
+  height: 34px;
+  min-height: 34px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-range-row .btn {
+  min-width: 68px;
+  height: 34px;
+  padding: 6px 10px;
+  border-radius: 5px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-color-input {
+  width: 46px;
+  min-width: 46px;
+  height: 34px;
+  min-height: 34px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-price-area {
+  width: max-content;
+  max-width: 100%;
+  margin: 18px 0 0;
+  padding: 14px;
+  border: 1px solid #cfe8d8;
+  border-radius: 8px;
+  background: #f6fbf8;
+}
+
+body[data-page="price_setting"] #rateModal .rate-price-area .table-wrap {
+  overflow: auto;
+}
+
+body[data-page="price_setting"] #rateModal .rate-price-area .price-grid {
+  width: 640px;
+  min-width: 640px;
+  border: 1px solid #c6ddcf;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+body[data-page="price_setting"] #rateModal .rate-price-area .price-grid th {
+  height: 40px;
+  padding: 8px 10px;
+  background: #e5f4ea;
+  color: #14532d;
+}
+
+body[data-page="price_setting"] #rateModal .rate-price-area .price-grid td {
+  height: 46px;
+  padding: 8px;
+  background: #fff;
+}
+
+body[data-page="price_setting"] #rateModal .rate-price-area .price-grid th:first-child,
+body[data-page="price_setting"] #rateModal .rate-price-area .price-grid td:first-child {
+  width: 92px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-price-area .price-grid input {
+  height: 34px;
+  min-height: 34px;
+  border-radius: 5px;
+  border-color: #b7d7c2;
+  font-weight: 800;
+}
+
+body[data-page="price_setting"] .calc-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #edf0f3;
+}
+
+body[data-page="price_setting"] .calc-line:last-child {
+  border-bottom: 0;
+}
+
+body[data-page="price_setting"] .total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: 900;
+  color: #175cd3;
+  border-top: 2px solid #d9dde3;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+body[data-page="price_setting"] .calendar-head {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+body[data-page="price_setting"] .calendar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body[data-page="price_setting"] .calendar-actions input,
+body[data-page="price_setting"] .calendar-actions select {
+  width: auto;
+  min-width: 128px;
+  height: 32px;
+  min-height: 32px;
+  padding: 5px 8px;
+}
+
+body[data-page="price_setting"] .calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #edf0f3;
+  background: #fff;
+}
+
+body[data-page="price_setting"] .calendar-toolbar strong {
+  font-size: 18px;
+}
+
+body[data-page="price_setting"] .display-options,
+body[data-page="price_setting"] .notice-options,
+body[data-page="price_setting"] .bulk-apply-mode,
+body[data-page="price_setting"] .bulk-excludes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+body[data-page="price_setting"] .display-options label,
+body[data-page="price_setting"] .notice-options label,
+body[data-page="price_setting"] .bulk-apply-mode label,
+body[data-page="price_setting"] .bulk-excludes label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 800;
+}
+
+body[data-page="price_setting"] .display-options input,
+body[data-page="price_setting"] .notice-options input,
+body[data-page="price_setting"] .bulk-apply-mode input,
+body[data-page="price_setting"] .bulk-excludes input {
+  width: auto;
+  min-height: auto;
+}
+
+body[data-page="price_setting"] .calendar-message {
+  display: none;
+  margin: 10px 14px;
+  padding: 9px 10px;
+  border: 1px solid #b7e4c7;
+  background: #eefbf3;
+  color: #137333;
+  border-radius: 5px;
+  font-weight: 800;
+}
+
+body[data-page="price_setting"] .calendar-message.error {
+  display: block;
+  border-color: #ffc9c9;
+  background: #fff1f1;
+  color: #b42318;
+}
+
+body[data-page="price_setting"] .calendar-message.show {
+  display: block;
+}
+
+body[data-page="price_setting"] .calendar-scroll {
+  padding: 14px;
+  overflow-x: auto;
+}
+
+body[data-page="price_setting"] .calendar-weekdays,
+body[data-page="price_setting"] .departure-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(136px, 1fr));
+  min-width: 952px;
+}
+
+body[data-page="price_setting"] .calendar-weekdays span {
+  padding: 9px 6px;
+  text-align: center;
+  background: #f3f5f7;
+  border: 1px solid #d9dde3;
+  border-right: 0;
+  font-weight: 900;
+}
+
+body[data-page="price_setting"] .calendar-weekdays span:last-child {
+  border-right: 1px solid #d9dde3;
+}
+
+body[data-page="price_setting"] .calendar-weekdays span:first-child {
+  color: #d92d20;
+}
+
+body[data-page="price_setting"] .calendar-weekdays span:last-child {
+  color: #175cd3;
+}
+
+body[data-page="price_setting"] .calendar-day {
+  min-height: 154px;
+  border: 1px solid #d9dde3;
+  border-top: 0;
+  border-right: 0;
+  background: #fff;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #172033;
+}
+
+body[data-page="price_setting"] .calendar-day:nth-child(7n) {
+  border-right: 1px solid #d9dde3;
+}
+
+body[data-page="price_setting"] .calendar-day:hover,
+body[data-page="price_setting"] .calendar-day:focus {
+  outline: 2px solid #18a34a;
+  outline-offset: -2px;
+}
+
+body[data-page="price_setting"] .calendar-day.other-month {
+  background: #fafbfc;
+  color: #98a2b3;
+}
+
+body[data-page="price_setting"] .calendar-day.no-departure {
+  cursor: default;
+  background: #f7f9fb;
+}
+
+body[data-page="price_setting"] .calendar-day.today {
+  box-shadow: inset 0 0 0 2px #175cd3;
+}
+
+body[data-page="price_setting"] .calendar-day.selected {
+  background: #f0fff5;
+  box-shadow: inset 0 0 0 2px #18a34a;
+}
+
+body[data-page="price_setting"] .day-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+body[data-page="price_setting"] .day-number {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+body[data-page="price_setting"] .source-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid #cfd5dd;
+  padding: 2px 5px;
+  font-size: 11px;
+  font-weight: 900;
+  background: #fff;
+  color: #475467;
+}
+
+body[data-page="price_setting"] .day-lines {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body[data-page="price_setting"] .day-price strong,
+body[data-page="price_setting"] .day-seat strong,
+body[data-page="price_setting"] .day-booked strong {
+  font-weight: 900;
+}
+
+body[data-page="price_setting"] .status-pill {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  align-items: center;
+  border-radius: 14px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+body[data-page="price_setting"] .status-available {
+  background: #e7f8ee;
+  color: #0f8738;
+}
+
+body[data-page="price_setting"] .status-confirmed {
+  background: #eaf1ff;
+  color: #175cd3;
+}
+
+body[data-page="price_setting"] .status-waiting {
+  background: #fff4de;
+  color: #b45309;
+}
+
+body[data-page="price_setting"] .status-closed {
+  background: #eef1f5;
+  color: #344054;
+}
+
+body[data-page="price_setting"] .status-cancelled {
+  background: #fff0f0;
+  color: #d92d20;
+}
+
+body[data-page="price_setting"] .detail-modal {
+  padding: 18px;
+}
+
+body[data-page="price_setting"] .detail-modal-box {
+  width: min(860px, 96vw);
+}
+
+body[data-page="price_setting"] .detail-modal .modal-body {
+  max-height: calc(92vh - 58px);
+  overflow: auto;
+}
+
+body[data-page="price_setting"] .detail-empty {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #667085;
+  font-weight: 800;
+  border: 1px dashed #cfd5dd;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+body[data-page="price_setting"] .detail-form {
+  display: none;
+}
+
+body[data-page="price_setting"] .detail-form.open {
+  display: block;
+}
+
+body[data-page="price_setting"] .detail-form h3 {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: #172033;
+}
+
+body[data-page="price_setting"] .detail-meta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+body[data-page="price_setting"] .detail-meta div {
+  border: 1px solid #edf0f3;
+  border-radius: 5px;
+  padding: 9px;
+  background: #fafbfc;
+}
+
+body[data-page="price_setting"] .detail-meta span {
+  display: block;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 3px;
+}
+
+body[data-page="price_setting"] .detail-meta strong {
+  display: block;
+  font-size: 13px;
+}
+
+body[data-page="price_setting"] .quick-adjust,
+body[data-page="price_setting"] .detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+body[data-page="price_setting"] .field-error {
+  display: none;
+  margin-top: 8px;
+  color: #b42318;
+  font-weight: 800;
+}
+
+body[data-page="price_setting"] .field-error.show {
+  display: block;
+}
+
+body[data-page="price_setting"] textarea {
+  border: 1px solid #d6dbe1;
+  border-radius: 4px;
+  padding: 8px 9px;
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+}
+
+body[data-page="price_setting"] .bulk-modal-box {
+  width: min(940px, 94vw);
+}
+
+body[data-page="price_setting"] .bulk-grid {
+  margin-bottom: 14px;
+}
+
+body[data-page="price_setting"] .bulk-apply-mode,
+body[data-page="price_setting"] .bulk-excludes {
+  border-top: 1px solid #edf0f3;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+body[data-page="price_setting"] .bulk-summary {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 5px;
+  border: 1px solid #d9dde3;
+  background: #fafbfc;
+  font-weight: 800;
+}
+
+body[data-page="price_setting"] .hidden-by-option {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  body[data-page="price_setting"] .layout {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page="price_setting"] .preview-panel {
+    position: static;
+  }
+
+  body[data-page="price_setting"] .detail-modal .modal-body {
+    max-height: calc(92vh - 58px);
+  }
+}
+
+@media (max-width: 760px) {
+  body[data-page="price_setting"] .calendar-toolbar,
+  body[data-page="price_setting"] .calendar-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  body[data-page="price_setting"] .calendar-actions {
+    width: 100%;
+  }
+
+  body[data-page="price_setting"] .calendar-actions .btn,
+  body[data-page="price_setting"] .calendar-actions input,
+  body[data-page="price_setting"] .calendar-actions select {
+    flex: 1 1 120px;
+  }
+
+  body[data-page="price_setting"] .preview-row {
+    grid-template-columns: 1fr;
+  }
+}

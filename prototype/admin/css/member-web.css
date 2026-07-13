@@ -385,6 +385,20 @@ body[data-page^="member_web_"] .inline-fields {
   gap: 8px;
 }
 
+body[data-page^="member_web_"] .input-with-button {
+  display: flex;
+  gap: 6px;
+}
+
+body[data-page^="member_web_"] .input-with-button input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+body[data-page^="member_web_"] .input-with-button .btn {
+  flex: 0 0 auto;
+}
+
 body[data-page^="member_web_"] .check-row,
 body[data-page^="member_web_"] .radio-row {
   display: flex;
@@ -408,7 +422,8 @@ body[data-page^="member_web_"] .readonly-radio {
 
 body[data-page^="member_web_"] .conditional-field.hidden,
 body[data-page^="member_web_"] .tab-panel.hidden,
-body[data-page^="member_web_"] .password-field.hidden {
+body[data-page^="member_web_"] .password-field.hidden,
+body[data-page^="member_web_"] .hidden {
   display: none;
 }
 
@@ -456,6 +471,27 @@ body[data-page^="member_web_"] .member-detail-form-grid {
   gap: 14px 20px;
 }
 
+body[data-page^="member_web_"] .member-basic-form-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px 20px;
+}
+
+body[data-page^="member_web_"] .member-basic-form-grid .span2 {
+  grid-column: span 2;
+}
+
+body[data-page^="member_web_"] .member-basic-form-grid .span3 {
+  grid-column: span 3;
+}
+
+body[data-page^="member_web_"] .member-basic-form-grid .span4 {
+  grid-column: span 4;
+}
+
+body[data-page^="member_web_"] .member-basic-form-grid .span5 {
+  grid-column: 1 / -1;
+}
+
 body[data-page^="member_web_"] .member-detail-form-grid .span2 {
   grid-column: span 2;
 }
@@ -466,21 +502,6 @@ body[data-page^="member_web_"] .member-detail-form-grid .span3 {
 
 body[data-page^="member_web_"] .member-detail-form-grid .span4 {
   grid-column: 1 / -1;
-}
-
-body[data-page^="member_web_"] .member-half-panels {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
-  align-items: stretch;
-}
-
-body[data-page^="member_web_"] .member-half-panels .panel {
-  margin-bottom: 12px;
-}
-
-body[data-page^="member_web_"] .member-half-panels .member-detail-form-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 body[data-page^="member_web_"] .summary-main {
@@ -504,12 +525,30 @@ body[data-page^="member_web_"] .info-card strong {
   margin-top: 6px;
 }
 
+body[data-page^="member_web_"] .tab-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--crm-line);
+}
+
 body[data-page^="member_web_"] .admin-tabs {
   display: flex;
   gap: 4px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--crm-line);
   overflow-x: auto;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body[data-page^="member_web_"] .tab-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 8px;
+  flex: 0 0 auto;
 }
 
 body[data-page^="member_web_"] .tab {
@@ -599,7 +638,8 @@ body[data-page^="member_web_"] .modal-close {
   body[data-page^="member_web_"] .filter-grid,
   body[data-page^="member_web_"] .form-grid,
   body[data-page^="member_web_"] .info-grid,
-  body[data-page^="member_web_"] .detail-summary {
+  body[data-page^="member_web_"] .detail-summary,
+  body[data-page^="member_web_"] .member-basic-form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -607,12 +647,11 @@ body[data-page^="member_web_"] .modal-close {
   body[data-page^="member_web_"] .field.span3,
   body[data-page^="member_web_"] .field.span4,
   body[data-page^="member_web_"] .info-card.span2,
-  body[data-page^="member_web_"] .info-card.span3 {
+  body[data-page^="member_web_"] .info-card.span3,
+  body[data-page^="member_web_"] .member-basic-form-grid .span3,
+  body[data-page^="member_web_"] .member-basic-form-grid .span4,
+  body[data-page^="member_web_"] .member-basic-form-grid .span5 {
     grid-column: span 2;
-  }
-
-  body[data-page^="member_web_"] .member-half-panels {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -629,11 +668,21 @@ body[data-page^="member_web_"] .modal-close {
     display: block;
   }
 
+  body[data-page^="member_web_"] .tab-bar {
+    display: block;
+  }
+
+  body[data-page^="member_web_"] .tab-actions {
+    justify-content: flex-start;
+    padding: 0 0 10px;
+  }
+
   body[data-page^="member_web_"] .summary-grid,
   body[data-page^="member_web_"] .filter-grid,
   body[data-page^="member_web_"] .form-grid,
   body[data-page^="member_web_"] .info-grid,
   body[data-page^="member_web_"] .detail-summary,
+  body[data-page^="member_web_"] .member-basic-form-grid,
   body[data-page^="member_web_"] .inline-fields {
     grid-template-columns: 1fr;
   }
@@ -642,7 +691,11 @@ body[data-page^="member_web_"] .modal-close {
   body[data-page^="member_web_"] .field.span3,
   body[data-page^="member_web_"] .field.span4,
   body[data-page^="member_web_"] .info-card.span2,
-  body[data-page^="member_web_"] .info-card.span3 {
+  body[data-page^="member_web_"] .info-card.span3,
+  body[data-page^="member_web_"] .member-basic-form-grid .span2,
+  body[data-page^="member_web_"] .member-basic-form-grid .span3,
+  body[data-page^="member_web_"] .member-basic-form-grid .span4,
+  body[data-page^="member_web_"] .member-basic-form-grid .span5 {
     grid-column: auto;
   }
 }

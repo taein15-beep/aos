@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>관리자/직원 상세</title>
+  <link rel="stylesheet" href="./css/common.css"><link rel="stylesheet" href="./css/layout.css"><link rel="stylesheet" href="./css/components.css"><link rel="stylesheet" href="./css/member-admin.css">
+</head>
+<body data-page="member_admin_detail">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong>관리자/직원 상세</strong><span>내부 운영자 계정의 권한과 이력을 확인합니다.</span></header>
+    <div class="page member-admin-page">
+      <div class="page-head">
+        <div><div class="muted">회원관리 &gt; 관리자/직원 관리 &gt; 상세</div><h1>관리자/직원 상세</h1><div class="desc">관리자 계정의 기본정보, 권한, 담당업무, 접속이력, 변경이력을 관리합니다.</div></div>
+        <div class="top-actions"><a class="btn" href="member_admin_list.html">목록</a><a class="btn blue" href="member_admin_form.html?mode=edit&id=ADM000001">수정</a><button class="btn" type="button" data-admin-action="password-reset">비밀번호 초기화</button><button class="btn" type="button" data-admin-action="lock">계정잠금</button><button class="btn red" type="button" data-admin-action="resign">퇴사처리</button></div>
+      </div>
+      <section class="summary-grid admin-detail-summary" aria-label="관리자 직원 상세 요약"><div class="summary-card active"><span>직원명</span><strong>김태인</strong></div><div class="summary-card"><span>아이디</span><strong>superadmin</strong></div><div class="summary-card"><span>권한그룹</span><strong>최고관리자</strong></div><div class="summary-card"><span>계정상태</span><strong>사용중</strong></div><div class="summary-card"><span>최근 로그인</span><strong>2026-07-06</strong></div><div class="summary-card"><span>보안상태</span><strong>2차인증 설정</strong></div></section>
+      <nav class="tabs admin-tabs" aria-label="관리자 직원 상세 탭"><button class="tab active" type="button" data-admin-tab="basic">기본정보</button><button class="tab" type="button" data-admin-tab="permission">권한정보</button><button class="tab" type="button" data-admin-tab="work">담당업무</button><button class="tab" type="button" data-admin-tab="access">접속이력</button><button class="tab" type="button" data-admin-tab="history">변경이력</button><button class="tab" type="button" data-admin-tab="memo">메모</button></nav>
+      <section class="panel admin-tab-panel active" data-admin-panel="basic"><div class="panel-head">기본정보</div><div class="panel-body info-grid admin-info-grid"><div class="info-card"><span>직원명</span><strong>김태인</strong></div><div class="info-card"><span>아이디</span><strong>superadmin</strong></div><div class="info-card"><span>이메일</span><strong>admin@avianext.example</strong></div><div class="info-card"><span>휴대폰</span><strong>010-1000-0001</strong></div><div class="info-card"><span>부서/직책</span><strong>시스템운영 / 팀장</strong></div><div class="info-card"><span>입사일</span><strong>2026-01-02</strong></div><div class="info-card"><span>재직상태</span><strong>재직</strong></div><div class="info-card span2"><span>메모</span><strong>시스템 전체 운영과 권한 관리를 담당합니다.</strong></div></div></section>
+      <section class="panel admin-tab-panel" data-admin-panel="permission"><div class="panel-head">권한정보</div><div class="panel-body"><div class="info-grid admin-info-grid"><div class="info-card"><span>권한그룹</span><strong>최고관리자</strong></div><div class="info-card span2"><span>그룹권한 설명</span><strong>전체 메뉴 등록/수정 권한과 관리자 계정관리 권한을 보유합니다.</strong></div></div><div class="section-subtitle">개별권한 예외 내역</div><div class="table-wrap"><table class="table"><thead><tr><th>메뉴</th><th>그룹권한</th><th>개별권한</th><th>적용결과</th></tr></thead><tbody><tr><td>정산관리</td><td>등록/수정</td><td>등록/수정</td><td>등록/수정</td></tr><tr><td>랜드사관리</td><td>등록/수정</td><td>등록/수정</td><td>등록/수정</td></tr><tr><td>게시판관리</td><td>등록/수정</td><td>읽기</td><td>읽기</td></tr></tbody></table></div><div class="section-subtitle">고급권한 내역</div><div class="tag-list"><span>삭제권한</span><span>엑셀 다운로드</span><span>정산승인</span><span>환불처리</span><span>관리자 계정관리</span><span>권한그룹관리</span></div></div></section>
+      <section class="panel admin-tab-panel" data-admin-panel="work"><div class="panel-head">담당업무</div><div class="panel-body info-grid admin-info-grid"><div class="info-card"><span>담당업무</span><strong>시스템관리, 예약관리, 상품관리</strong></div><div class="info-card"><span>담당지역</span><strong>전체</strong></div><div class="info-card"><span>담당상품</span><strong>전체 상품</strong></div><div class="info-card"><span>담당판매점</span><strong>전체 판매점</strong></div><div class="info-card"><span>담당랜드사</span><strong>전체 랜드사</strong></div><div class="info-card span2"><span>수신 알림 설정</span><strong>신규예약, 결제/환불, 고객문의, 판매점 가입신청, 랜드사 승인요청</strong></div></div></section>
+      <section class="panel admin-tab-panel" data-admin-panel="access"><div class="panel-head">접속이력</div><div class="table-wrap"><table class="table"><thead><tr><th>로그인 일시</th><th>접속 IP</th><th>브라우저</th><th>성공/실패 여부</th><th>실패 사유</th></tr></thead><tbody><tr><td>2026-07-06 09:10</td><td>211.10.20.30</td><td>Chrome / Windows</td><td><span class="badge b-green">성공</span></td><td>-</td></tr><tr><td>2026-07-05 18:42</td><td>211.10.20.30</td><td>Edge / Windows</td><td><span class="badge b-green">성공</span></td><td>-</td></tr><tr><td>2026-07-04 08:58</td><td>118.33.10.9</td><td>Chrome / Windows</td><td><span class="badge b-red">실패</span></td><td>비밀번호 오류</td></tr></tbody></table></div></section>
+      <section class="panel admin-tab-panel" data-admin-panel="history"><div class="panel-head">변경이력</div><div class="table-wrap"><table class="table"><thead><tr><th>변경일시</th><th>변경자</th><th>변경항목</th><th>변경 전</th><th>변경 후</th></tr></thead><tbody><tr><td>2026-07-01 14:30</td><td>김태인</td><td>2차인증</td><td>미사용</td><td>사용</td></tr><tr><td>2026-06-20 11:12</td><td>김태인</td><td>비밀번호 변경일</td><td>2026-05-18</td><td>2026-06-20</td></tr><tr><td>2026-06-10 16:05</td><td>최고관리자</td><td>권한그룹</td><td>운영관리자</td><td>최고관리자</td></tr></tbody></table></div></section>
+      <section class="panel admin-tab-panel" data-admin-panel="memo"><div class="panel-head">메모</div><div class="panel-body memo-grid"><div class="memo-box"><strong>관리자 메모</strong><p>시스템 운영 총괄 계정입니다. 권한 변경 시 이중 확인 필요.</p></div><div class="memo-box"><strong>상담/업무 메모</strong><p>예약/정산 정책 변경 문의를 우선 처리합니다.</p></div><div class="memo-box"><strong>내부 공유 메모</strong><p>월말 권한 점검 리포트 확인 담당.</p></div></div></section>
+    </div>
+  </main>
+</div>
+<script src="./js/common.js"></script><script src="./js/components.js"></script><script src="./js/member-admin.js"></script>
+</body>
+</html>

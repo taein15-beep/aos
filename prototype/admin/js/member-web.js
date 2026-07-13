@@ -31,14 +31,23 @@
     if (!formPage) return;
     var params = new URLSearchParams(window.location.search);
     var isEdit = params.get('mode') === 'edit';
+    var editTab = params.get('tab');
     var title = document.getElementById('memberFormTitle');
     var topbarTitle = document.getElementById('memberTopbarTitle');
-    if (title) title.textContent = isEdit ? '웹회원 수정' : '웹회원 등록';
-    if (topbarTitle) topbarTitle.textContent = isEdit ? '웹회원 수정' : '웹회원 등록';
-    $all('[data-edit-only]').forEach(function (el) { el.hidden = !isEdit; });
+    var editTitle = '웹회원 수정';
+    if (isEdit && editTab === 'basic') editTitle = '웹회원 기본정보 수정';
+    if (isEdit && editTab === 'referral') editTitle = '웹회원 가입/추천정보 수정';
+    if (title) title.textContent = isEdit ? editTitle : '웹회원 등록';
+    if (topbarTitle) topbarTitle.textContent = isEdit ? editTitle : '웹회원 등록';
+    $all('[data-edit-only]').forEach(function (el) { el.hidden = !isEdit || !!editTab; });
     $all('[data-create-only]').forEach(function (el) { el.classList.toggle('hidden', isEdit); });
     var memberLoginId = document.getElementById('memberLoginId');
     if (memberLoginId) memberLoginId.readOnly = isEdit;
+    if (isEdit && editTab) {
+      $all('[data-form-section]').forEach(function (section) {
+        section.classList.toggle('hidden', section.dataset.formSection !== editTab);
+      });
+    }
   }
 
   function updateStatusFields() {
@@ -84,6 +93,9 @@
       var isActive = panel.dataset.tabPanel === tabName;
       panel.classList.toggle('active', isActive);
       panel.classList.toggle('hidden', !isActive);
+    });
+    $all('[data-tab-edit]').forEach(function (button) {
+      button.classList.toggle('hidden', button.dataset.tabEdit !== tabName);
     });
   }
 

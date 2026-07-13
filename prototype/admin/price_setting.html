@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./css/common.css">
   <link rel="stylesheet" href="./css/layout.css">
   <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/price-setting.css">
 </head>
 <body data-page="price_setting">
 <div class="app">
@@ -58,18 +59,54 @@
               </table>
             </div>
           </section>
+
+          <section class="panel calendar-panel">
+            <div class="panel-head calendar-head">
+              <span>출발일별 요금·좌석 관리</span>
+              <div class="calendar-actions">
+                <button class="btn small" id="calendarTodayBtn" type="button">오늘</button>
+                <button class="btn small" id="calendarPrevBtn" type="button">이전 달</button>
+                <button class="btn small" id="calendarNextBtn" type="button">다음 달</button>
+                <input id="calendarMonthPicker" type="month" aria-label="표시 월 선택">
+                <select id="calendarStatusFilter" aria-label="상태 필터">
+                  <option value="all">전체</option>
+                  <option value="available">예약가능</option>
+                  <option value="confirmed">출발확정</option>
+                  <option value="waiting">대기</option>
+                  <option value="closed">예약마감</option>
+                  <option value="cancelled">취소</option>
+                </select>
+                <button class="btn green small" id="openBulkModalBtn" type="button">일괄설정</button>
+              </div>
+            </div>
+            <div class="calendar-toolbar">
+              <strong id="calendarTitle">2026년 7월</strong>
+              <div class="display-options" aria-label="표시 옵션">
+                <label><input id="togglePrice" type="checkbox" checked>요금 표시</label>
+                <label><input id="toggleSeat" type="checkbox" checked>좌석 표시</label>
+                <label><input id="toggleStatus" type="checkbox" checked>상태 표시</label>
+              </div>
+            </div>
+            <div id="calendarMessage" class="calendar-message" role="status" aria-live="polite"></div>
+            <div class="calendar-scroll">
+              <div class="calendar-weekdays" aria-hidden="true">
+                <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+              </div>
+              <div id="departureCalendar" class="departure-calendar"></div>
+            </div>
+          </section>
         </div>
 
         <aside class="panel preview-panel">
           <div class="panel-head">요금 미리보기</div>
           <div class="panel-body">
             <div class="preview-row">
-              <div class="field"><label>출발일</label><input id="previewDate" type="date" value="2026-09-24"></div>
-              <div class="field"><label>숙박타입</label><select id="previewStayType"></select></div>
+              <div class="field"><label for="previewDate">출발일</label><input id="previewDate" type="date" value="2026-09-24"></div>
+              <div class="field"><label for="previewStayType">숙박타입</label><select id="previewStayType"></select></div>
             </div>
             <div id="previewPeople" class="preview-row u-style-8a77e5a3"></div>
             <div class="field full u-style-8a77e5a3"><label>선택 옵션</label><div id="previewOptions"></div></div>
-            <button class="btn blue u-style-9202fe4c" onclick="calculatePreview()">요금계산하기</button>
+            <button class="btn blue u-style-9202fe4c" id="previewCalcBtn" type="button">요금계산하기</button>
             <div id="previewResult" class="calc-box"><span class="hint">조건을 선택한 뒤 계산해주세요.</span></div>
           </div>
         </aside>
@@ -79,16 +116,79 @@
   </main>
 </div>
 
+<div id="dateDetailModal" class="modal-backdrop detail-modal">
+  <div class="modal-box detail-modal-box" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+          <div class="modal-head"><span id="detailTitle">출발일 설정</span><button class="btn small" id="detailCloseBtn" type="button">닫기</button></div>
+          <div class="modal-body">
+            <div id="detailEmpty" class="detail-empty">캘린더에서 출발일을 선택하면 요금, 좌석, 상태를 수정할 수 있습니다.</div>
+            <div id="detailForm" class="detail-form">
+              <div id="detailNotice" class="warn detail-notice"></div>
+              <div id="detailMessage" class="calendar-message" role="status" aria-live="polite"></div>
+
+              <h3>기본정보</h3>
+              <div class="detail-meta">
+                <div><span>출발일</span><strong id="detailDateText">-</strong></div>
+                <div><span>적용 요금구분</span><strong id="detailSourceText">-</strong></div>
+                <div><span>개별수정 여부</span><strong id="detailOverrideText">-</strong></div>
+                <div><span>마지막 수정일시</span><strong id="detailUpdatedText">-</strong></div>
+              </div>
+
+              <h3>요금설정</h3>
+              <div class="quick-adjust" aria-label="빠른 요금 변경">
+                <button class="btn small price-adjust-btn" type="button" data-adjust="-10000">-10,000원</button>
+                <button class="btn small price-adjust-btn" type="button" data-adjust="-5000">-5,000원</button>
+                <button class="btn small price-adjust-btn" type="button" data-adjust="5000">+5,000원</button>
+                <button class="btn small price-adjust-btn" type="button" data-adjust="10000">+10,000원</button>
+              </div>
+              <div class="form-grid detail-price-grid">
+                <div class="field"><label for="detailAdultPrice">대인요금</label><input id="detailAdultPrice" inputmode="numeric" autocomplete="off"></div>
+                <div class="field"><label for="detailChildPrice">소아요금</label><input id="detailChildPrice" inputmode="numeric" autocomplete="off"></div>
+                <div class="field disabled-price"><label for="detailInfantPrice">유아요금</label><input id="detailInfantPrice" value="사용안함" disabled></div>
+                <div class="field disabled-price"><label for="detailSeniorPrice">경로요금</label><input id="detailSeniorPrice" value="사용안함" disabled></div>
+              </div>
+
+              <h3>좌석설정</h3>
+              <div class="form-grid detail-seat-grid">
+                <div class="field"><label for="detailTotalSeats">총 판매좌석</label><input id="detailTotalSeats" type="number" min="0"></div>
+                <div class="field"><label for="detailBookedSeats">예약인원</label><input id="detailBookedSeats" type="number" readonly></div>
+                <div class="field"><label for="detailBlockedSeats">판매제외 좌석</label><input id="detailBlockedSeats" type="number" min="0"></div>
+                <div class="field"><label for="detailRemainingSeats">잔여좌석</label><input id="detailRemainingSeats" type="number" readonly></div>
+              </div>
+              <div id="detailSeatError" class="field-error"></div>
+
+              <h3>상태설정</h3>
+              <div class="form-grid">
+                <div class="field"><label for="detailDepartureStatus">출발상태</label><select id="detailDepartureStatus"></select></div>
+                <div class="field"><label for="detailBookingStatus">예약접수 상태</label><select id="detailBookingStatus"></select></div>
+              </div>
+
+              <h3>안내 및 알림</h3>
+              <div class="notice-options">
+                <label><input id="detailNotifyConfirm" type="checkbox">출발확정 시 예약자 알림톡 발송</label>
+                <label><input id="detailNotifyCancel" type="checkbox">출발취소 시 예약자 알림톡 발송</label>
+                <div class="field"><label for="detailAdminMemo">관리자 메모</label><textarea id="detailAdminMemo" rows="4" placeholder="내부 확인 메모를 입력하세요"></textarea></div>
+              </div>
+
+              <div class="detail-actions">
+                <button class="btn green" id="detailSaveBtn" type="button">변경사항 저장</button>
+                <button class="btn" id="detailCancelBtn" type="button">수정 취소</button>
+                <button class="btn red" id="detailResetBtn" type="button">기본값으로 되돌리기</button>
+              </div>
+            </div>
+          </div>
+  </div>
+</div>
+
 <div id="rateModal" class="modal-backdrop">
   <div class="modal-box">
-    <div class="modal-head"><span>날짜별 요금추가</span></div>
+    <div class="modal-head"><span id="rateModalTitle">날짜별 요금추가</span></div>
     <div class="modal-body">
       <table class="rate-config-table">
         <tr>
           <th>적용구분</th>
-          <td><input id="rateTitle" class="rate-title-input" placeholder="이름을 입력하세요"></td>
+          <td colspan="2"><input id="rateTitle" class="rate-title-input" placeholder="이름을 입력하세요"></td>
           <th>요일</th>
-          <td colspan="3">
+          <td colspan="2">
             <div id="rateDays" class="rate-days-row"></div>
           </td>
         </tr>
@@ -105,7 +205,7 @@
         </tr>
         <tr>
           <th>적용기간</th>
-          <td colspan="5">
+          <td colspan="3">
             <div class="rate-period-wrap">
               <div class="rate-term-row">
                 <label><input type="radio" name="applyType" value="period" checked onchange="toggleApplyType()">기간으로 설정</label>
@@ -126,6 +226,8 @@
               </div>
             </div>
           </td>
+          <th>배경색</th>
+          <td><input id="rateColor" class="rate-color-input" type="color" value="#fff4de" aria-label="달력 배경색"></td>
         </tr>
       </table>
       <div id="selectedDateRow" class="rate-selected-row u-style-6b99de8b">
@@ -136,7 +238,7 @@
         <div class="table-wrap"><table class="price-grid"><thead id="ratePriceHead"></thead><tbody id="ratePriceBody"></tbody></table></div>
       </div>
     </div>
-    <div class="modal-foot"><div class="rate-modal-actions"><button class="btn" onclick="closeModal('rateModal')">취소</button><button class="btn green" onclick="saveRateRule()">저장</button></div></div>
+    <div class="modal-foot"><div class="rate-modal-actions"><button class="btn" onclick="closeModal('rateModal')">취소</button><button class="btn green" id="rateSaveBtn" onclick="saveRateRule()">저장</button></div></div>
   </div>
 </div>
 
@@ -156,8 +258,41 @@
     <div class="modal-foot"><button class="btn" onclick="closeModal('optionModal')">취소</button> <button class="btn green" onclick="saveOptionGroup()">저장</button></div>
   </div>
 </div>
+
+<div id="bulkModal" class="modal-backdrop">
+  <div class="modal-box bulk-modal-box" role="dialog" aria-modal="true" aria-labelledby="bulkModalTitle">
+    <div class="modal-head"><span id="bulkModalTitle">출발일 일괄설정</span><button class="btn small bulk-close-btn" type="button">닫기</button></div>
+    <div class="modal-body">
+      <div id="bulkMessage" class="calendar-message" role="status" aria-live="polite"></div>
+      <div class="form-grid bulk-grid">
+        <div class="field"><label for="bulkStartDate">적용 시작일</label><input id="bulkStartDate" type="date" value="2026-07-01"></div>
+        <div class="field"><label for="bulkEndDate">적용 종료일</label><input id="bulkEndDate" type="date" value="2026-07-31"></div>
+        <div class="field full"><label>적용 요일</label><div id="bulkWeekdays" class="check-list"></div></div>
+        <div class="field"><label for="bulkAdultPrice">대인요금</label><input id="bulkAdultPrice" inputmode="numeric" placeholder="예: 120000"></div>
+        <div class="field"><label for="bulkChildPrice">소아요금</label><input id="bulkChildPrice" inputmode="numeric" placeholder="예: 110000"></div>
+        <div class="field"><label for="bulkTotalSeats">총 판매좌석</label><input id="bulkTotalSeats" type="number" min="0"></div>
+        <div class="field"><label for="bulkBlockedSeats">판매제외 좌석</label><input id="bulkBlockedSeats" type="number" min="0"></div>
+        <div class="field"><label for="bulkDepartureStatus">출발상태</label><select id="bulkDepartureStatus"></select></div>
+        <div class="field"><label for="bulkBookingStatus">예약접수 상태</label><select id="bulkBookingStatus"></select></div>
+      </div>
+      <div class="bulk-apply-mode">
+        <strong>적용방식</strong>
+        <label><input type="radio" name="bulkApplyMode" value="overwrite" checked>기존 값을 덮어쓰기</label>
+        <label><input type="radio" name="bulkApplyMode" value="emptyOnly">값이 없는 항목만 적용</label>
+      </div>
+      <div class="bulk-excludes">
+        <strong>제외 조건</strong>
+        <label><input id="bulkExcludeOverride" type="checkbox" checked>개별 수정된 날짜 제외</label>
+        <label><input id="bulkExcludeCancelled" type="checkbox" checked>출발취소 날짜 제외</label>
+        <label><input id="bulkExcludePast" type="checkbox" checked>지난 날짜 제외</label>
+      </div>
+      <div id="bulkSummary" class="bulk-summary"></div>
+    </div>
+    <div class="modal-foot"><button class="btn bulk-close-btn" type="button">취소</button> <button class="btn green" id="bulkApplyBtn" type="button">일괄 적용</button></div>
+  </div>
+</div>
   <script src="./js/common.js"></script>
-  <script src="./js/components.js"></script>
+  <script src="./js/price-setting.js"></script>
 </body>
 </html>
 

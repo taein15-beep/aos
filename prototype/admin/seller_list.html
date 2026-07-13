@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
@@ -21,7 +21,7 @@
         </div>
         <div class="top-actions">
           <button class="btn" onclick="openSettings()">가입승인 설정</button>
-          <button class="btn" onclick="openCommissionGroupSettings()">커미션 그룹 설정</button>
+          <button class="btn" onclick="openCommissionGroupSettings()">커미션등급 설정</button>
           <button class="btn blue" onclick="openSellerForm()">+ 판매점 신규등록</button>
         </div>
       </div>
@@ -109,7 +109,7 @@
             <div class="field"><label>판매점코드</label><input id="agencyCode" placeholder="미입력 시 자동생성"><div class="help">중복 불가</div></div>
             <div class="field"><label>사업자유형</label><div class="radio-row compact"><label><input type="radio" name="businessType" value="corporation" checked> 법인</label><label><input type="radio" name="businessType" value="sole"> 개인사업자</label><label><input type="radio" name="businessType" value="individual"> 개인</label></div></div>
             <div class="field"><label>사용여부</label><div class="radio-row compact"><label><input type="radio" name="isActive" value="Y" checked> 사용</label><label><input type="radio" name="isActive" value="N"> 미사용</label></div></div>
-            <div class="field"><label>판매점등급</label><select id="sellerGrade" onchange="syncSellerGradeGroup()"><option value="A">A그룹</option><option value="B">B그룹</option><option value="C">C그룹</option><option value="D">D그룹</option></select></div>
+            <div class="field"><label>커미션등급</label><select id="sellerGrade" onchange="syncSellerGradeGroup()"><option value="A">A등급</option><option value="B">B등급</option><option value="C">C등급</option><option value="D">D등급</option></select></div>
             <div class="field"><label>대표자명</label><input id="ceoName"></div>
             <div class="field"><label>대표전화번호</label><input id="companyPhone"></div>
             <div class="field"><label>휴대폰번호(추천인코드) *</label><input id="mobilePhone" required oninput="syncReferralCode()"></div>
@@ -145,7 +145,7 @@
         <section class="form-section section-card tab-panel" data-ui-tab-panel="seller-business">
           <div class="section-header">
             <h3 class="section-title">사업자정보</h3>
-            <p class="section-desc">정산 계좌와 커미션 그룹 정보를 관리합니다.</p>
+            <p class="section-desc">정산 계좌와 커미션등급 정보를 관리합니다.</p>
           </div>
           <div class="section-body">
           <div class="form-grid seller-form-grid">
@@ -156,8 +156,8 @@
           </div>
           <div class="section-subtitle">커미션설정</div>
           <div class="form-grid seller-form-grid commission-form-grid">
-            <div class="field"><label>판매점그룹</label><select id="commissionGroup" onchange="syncCommissionGroupGrade();applyGroupCommission(false)"><option value="A">A그룹 판매점</option><option value="B">B그룹 판매점</option><option value="C">C그룹 판매점</option><option value="D">D그룹 판매점</option></select></div>
-            <div class="field"><label>커미션 적용방식</label><div class="radio-row compact"><label><input type="radio" name="commissionOverride" value="N" checked onchange="applyGroupCommission(false)"> 그룹 기본값</label><label><input type="radio" name="commissionOverride" value="Y" onchange="applyGroupCommission(true)"> 개별 수정</label></div><div class="help">기본은 선택한 그룹의 커미션을 적용합니다.</div></div>
+            <div class="field"><label>커미션등급</label><select id="commissionGroup" onchange="syncCommissionGroupGrade();applyGroupCommission(false)"><option value="A">A등급 판매점</option><option value="B">B등급 판매점</option><option value="C">C등급 판매점</option><option value="D">D등급 판매점</option></select></div>
+            <div class="field"><label>커미션 적용방식</label><div class="radio-row compact"><label><input type="radio" name="commissionOverride" value="N" checked onchange="applyGroupCommission(false)"> 등급 기본값</label><label><input type="radio" name="commissionOverride" value="Y" onchange="applyGroupCommission(true)"> 개별 수정</label></div><div class="help">기본은 선택한 커미션등급의 커미션을 적용합니다.</div></div>
             <div class="field"><label>커미션유형</label><div class="radio-row compact"><label><input type="radio" name="commissionType" value="amount" checked> 정액</label><label><input type="radio" name="commissionType" value="rate"> 정률</label></div></div>
             <div class="field"><label>기본커미션(원)</label><input id="commissionAmount" type="number" min="0" step="1000"></div>
             <div class="field"><label>기본커미션율(%)</label><input id="commissionRate" type="number" min="0" max="100" step="0.1"></div>
@@ -214,29 +214,29 @@
 
 <div class="modal-backdrop" id="commissionGroupModal" role="dialog" aria-modal="true" aria-labelledby="commissionGroupTitle">
   <div class="modal small">
-    <div class="modal-head"><span id="commissionGroupTitle">커미션 그룹 설정</span><button class="btn small" onclick="closeCommissionGroupSettings()">닫기</button></div>
+    <div class="modal-head"><span id="commissionGroupTitle">커미션등급 설정</span><button class="btn small" onclick="closeCommissionGroupSettings()">닫기</button></div>
     <div class="modal-body">
-      <div class="setting-note">A~D그룹별 기본 수수료를 설정합니다. 판매점 등록 시 그룹을 지정하면 기본값이 자동 적용되고, 판매점별 개별 수정도 가능합니다.</div>
+      <div class="setting-note">A~D 커미션등급별 기본 수수료를 설정합니다. 판매점 등록 시 커미션등급을 지정하면 기본값이 자동 적용되고, 판매점별 개별 수정도 가능합니다.</div>
       <form id="commissionGroupForm" onsubmit="saveCommissionGroupSettings(event)">
         <section class="form-section">
-          <h3>그룹 기본 수수료</h3>
+          <h3>커미션등급 기본 수수료</h3>
           <div class="form-grid seller-form-grid">
-            <div class="field"><label>A그룹 고정 대인(원)</label><input id="groupAAmountAdult" type="number" min="0" step="1000"></div>
-            <div class="field"><label>A그룹 고정 소인(원)</label><input id="groupAAmountChild" type="number" min="0" step="1000"></div>
-            <div class="field"><label>A그룹 정률 대인(%)</label><input id="groupARateAdult" type="number" min="0" max="100" step="0.1"></div>
-            <div class="field"><label>A그룹 정률 소인(%)</label><input id="groupARateChild" type="number" min="0" max="100" step="0.1"></div>
-            <div class="field"><label>B그룹 고정 대인(원)</label><input id="groupBAmountAdult" type="number" min="0" step="1000"></div>
-            <div class="field"><label>B그룹 고정 소인(원)</label><input id="groupBAmountChild" type="number" min="0" step="1000"></div>
-            <div class="field"><label>B그룹 정률 대인(%)</label><input id="groupBRateAdult" type="number" min="0" max="100" step="0.1"></div>
-            <div class="field"><label>B그룹 정률 소인(%)</label><input id="groupBRateChild" type="number" min="0" max="100" step="0.1"></div>
-            <div class="field"><label>C그룹 고정 대인(원)</label><input id="groupCAmountAdult" type="number" min="0" step="1000"></div>
-            <div class="field"><label>C그룹 고정 소인(원)</label><input id="groupCAmountChild" type="number" min="0" step="1000"></div>
-            <div class="field"><label>C그룹 정률 대인(%)</label><input id="groupCRateAdult" type="number" min="0" max="100" step="0.1"></div>
-            <div class="field"><label>C그룹 정률 소인(%)</label><input id="groupCRateChild" type="number" min="0" max="100" step="0.1"></div>
-            <div class="field"><label>D그룹 고정 대인(원)</label><input id="groupDAmountAdult" type="number" min="0" step="1000"></div>
-            <div class="field"><label>D그룹 고정 소인(원)</label><input id="groupDAmountChild" type="number" min="0" step="1000"></div>
-            <div class="field"><label>D그룹 정률 대인(%)</label><input id="groupDRateAdult" type="number" min="0" max="100" step="0.1"></div>
-            <div class="field"><label>D그룹 정률 소인(%)</label><input id="groupDRateChild" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>A등급 고정 대인(원)</label><input id="groupAAmountAdult" type="number" min="0" step="1000"></div>
+            <div class="field"><label>A등급 고정 소인(원)</label><input id="groupAAmountChild" type="number" min="0" step="1000"></div>
+            <div class="field"><label>A등급 정률 대인(%)</label><input id="groupARateAdult" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>A등급 정률 소인(%)</label><input id="groupARateChild" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>B등급 고정 대인(원)</label><input id="groupBAmountAdult" type="number" min="0" step="1000"></div>
+            <div class="field"><label>B등급 고정 소인(원)</label><input id="groupBAmountChild" type="number" min="0" step="1000"></div>
+            <div class="field"><label>B등급 정률 대인(%)</label><input id="groupBRateAdult" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>B등급 정률 소인(%)</label><input id="groupBRateChild" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>C등급 고정 대인(원)</label><input id="groupCAmountAdult" type="number" min="0" step="1000"></div>
+            <div class="field"><label>C등급 고정 소인(원)</label><input id="groupCAmountChild" type="number" min="0" step="1000"></div>
+            <div class="field"><label>C등급 정률 대인(%)</label><input id="groupCRateAdult" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>C등급 정률 소인(%)</label><input id="groupCRateChild" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>D등급 고정 대인(원)</label><input id="groupDAmountAdult" type="number" min="0" step="1000"></div>
+            <div class="field"><label>D등급 고정 소인(원)</label><input id="groupDAmountChild" type="number" min="0" step="1000"></div>
+            <div class="field"><label>D등급 정률 대인(%)</label><input id="groupDRateAdult" type="number" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>D등급 정률 소인(%)</label><input id="groupDRateChild" type="number" min="0" max="100" step="0.1"></div>
           </div>
         </section>
       </form>
@@ -280,9 +280,3 @@
   <script src="./js/components.js"></script>
 </body>
 </html>
-
-
-
-
-
-

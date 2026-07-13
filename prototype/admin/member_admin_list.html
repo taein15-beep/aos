@@ -1,0 +1,128 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>관리자/직원 관리</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/member-admin.css">
+</head>
+<body data-page="member_admin_list">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong>관리자/직원 관리</strong><span>내부 운영자 계정과 권한을 관리합니다.</span></header>
+    <div class="page member-admin-page">
+      <div class="page-head">
+        <div>
+          <div class="muted">회원관리 &gt; 관리자/직원 관리</div>
+          <h1>관리자/직원 관리</h1>
+          <div class="desc">AOS 관리자페이지에 로그인하는 내부 운영자 계정과 권한, 담당업무, 접속상태를 관리합니다.</div>
+        </div>
+        <div class="top-actions">
+          <a class="btn blue" href="member_admin_form.html">+ 관리자/직원 등록</a>
+          <button class="btn" type="button" data-admin-action="excel">엑셀 다운로드</button>
+          <button class="btn" type="button" data-admin-action="bulk-status">선택 계정상태 변경</button>
+        </div>
+      </div>
+      <section class="summary-grid admin-summary-grid" aria-label="관리자 직원 요약">
+        <div class="summary-card"><span>전체 관리자/직원</span><strong>8명</strong></div><div class="summary-card"><span>사용중 계정</span><strong>5명</strong></div><div class="summary-card"><span>잠금 계정</span><strong>1명</strong></div><div class="summary-card"><span>퇴사/사용중지</span><strong>2명</strong></div><div class="summary-card"><span>최근 7일 로그인</span><strong>5명</strong></div><div class="summary-card warning"><span>2차인증 미설정</span><strong>2명</strong></div>
+      </section>
+      <section class="panel">
+        <div class="panel-head">관리자/직원 검색</div>
+        <div class="panel-body">
+          <form id="adminSearchForm" class="filter-grid admin-filter-grid">
+            <div class="field keyword"><label>검색어</label><input name="keyword" placeholder="이름, 아이디, 이메일, 휴대폰 검색"></div>
+            <div class="field"><label>권한그룹</label><select name="role"><option>전체</option><option>최고관리자</option><option>운영관리자</option><option>예약담당</option><option>상품담당</option><option>정산담당</option><option>CS담당</option><option>조회전용</option></select></div>
+            <div class="field"><label>부서/담당업무</label><select name="work"><option>전체</option><option>예약관리</option><option>상품관리</option><option>정산관리</option><option>판매점관리</option><option>랜드사관리</option><option>고객문의</option><option>시스템관리</option></select></div>
+            <div class="field"><label>계정상태</label><select name="status"><option>전체</option><option>사용중</option><option>사용중지</option><option>잠금</option><option>퇴사</option></select></div>
+            <div class="field"><label>최근접속</label><select name="login"><option>전체</option><option>7일 이내</option><option>30일 이상 미접속</option><option>미접속</option></select></div>
+            <div class="field action-row"><label>&nbsp;</label><button class="btn green" type="button" data-admin-action="search">검색</button><button class="btn" type="button" data-admin-action="reset-search">초기화</button></div>
+          </form>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><span>관리자/직원 목록 <span class="muted">총 8명</span></span><span class="muted">처리 이력 보존을 위해 완전삭제 대신 사용중지 또는 퇴사처리로 관리합니다.</span></div>
+        <div class="table-wrap">
+          <table class="table admin-table admin-list-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>아이디</th>
+                <th>이름</th>
+                <th>부서/직책</th>
+                <th>연락처</th>
+                <th>권한그룹</th>
+                <th>계정상태</th>
+                <th>최근로그인</th>
+                <th>등록일</th>
+                <th>관리(권한설정)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="center">1</td><td class="admin-id"><a href="member_admin_detail.html?id=ADM000001">superadmin</a></td><td class="admin-name">김태인</td><td>시스템운영 / 팀장</td><td>010-1000-0001</td><td><span class="badge b-red">최고관리자</span></td><td><span class="badge b-green">사용중</span></td><td>2026-07-06 09:10</td><td>2026-01-02</td><td class="center"><button class="btn small" type="button" data-admin-action="permission">권한설정</button></td></tr>
+              <tr><td class="center">2</td><td class="admin-id"><a href="member_admin_detail.html?id=ADM000002">reserve01</a></td><td class="admin-name">박소영</td><td>예약팀 / 매니저</td><td>010-1000-0002</td><td><span class="badge b-blue">예약담당</span></td><td><span class="badge b-green">사용중</span></td><td>2026-07-06 08:42</td><td>2026-02-10</td><td class="center"><button class="btn small" type="button" data-admin-action="permission">권한설정</button></td></tr>
+              <tr><td class="center">3</td><td class="admin-id"><a href="member_admin_detail.html?id=ADM000003">product01</a></td><td class="admin-name">이준호</td><td>상품팀 / 대리</td><td>010-1000-0003</td><td><span class="badge b-purple">상품담당</span></td><td><span class="badge b-green">사용중</span></td><td>2026-07-05 18:22</td><td>2026-02-21</td><td class="center"><button class="btn small" type="button" data-admin-action="permission">권한설정</button></td></tr>
+              <tr><td class="center">4</td><td class="admin-id"><a href="member_admin_detail.html?id=ADM000004">settle01</a></td><td class="admin-name">최민아</td><td>정산팀 / 과장</td><td>010-1000-0004</td><td><span class="badge b-orange">정산담당</span></td><td><span class="badge b-green">사용중</span></td><td>2026-07-04 16:05</td><td>2026-03-01</td><td class="center"><button class="btn small" type="button" data-admin-action="permission">권한설정</button></td></tr>
+              <tr><td class="center">5</td><td class="admin-id"><a href="member_admin_detail.html?id=ADM000005">cs01</a></td><td class="admin-name">정하늘</td><td>CS팀 / 매니저</td><td>010-1000-0005</td><td><span class="badge b-blue">CS담당</span></td><td><span class="badge b-green">사용중</span></td><td>2026-07-03 13:15</td><td>2026-03-11</td><td class="center"><button class="btn small" type="button" data-admin-action="permission">권한설정</button></td></tr>
+              <tr><td class="center">6</td><td class="admin-id"><a href="member_admin_detail.html?id=ADM000006">seller01</a></td><td class="admin-name">오지훈</td><td>운영팀 / 대리</td><td>010-1000-0006</td><td><span class="badge b-gray">운영관리자</span></td><td><span class="badge b-red">잠금</span></td><td>2026-06-29 10:22</td><td>2026-03-20</td><td class="center"><button class="btn small" type="button" data-admin-action="permission">권한설정</button></td></tr>
+              <tr><td class="center">7</td><td class="admin-id"><a href="member_admin_detail.html?id=ADM000007">land01</a></td><td class="admin-name">한유리</td><td>운영팀 / 매니저</td><td>010-1000-0007</td><td><span class="badge b-gray">운영관리자</span></td><td><span class="badge b-orange">사용중지</span></td><td>2026-06-20 17:40</td><td>2026-04-02</td><td class="center"><button class="btn small" type="button" data-admin-action="permission">권한설정</button></td></tr>
+              <tr><td class="center">8</td><td class="admin-id"><a href="member_admin_detail.html?id=ADM000008">view01</a></td><td class="admin-name">문서윤</td><td>기획팀 / 사원</td><td>010-1000-0008</td><td><span class="badge b-gray">조회전용</span></td><td><span class="badge b-gray">30일 이상 미접속</span></td><td>2026-05-28 11:00</td><td>2026-04-15</td><td class="center"><button class="btn small" type="button" data-admin-action="permission">권한설정</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="adminPermissionModal" class="admin-modal permission-modal" aria-hidden="true">
+  <div class="admin-modal-card large">
+    <div class="admin-modal-head">
+      <strong>그룹 상세 및 권한설정</strong>
+      <button type="button" class="modal-close" data-admin-action="close-permission">x</button>
+    </div>
+    <div class="admin-modal-body">
+      <div class="permission-summary two">
+        <div><span>그룹명</span><strong id="adminPermGroupName">일반관리자</strong></div>
+        <div><span>그룹유형</span><strong id="adminPermGroupType">관리자/직원</strong></div>
+      </div>
+      <div class="notice info">권한없음은 메뉴가 노출되지 않습니다. 읽기는 조회만 가능하며, 등록/수정은 데이터 생성과 수정이 가능합니다.</div>
+      <div class="permission-flow">
+        <span>1. 그룹유형 기본권한</span>
+        <span class="active">2. 그룹명별 권한</span>
+        <span>3. 소속계정 개별권한</span>
+      </div>
+      <nav class="admin-permission-tabs" aria-label="권한설정 탭">
+        <button class="active" type="button">메뉴권한</button>
+        <button type="button">소속계정</button>
+        <button type="button">기본정보</button>
+        <button type="button">권한변경이력</button>
+      </nav>
+      <section class="admin-permission-panel">
+        <div class="permission-bulk-actions">
+          <strong>전체선택</strong>
+          <button class="btn small" type="button" data-admin-action="bulk-permission" data-permission-value="none">권한없음</button>
+          <button class="btn small" type="button" data-admin-action="bulk-permission" data-permission-value="read">읽기</button>
+          <button class="btn small" type="button" data-admin-action="bulk-permission" data-permission-value="edit">등록/수정</button>
+        </div>
+        <div class="admin-permission-tree">
+          <div class="permission-row"><strong>대시보드</strong><label><input type="radio" name="perm-dashboard" value="none"> 권한없음</label><label><input type="radio" name="perm-dashboard" value="read"> 읽기</label><label><input type="radio" name="perm-dashboard" value="edit" checked> 등록/수정</label></div>
+          <div class="permission-group"><div class="permission-row parent"><strong>상품관리 <span>하위 4개</span></strong><label><input type="radio" name="perm-product" value="none"> 권한없음</label><label><input type="radio" name="perm-product" value="read"> 읽기</label><label><input type="radio" name="perm-product" value="edit" checked> 등록/수정</label></div><div class="permission-row child"><strong>상품목록</strong><label><input type="radio" name="perm-product-list" value="none"> 권한없음</label><label><input type="radio" name="perm-product-list" value="read"> 읽기</label><label><input type="radio" name="perm-product-list" value="edit" checked> 등록/수정</label></div><div class="permission-row child"><strong>상품등록</strong><label><input type="radio" name="perm-product-create" value="none"> 권한없음</label><label><input type="radio" name="perm-product-create" value="read"> 읽기</label><label><input type="radio" name="perm-product-create" value="edit" checked> 등록/수정</label></div><div class="permission-row child"><strong>요금설정</strong><label><input type="radio" name="perm-product-price" value="none"> 권한없음</label><label><input type="radio" name="perm-product-price" value="read"> 읽기</label><label><input type="radio" name="perm-product-price" value="edit" checked> 등록/수정</label></div><div class="permission-row child"><strong>일정표관리</strong><label><input type="radio" name="perm-product-schedule" value="none"> 권한없음</label><label><input type="radio" name="perm-product-schedule" value="read"> 읽기</label><label><input type="radio" name="perm-product-schedule" value="edit" checked> 등록/수정</label></div></div>
+          <div class="permission-group"><div class="permission-row parent"><strong>예약관리 <span>하위 3개</span></strong><label><input type="radio" name="perm-reserve" value="none"> 권한없음</label><label><input type="radio" name="perm-reserve" value="read"> 읽기</label><label><input type="radio" name="perm-reserve" value="edit" checked> 등록/수정</label></div><div class="permission-row child"><strong>예약현황</strong><label><input type="radio" name="perm-reserve-status" value="none"> 권한없음</label><label><input type="radio" name="perm-reserve-status" value="read"> 읽기</label><label><input type="radio" name="perm-reserve-status" value="edit" checked> 등록/수정</label></div><div class="permission-row child"><strong>예약등록</strong><label><input type="radio" name="perm-reserve-create" value="none"> 권한없음</label><label><input type="radio" name="perm-reserve-create" value="read"> 읽기</label><label><input type="radio" name="perm-reserve-create" value="edit" checked> 등록/수정</label></div><div class="permission-row child"><strong>예약취소관리</strong><label><input type="radio" name="perm-reserve-cancel" value="none"> 권한없음</label><label><input type="radio" name="perm-reserve-cancel" value="read"> 읽기</label><label><input type="radio" name="perm-reserve-cancel" value="edit" checked> 등록/수정</label></div></div>
+          <div class="permission-row"><strong>회원관리 <span>하위 5개</span></strong><label><input type="radio" name="perm-member" value="none"> 권한없음</label><label><input type="radio" name="perm-member" value="read"> 읽기</label><label><input type="radio" name="perm-member" value="edit" checked> 등록/수정</label></div>
+          <div class="permission-row"><strong>랜드사관리</strong><label><input type="radio" name="perm-vendor" value="none"> 권한없음</label><label><input type="radio" name="perm-vendor" value="read"> 읽기</label><label><input type="radio" name="perm-vendor" value="edit" checked> 등록/수정</label></div>
+        </div>
+      </section>
+      <div class="modal-actions">
+        <button class="btn blue" type="button" data-admin-action="save-permission">저장</button>
+        <button class="btn" type="button" data-admin-action="close-permission">취소</button>
+      </div>
+    </div>
+  </div>
+</div><script src="./js/common.js"></script><script src="./js/components.js"></script><script src="./js/member-admin.js"></script>
+</body>
+</html>
+

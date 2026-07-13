@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>거래처 등록</title>
+  <title>랜드사 등록</title>
   <link rel="stylesheet" href="./css/common.css">
   <link rel="stylesheet" href="./css/layout.css">
   <link rel="stylesheet" href="./css/components.css">
@@ -12,12 +12,12 @@
 <div class="app">
   <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
   <main>
-    <header class="topbar"><strong>거래처 등록</strong><span>윤호님 · 로그아웃</span></header>
+    <header class="topbar"><strong>랜드사 등록</strong><span>윤호님 · 로그아웃</span></header>
     <div class="page">
       <div class="page-head">
         <div>
-          <h1 id="vendorPageTitle">거래처 등록</h1>
-          <div class="desc">거래처의 기본정보, 담당자 계정, 카테고리별 요금, 정산정보를 등록합니다.</div>
+          <h1 id="vendorPageTitle">랜드사 등록</h1>
+          <div class="desc">랜드사의 기본정보, 담당자 계정, 카테고리별 요금, 정산정보를 등록합니다.</div>
         </div>
         <div class="top-actions">
           <button class="btn" type="button" data-vendor-action="list">목록</button>
@@ -26,7 +26,7 @@
         </div>
       </div>
 
-      <nav class="tabs vendor-tabs" aria-label="거래처 등록 탭">
+      <nav class="tabs vendor-tabs" aria-label="랜드사 등록 탭">
         <button class="tab active" type="button" data-vendor-tab="basic">기본정보</button>
         <button class="tab" type="button" data-vendor-tab="account">담당자/계정</button>
         <button class="tab" type="button" data-vendor-tab="rate">요금정보</button>
@@ -39,8 +39,8 @@
         <section class="panel vendor-tab-panel active" data-vendor-panel="basic">
           <div class="panel-head">기본정보</div>
           <div class="panel-body form-grid vendor-form-grid">
-            <div class="field"><label>거래처명 <span class="required">*</span></label><input id="vendorName" required></div>
-            <div class="field"><label>거래처코드</label><input placeholder="저장 시 자동생성" readonly class="disabled-field"><div class="help">미입력 시 VND-YYNNNN 형식으로 자동 생성됩니다.</div></div>
+            <div class="field"><label>랜드사명 <span class="required">*</span></label><input id="vendorName" required></div>
+            <div class="field"><label>랜드사코드</label><input placeholder="저장 시 자동생성" readonly class="disabled-field"><div class="help">미입력 시 VND-YYNNNN 형식으로 자동 생성됩니다.</div></div>
             <div class="field"><label>주 카테고리 <span class="required">*</span></label><select id="mainCategory" required><option value="">선택</option><option>식당</option><option>숙박</option><option>선박</option><option>액티비티</option><option>관광지</option><option>차량</option><option>가이드</option><option>기타</option></select></div>
             <div class="field"><label>사용상태</label><select><option>사용중</option><option>사용중지</option><option>승인대기</option></select></div>
             <div class="field span4"><label>제공서비스</label><div class="check-row compact"><label><input type="checkbox"> 식당</label><label><input type="checkbox"> 숙박</label><label><input type="checkbox"> 선박</label><label><input type="checkbox"> 액티비티</label><label><input type="checkbox"> 관광지</label><label><input type="checkbox"> 차량</label><label><input type="checkbox"> 가이드</label><label><input type="checkbox"> 기타</label></div></div>
@@ -67,7 +67,7 @@
             <div class="field span4"><label>로그인 계정 사용 여부</label><div class="radio-row compact"><label><input type="radio" name="loginEnabled" value="Y" checked> 사용</label><label><input type="radio" name="loginEnabled" value="N"> 미사용</label></div></div>
             <div class="field account-field"><label>로그인 아이디</label><input></div>
             <div class="field account-field"><label>임시비밀번호</label><div class="input-with-button"><input type="password" placeholder="초기 비밀번호"><button class="btn" type="button" data-vendor-action="password">재발급</button></div></div>
-            <div class="field account-field"><label>계정권한</label><select><option>거래처 관리자</option><option>거래처 직원</option></select></div>
+            <div class="field account-field"><label>계정권한</label><select><option>랜드사 관리자</option><option>랜드사 직원</option></select></div>
             <div class="field account-field"><label>계정상태</label><select><option>정상</option><option>잠금</option><option>사용중지</option></select></div>
             <div class="field"><label>마지막 로그인</label><input readonly class="disabled-field" placeholder="수정화면에서 표시"></div>
           </div>
@@ -76,7 +76,7 @@
         <section class="panel vendor-tab-panel" data-vendor-panel="rate">
           <div class="panel-head">요금정보</div>
           <div class="panel-body">
-            <div class="info-box">거래처 요금은 예약 및 정산 시 기준 금액으로 사용됩니다. 실제 정산 시 예약별 확정금액으로 조정될 수 있습니다.</div>
+            <div class="info-box">랜드사 요금은 예약 및 정산 시 기준 금액으로 사용됩니다. 실제 정산 시 예약별 확정금액으로 조정될 수 있습니다.</div>
             <div class="rate-section"><div class="rate-head"><strong>식당 요금</strong><button class="btn small blue" type="button" data-rate-add="meal">메뉴 추가</button></div><div class="table-wrap"><table class="table rate-table" data-rate-table="meal"><thead><tr><th>메뉴명</th><th>식사구분</th><th>1인 단가</th><th>최소인원</th><th>무료인원 기준</th><th>적용기간 시작일</th><th>적용기간 종료일</th><th>상태</th><th>삭제</th></tr></thead><tbody><tr><td><input value="흑돼지 정식"></td><td><select><option>중식</option><option>조식</option><option>석식</option><option>간식</option></select></td><td><input value="18000"></td><td><input value="10"></td><td><input value="가이드 1명"></td><td><input type="date" value="2026-07-01"></td><td><input type="date" value="2026-12-31"></td><td><select><option>사용중</option><option>중지</option></select></td><td><button class="btn small" type="button" data-rate-delete>삭제</button></td></tr><tr><td><input value="전복죽"></td><td><select><option>조식</option><option>중식</option><option>석식</option><option>간식</option></select></td><td><input value="12000"></td><td><input value="8"></td><td><input value="없음"></td><td><input type="date" value="2026-07-01"></td><td><input type="date" value="2026-12-31"></td><td><select><option>사용중</option><option>중지</option></select></td><td><button class="btn small" type="button" data-rate-delete>삭제</button></td></tr></tbody></table></div></div>
             <div class="rate-section"><div class="rate-head"><strong>숙박 요금</strong><button class="btn small blue" type="button" data-rate-add="stay">객실 추가</button></div><div class="table-wrap"><table class="table rate-table" data-rate-table="stay"><thead><tr><th>객실타입</th><th>인실</th><th>기준인원</th><th>최대인원</th><th>주중요금</th><th>금요일요금</th><th>주말요금</th><th>성수기요금</th><th>조식포함</th><th>적용기간 시작일</th><th>적용기간 종료일</th><th>상태</th><th>삭제</th></tr></thead><tbody><tr><td><input value="스탠다드"></td><td><select><option>2인실</option><option>1인실</option><option>3인실</option><option>4인실</option><option>단체실</option></select></td><td><input value="2"></td><td><input value="3"></td><td><input value="90000"></td><td><input value="110000"></td><td><input value="130000"></td><td><input value="160000"></td><td><select><option>포함</option><option>불포함</option></select></td><td><input type="date" value="2026-07-01"></td><td><input type="date" value="2026-12-31"></td><td><select><option>사용중</option><option>중지</option></select></td><td><button class="btn small" type="button" data-rate-delete>삭제</button></td></tr><tr><td><input value="패밀리"></td><td><select><option>4인실</option><option>1인실</option><option>2인실</option><option>3인실</option><option>단체실</option></select></td><td><input value="4"></td><td><input value="5"></td><td><input value="150000"></td><td><input value="175000"></td><td><input value="210000"></td><td><input value="260000"></td><td><select><option>포함</option><option>불포함</option></select></td><td><input type="date" value="2026-07-01"></td><td><input type="date" value="2026-12-31"></td><td><select><option>사용중</option><option>중지</option></select></td><td><button class="btn small" type="button" data-rate-delete>삭제</button></td></tr></tbody></table></div></div>
             <div class="rate-section"><div class="rate-head"><strong>선박 요금</strong><button class="btn small blue" type="button" data-rate-add="ship">노선 추가</button></div><div class="table-wrap"><table class="table rate-table" data-rate-table="ship"><thead><tr><th>노선명</th><th>편도/왕복</th><th>좌석등급</th><th>성인요금</th><th>소아요금</th><th>유아요금</th><th>출항시간</th><th>적용기간 시작일</th><th>적용기간 종료일</th><th>상태</th><th>삭제</th></tr></thead><tbody><tr><td><input value="여수-제주"></td><td><select><option>왕복</option><option>편도</option></select></td><td><input value="일반석"></td><td><input value="68000"></td><td><input value="44000"></td><td><input value="0"></td><td><input type="time" value="09:00"></td><td><input type="date" value="2026-07-01"></td><td><input type="date" value="2026-12-31"></td><td><select><option>사용중</option><option>중지</option></select></td><td><button class="btn small" type="button" data-rate-delete>삭제</button></td></tr></tbody></table></div></div>
@@ -87,21 +87,21 @@
         <section class="panel vendor-tab-panel" data-vendor-panel="settlement">
           <div class="panel-head">정산정보</div>
           <div class="panel-body form-grid vendor-form-grid">
-            <div class="field"><label>사업자등록번호</label><input></div><div class="field"><label>대표자명</label><input></div><div class="field"><label>업태</label><input></div><div class="field"><label>종목</label><input></div><div class="field"><label>세금계산서 이메일</label><input type="email"></div><div class="field"><label>은행명</label><input></div><div class="field"><label>계좌번호</label><input></div><div class="field"><label>예금주</label><input></div><div class="field"><label>정산방식</label><select><option>건별정산</option><option>월정산</option><option>행사종료 후 정산</option></select></div><div class="field"><label>부가세 구분</label><select><option>포함</option><option>별도</option><option>면세</option></select></div><div class="field"><label>지급조건</label><select><option>행사 후 7일 이내</option><option>행사 후 15일 이내</option><option>월말정산</option><option>직접입력</option></select></div><div class="field span4"><label>정산 메모</label><textarea></textarea></div><div class="info-box span4">정산금액은 거래처 기본요금, 예약 적용요금, 실제 확정요금을 기준으로 계산됩니다.</div>
+            <div class="field"><label>사업자등록번호</label><input></div><div class="field"><label>대표자명</label><input></div><div class="field"><label>업태</label><input></div><div class="field"><label>종목</label><input></div><div class="field"><label>세금계산서 이메일</label><input type="email"></div><div class="field"><label>은행명</label><input></div><div class="field"><label>계좌번호</label><input></div><div class="field"><label>예금주</label><input></div><div class="field"><label>정산방식</label><select><option>건별정산</option><option>월정산</option><option>행사종료 후 정산</option></select></div><div class="field"><label>부가세 구분</label><select><option>포함</option><option>별도</option><option>면세</option></select></div><div class="field"><label>지급조건</label><select><option>행사 후 7일 이내</option><option>행사 후 15일 이내</option><option>월말정산</option><option>직접입력</option></select></div><div class="field span4"><label>정산 메모</label><textarea></textarea></div><div class="info-box span4">정산금액은 랜드사 기본요금, 예약 적용요금, 실제 확정요금을 기준으로 계산됩니다.</div>
           </div>
         </section>
 
         <section class="panel vendor-tab-panel" data-vendor-panel="operation">
           <div class="panel-head">운영정보</div>
           <div class="panel-body form-grid vendor-form-grid">
-            <div class="field"><label>운영시간</label><input placeholder="09:00-18:00"></div><div class="field"><label>휴무일</label><input></div><div class="field"><label>예약마감시간</label><input></div><div class="field"><label>최대수용인원</label><input type="number"></div><div class="field"><label>주차가능여부</label><select><option>가능</option><option>불가</option></select></div><div class="field"><label>대형버스 진입 가능여부</label><select><option>가능</option><option>불가</option></select></div><div class="field"><label>비상연락처</label><input></div><div class="field span4"><label>취소규정</label><textarea></textarea></div><div class="field span4"><label>거래처 요청사항</label><textarea></textarea></div><div class="field span4"><label>관리자 확인사항</label><textarea></textarea></div>
+            <div class="field"><label>운영시간</label><input placeholder="09:00-18:00"></div><div class="field"><label>휴무일</label><input></div><div class="field"><label>예약마감시간</label><input></div><div class="field"><label>최대수용인원</label><input type="number"></div><div class="field"><label>주차가능여부</label><select><option>가능</option><option>불가</option></select></div><div class="field"><label>대형버스 진입 가능여부</label><select><option>가능</option><option>불가</option></select></div><div class="field"><label>비상연락처</label><input></div><div class="field span4"><label>취소규정</label><textarea></textarea></div><div class="field span4"><label>랜드사 요청사항</label><textarea></textarea></div><div class="field span4"><label>관리자 확인사항</label><textarea></textarea></div>
           </div>
         </section>
 
         <section class="panel vendor-tab-panel" data-vendor-panel="memo">
           <div class="panel-head">메모/첨부파일</div>
           <div class="panel-body form-grid vendor-form-grid">
-            <div class="field span2"><label>내부메모</label><textarea placeholder="관리자만 확인하는 메모"></textarea></div><div class="field span2"><label>거래처 안내메모</label><textarea placeholder="예약 진행 시 참고할 메모"></textarea></div><div class="field"><label>사업자등록증 첨부</label><input type="file"></div><div class="field"><label>통장사본 첨부</label><input type="file"></div><div class="field"><label>계약서 첨부</label><input type="file"></div><div class="field"><label>업체 이미지 첨부</label><input type="file" multiple></div>
+            <div class="field span2"><label>내부메모</label><textarea placeholder="관리자만 확인하는 메모"></textarea></div><div class="field span2"><label>랜드사 안내메모</label><textarea placeholder="예약 진행 시 참고할 메모"></textarea></div><div class="field"><label>사업자등록증 첨부</label><input type="file"></div><div class="field"><label>통장사본 첨부</label><input type="file"></div><div class="field"><label>계약서 첨부</label><input type="file"></div><div class="field"><label>업체 이미지 첨부</label><input type="file" multiple></div>
           </div>
         </section>
       </form>

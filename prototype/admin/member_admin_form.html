@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>관리자/직원 등록</title>
+  <link rel="stylesheet" href="./css/common.css"><link rel="stylesheet" href="./css/layout.css"><link rel="stylesheet" href="./css/components.css"><link rel="stylesheet" href="./css/member-admin.css">
+</head>
+<body data-page="member_admin_form">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong id="adminFormTopTitle">관리자/직원 등록</strong><span>내부 운영자 계정과 권한을 설정합니다.</span></header>
+    <div class="page member-admin-page">
+      <div class="page-head">
+        <div><div class="muted">회원관리 &gt; 관리자/직원 관리</div><h1 id="adminFormTitle">관리자/직원 등록</h1><div class="desc">AOS 관리자페이지 접근 계정, 보안 설정, 권한과 담당업무를 등록합니다.</div></div>
+        <div class="top-actions"><a class="btn" href="member_admin_list.html">목록</a><button id="adminSaveTopButton" class="btn blue" type="button" data-admin-action="save">저장</button><a class="btn" href="member_admin_list.html">취소</a></div>
+      </div>
+      <form id="adminForm" class="admin-form">
+        <section class="panel"><div class="panel-head">기본정보</div><div class="panel-body form-grid admin-form-grid">
+          <div class="field"><label>직원명 <span class="required">*</span></label><input id="adminName" required value="김태인"></div><div class="field"><label>아이디 <span class="required">*</span></label><input id="adminLoginId" required value="superadmin"></div><div class="field"><label>이메일</label><input type="email" value="admin@avianext.example"></div><div class="field"><label>휴대폰</label><input value="010-1000-0001"></div>
+          <div class="field"><label>부서</label><select><option>시스템운영</option><option>예약팀</option><option>상품팀</option><option>정산팀</option><option>CS팀</option><option>운영팀</option></select></div><div class="field"><label>직책</label><input value="팀장"></div><div class="field"><label>입사일</label><input type="date" value="2026-01-02"></div><div class="field"><label>재직상태</label><select><option>재직</option><option>휴직</option><option>퇴사</option></select></div><div class="field span4"><label>메모</label><textarea rows="3" placeholder="내부 계정 관리 메모"></textarea></div>
+        </div></section>
+        <section class="panel"><div class="panel-head">계정정보 / 보안설정</div><div class="panel-body form-grid admin-form-grid">
+          <div class="field"><label>로그인 허용 여부</label><div class="radio-row"><label><input type="radio" name="loginAllowed" checked> 허용</label><label><input type="radio" name="loginAllowed"> 차단</label></div></div><div class="field"><label>임시 비밀번호 발급 여부</label><div class="radio-row"><label><input type="radio" name="tempPassword" checked> 발급</label><label><input type="radio" name="tempPassword"> 미발급</label></div></div><div class="field"><label>다음 로그인 시 비밀번호 변경</label><div class="radio-row"><label><input type="radio" name="forceChange" checked> 사용</label><label><input type="radio" name="forceChange"> 미사용</label></div></div><div class="field"><label>2차인증 사용 여부</label><div class="radio-row"><label><input type="radio" name="mfa" checked> 사용</label><label><input type="radio" name="mfa"> 미사용</label></div></div>
+          <div class="field span2"><label>허용 IP</label><input placeholder="예: 10.0.0.1, 211.10.20.30"></div><div class="field"><label>계정상태</label><select><option>사용중</option><option>사용중지</option><option>잠금</option><option>퇴사</option></select></div><div class="field"><label>로그인 실패 횟수</label><input type="number" min="0" value="0"></div><div class="field"><label>마지막 비밀번호 변경일</label><input type="date" value="2026-06-20"></div>
+        </div></section>
+        <section class="panel"><div class="panel-head">권한설정</div><div class="panel-body">
+          <div class="form-grid admin-form-grid"><div class="field span2"><label>권한그룹 선택</label><select><option>최고관리자</option><option>운영관리자</option><option>예약담당</option><option>상품담당</option><option>정산담당</option><option>CS담당</option><option>조회전용</option></select></div><div class="notice info span2">권한그룹은 그룹관리에서 설정한 메뉴권한을 기본으로 적용합니다. 직원별 개별권한은 그룹권한보다 우선 적용됩니다.</div></div>
+          <div class="section-subtitle">개별권한 예외설정</div><div class="table-wrap"><table class="table permission-table"><thead><tr><th>메뉴</th><th>권한없음</th><th>읽기</th><th>등록/수정</th></tr></thead><tbody>
+            <tr><td>상품관리</td><td><input type="radio" name="permProduct"></td><td><input type="radio" name="permProduct"></td><td><input type="radio" name="permProduct" checked></td></tr><tr><td>예약관리</td><td><input type="radio" name="permReserve"></td><td><input type="radio" name="permReserve"></td><td><input type="radio" name="permReserve" checked></td></tr><tr><td>판매점관리</td><td><input type="radio" name="permSeller"></td><td><input type="radio" name="permSeller" checked></td><td><input type="radio" name="permSeller"></td></tr><tr><td>랜드사관리</td><td><input type="radio" name="permLand"></td><td><input type="radio" name="permLand" checked></td><td><input type="radio" name="permLand"></td></tr><tr><td>정산관리</td><td><input type="radio" name="permSettle"></td><td><input type="radio" name="permSettle"></td><td><input type="radio" name="permSettle" checked></td></tr><tr><td>통계관리</td><td><input type="radio" name="permStats"></td><td><input type="radio" name="permStats" checked></td><td><input type="radio" name="permStats"></td></tr><tr><td>디자인설정</td><td><input type="radio" name="permDesign"></td><td><input type="radio" name="permDesign" checked></td><td><input type="radio" name="permDesign"></td></tr><tr><td>알림톡/문자관리</td><td><input type="radio" name="permMsg"></td><td><input type="radio" name="permMsg" checked></td><td><input type="radio" name="permMsg"></td></tr><tr><td>게시판관리</td><td><input type="radio" name="permBoard"></td><td><input type="radio" name="permBoard"></td><td><input type="radio" name="permBoard" checked></td></tr><tr><td>기본설정</td><td><input type="radio" name="permBase"></td><td><input type="radio" name="permBase" checked></td><td><input type="radio" name="permBase"></td></tr>
+          </tbody></table></div><div class="section-subtitle">고급권한</div><div class="check-grid"><label><input type="checkbox"> 삭제권한</label><label><input type="checkbox" checked> 엑셀 다운로드</label><label><input type="checkbox"> 정산승인</label><label><input type="checkbox"> 환불처리</label><label><input type="checkbox" checked> 관리자 계정관리</label><label><input type="checkbox" checked> 권한그룹관리</label></div>
+        </div></section>
+        <section class="panel"><div class="panel-head">담당업무 / 알림</div><div class="panel-body form-grid admin-form-grid">
+          <div class="field span4"><label>담당업무</label><div class="check-grid compact"><label><input type="checkbox" checked> 예약관리</label><label><input type="checkbox" checked> 상품관리</label><label><input type="checkbox"> 정산관리</label><label><input type="checkbox"> 판매점관리</label><label><input type="checkbox"> 랜드사관리</label><label><input type="checkbox"> 고객문의</label><label><input type="checkbox" checked> 시스템관리</label></div></div><div class="field"><label>담당지역</label><input placeholder="전체 또는 지역명"></div><div class="field"><label>담당상품</label><input placeholder="예: 제주 패키지"></div><div class="field"><label>담당판매점</label><input placeholder="판매점명 검색"></div><div class="field"><label>담당랜드사</label><input placeholder="랜드사명 검색"></div><div class="field span4"><label>알림 수신</label><div class="check-grid compact"><label><input type="checkbox" checked> 신규예약 알림</label><label><input type="checkbox" checked> 결제/환불 알림</label><label><input type="checkbox"> 정산 알림</label><label><input type="checkbox" checked> 고객문의 알림</label><label><input type="checkbox"> 판매점 가입신청 알림</label><label><input type="checkbox"> 랜드사 승인요청 알림</label></div></div>
+        </div></section>
+        <section class="panel"><div class="panel-head">퇴사/인수인계</div><div class="panel-body form-grid admin-form-grid">
+          <div class="notice warning span4">퇴사처리 후에도 처리한 예약, 상품, 정산 이력은 보존됩니다. 담당 업무는 이관 대상자를 지정해 관리하세요.</div><div class="field"><label>퇴사처리 여부</label><select><option>미처리</option><option>퇴사처리</option></select></div><div class="field"><label>퇴사일</label><input type="date"></div><div class="field span2"><label>업무 이관 대상자</label><select><option>선택</option><option>박소영 / reserve01</option><option>이준호 / product01</option><option>최민아 / settle01</option></select></div><div class="field"><label>처리중 예약 담당자 이관</label><select><option>미이관</option><option>이관</option></select></div><div class="field"><label>담당 판매점 이관</label><select><option>미이관</option><option>이관</option></select></div><div class="field"><label>담당 랜드사 이관</label><select><option>미이관</option><option>이관</option></select></div><div class="field span4"><label>인수인계 메모</label><textarea rows="4"></textarea></div>
+        </div></section>
+        <div class="bottom-actions"><button id="adminSaveBottomButton" class="btn blue" type="button" data-admin-action="save">저장</button><a class="btn" href="member_admin_list.html">목록</a><a class="btn" href="member_admin_list.html">취소</a></div>
+      </form>
+    </div>
+  </main>
+</div>
+<script src="./js/common.js"></script><script src="./js/components.js"></script><script src="./js/member-admin.js"></script>
+</body>
+</html>
