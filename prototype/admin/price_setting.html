@@ -205,7 +205,7 @@
         </tr>
         <tr>
           <th>적용기간</th>
-          <td colspan="3">
+          <td id="ratePeriodCell" colspan="5">
             <div class="rate-period-wrap">
               <div class="rate-term-row">
                 <label><input type="radio" name="applyType" value="period" checked onchange="toggleApplyType()">기간으로 설정</label>
@@ -226,10 +226,9 @@
               </div>
             </div>
           </td>
-          <th>배경색</th>
-          <td><input id="rateColor" class="rate-color-input" type="color" value="#fff4de" aria-label="달력 배경색"></td>
         </tr>
       </table>
+      <input id="rateColor" type="hidden" value="#fff4de">
       <div id="selectedDateRow" class="rate-selected-row u-style-6b99de8b">
         <div class="rate-selected-label">선택날짜</div>
         <div id="selectedDates" class="rate-selected-tags"></div>

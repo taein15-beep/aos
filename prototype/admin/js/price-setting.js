@@ -703,6 +703,8 @@
 
   window.openRateModal = function () {
     editingRateRuleId = '';
+    document.getElementById('rateModal').classList.remove('rate-edit-mode');
+    document.getElementById('ratePeriodCell').setAttribute('colspan', '5');
     document.getElementById('rateModalTitle').textContent = '날짜별 요금추가';
     document.getElementById('rateSaveBtn').textContent = '저장';
     var status = document.getElementById('rateStatus');
@@ -738,6 +740,8 @@
     if (!rule) return;
     window.openRateModal();
     editingRateRuleId = String(rule.id);
+    document.getElementById('rateModal').classList.add('rate-edit-mode');
+    document.getElementById('ratePeriodCell').setAttribute('colspan', '5');
     document.getElementById('rateModalTitle').textContent = '날짜별 요금수정';
     document.getElementById('rateSaveBtn').textContent = '수정 저장';
     document.getElementById('rateTitle').value = rule.title || '';
@@ -854,11 +858,12 @@
       });
     });
     var statusValue = document.querySelector('input[name="status"]:checked').value;
+    var existingRule = editingRateRuleId ? state.rateRules.find(function (rule) { return String(rule.id) === String(editingRateRuleId); }) : null;
     var nextRule = {
       id: editingRateRuleId || 'rule-' + Date.now(),
-      priority: editingRateRuleId ? (state.rateRules.find(function (rule) { return String(rule.id) === String(editingRateRuleId); }) || {}).priority : state.rateRules.length + 1,
+      priority: editingRateRuleId ? (existingRule || {}).priority : state.rateRules.length + 1,
       title: title,
-      color: ruleColor(document.getElementById('rateColor').value, editingRateRuleId ? Number((state.rateRules.find(function (rule) { return String(rule.id) === String(editingRateRuleId); }) || {}).priority || 1) - 1 : state.rateRules.length),
+      color: editingRateRuleId ? ruleColor((existingRule || {}).color, Number((existingRule || {}).priority || 1) - 1) : ruleColor(document.getElementById('rateColor').value, state.rateRules.length),
       applyType: applyType,
       startDate: document.getElementById('rateStart').value,
       endDate: document.getElementById('rateEnd').value,

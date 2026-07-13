@@ -99,7 +99,7 @@ body[data-page="price_setting"] #rateModal {
 }
 
 body[data-page="price_setting"] #rateModal .modal-box {
-  width: min(1040px, 94vw);
+  width: min(1240px, 96vw);
   max-height: 90vh;
   border-color: #cfd5dd;
   box-shadow: 0 18px 42px rgba(7, 17, 34, .18);
@@ -165,6 +165,12 @@ body[data-page="price_setting"] #rateModal .rate-range-row {
   gap: 8px;
 }
 
+body[data-page="price_setting"] #rateModal .rate-days-row,
+body[data-page="price_setting"] #rateModal .rate-status-row {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
 body[data-page="price_setting"] #rateModal .rate-days-row label,
 body[data-page="price_setting"] #rateModal .rate-status-row label,
 body[data-page="price_setting"] #rateModal .rate-term-row label {
@@ -190,6 +196,37 @@ body[data-page="price_setting"] #rateModal .rate-color-input {
   min-width: 46px;
   height: 34px;
   min-height: 34px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-period-wrap {
+  width: 100%;
+}
+
+body[data-page="price_setting"] #rateModal .rate-calendar-grid {
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+}
+
+body[data-page="price_setting"] #rateModal .rate-calendar-month {
+  min-width: 0;
+}
+
+body[data-page="price_setting"] #rateModal .rate-selected-row {
+  grid-template-columns: 128px 1fr;
+  width: 100%;
+  border: 1px solid #dfe5ec;
+  border-top: 0;
+}
+
+body[data-page="price_setting"] #rateModal .rate-selected-label {
+  padding: 14px 16px;
+}
+
+body[data-page="price_setting"] #rateModal .rate-selected-tags {
+  min-height: 44px;
+  padding: 10px 18px;
 }
 
 body[data-page="price_setting"] #rateModal .rate-price-area {
