@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>항공권 매출통계</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/statistics-sales-air.css">
+</head>
+<body data-page="statistics_sales">
+  <div class="app">
+    <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+    <main>
+      <header class="topbar"><strong>항공권 매출통계</strong><span>윤호님 · 로그아웃</span></header>
+      <div class="page flight-sales-page">
+        <div class="page-head">
+          <div>
+            <h1>항공권 매출통계</h1>
+            <div class="desc">월간 매출 흐름, 선택일 항공사 실적, 발권 상세를 한 화면에서 확인합니다.</div>
+          </div>
+          <div class="top-actions" aria-label="보기 방식 전환">
+            <button class="btn view-tab active" type="button" data-view="calendar" title="월간 달력 보기">월간 달력</button>
+            <button class="btn view-tab" type="button" data-view="weekly" title="주간 분석 보기">주간 분석</button>
+            <button class="btn view-tab" type="button" data-view="airlines" title="항공사 집계 보기">항공사 집계</button>
+            <button class="btn view-tab" type="button" data-view="tickets" title="발권 상세 보기">발권 상세</button>
+          </div>
+        </div>
+
+        <section class="panel search-panel" aria-label="항공권 매출통계 조회 조건">
+          <div class="panel-head"><span>조회 조건</span><span class="muted">기존 검색 및 Excel 동작은 샘플 메시지로 보존</span></div>
+          <div class="panel-body">
+            <form class="flight-filter" id="flightFilterForm">
+              <div class="segmented" role="tablist" aria-label="노선 구분">
+                <button type="button" class="segment active" data-route="international" aria-selected="true">국제선</button>
+                <button type="button" class="segment" data-route="domestic" aria-selected="false">국내선</button>
+              </div>
+              <div class="field"><label for="basisSelect">통계 기준</label><select id="basisSelect"><option value="ticketed">발권일</option><option value="departure">출발일</option><option value="reserved">예약일</option></select></div>
+              <div class="field"><label for="yearSelect">연도</label><select id="yearSelect"></select></div>
+              <div class="field"><label for="monthSelect">월</label><select id="monthSelect"></select></div>
+              <div class="field"><label for="agencySelect">거래처</label><select id="agencySelect"><option value="">전체</option><option>본사몰</option><option>강남판매점</option><option>기업복지몰</option><option>콜센터</option></select></div>
+              <div class="field"><label for="managerSelect">담당자</label><select id="managerSelect"><option value="">전체</option><option>윤호</option><option>서연</option><option>민재</option></select></div>
+              <div class="field"><label for="airlineSelect">항공사</label><select id="airlineSelect"></select></div>
+              <div class="field keyword-field"><label for="keywordInput">검색어</label><input id="keywordInput" type="search" placeholder="예약번호, PNR, 승객명"></div>
+              <div class="filter-actions">
+                <button class="btn green" type="submit" title="검색">검색</button>
+                <button class="btn" type="button" id="resetFilters" title="조회 조건 초기화">초기화</button>
+                <button class="btn blue" type="button" id="excelDownload" title="Excel 다운로드">Excel 다운로드</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="summary flight-kpi" id="monthlyKpis" aria-label="월간 핵심 실적"></section>
+
+        <section class="view-section active" data-view-panel="calendar">
+          <div class="calendar-layout">
+            <section class="panel calendar-panel">
+              <div class="panel-head calendar-head">
+                <div class="month-nav">
+                  <button class="btn small" type="button" id="prevMonth" aria-label="이전 달" title="이전 달">이전 달</button>
+                  <strong id="currentMonthLabel"></strong>
+                  <button class="btn small" type="button" id="nextMonth" aria-label="다음 달" title="다음 달">다음 달</button>
+                  <button class="btn small" type="button" id="todayButton" title="오늘로 이동">오늘</button>
+                </div>
+                <label class="toggle-check"><input id="heatmapToggle" type="checkbox"> 매출 히트맵</label>
+              </div>
+              <div class="panel-body">
+                <div class="calendar-weekdays" aria-hidden="true"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
+                <div class="sales-calendar" id="salesCalendar" aria-label="월간 매출 달력"></div>
+              </div>
+            </section>
+
+            <aside class="panel day-detail-panel" aria-live="polite">
+              <div class="panel-head"><span>선택일 상세</span><span class="muted" id="selectedDayRankNote">총 결제금액순</span></div>
+              <div class="panel-body">
+                <div class="day-total" id="selectedDayTotal"></div>
+                <div class="airline-day-list" id="selectedAirlineList"></div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view-section" data-view-panel="weekly">
+          <div class="panel">
+            <div class="panel-head">
+              <div class="month-nav">
+                <button class="btn small" type="button" id="prevWeek" title="이전 주">이전 주</button>
+                <strong id="weekLabel"></strong>
+                <button class="btn small" type="button" id="nextWeek" title="다음 주">다음 주</button>
+              </div>
+              <span class="muted">7일 단위 항공사 실적 비교</span>
+            </div>
+            <div class="panel-body"><div class="table-wrap"><table class="table weekly-table" id="weeklyTable"></table></div></div>
+          </div>
+        </section>
+
+        <section class="panel airline-summary-panel view-section active" data-view-panel="airlines">
+          <div class="panel-head">
+            <span>월간 항공사별 집계</span>
+            <div class="summary-tools">
+              <input id="airlineSearch" type="search" placeholder="항공사 검색">
+              <label class="toggle-check"><input id="hideZeroAirlines" type="checkbox"> 실적 0 숨기기</label>
+            </div>
+          </div>
+          <div class="panel-body"><div class="table-wrap"><table class="table airline-summary-table" id="airlineSummaryTable"></table></div></div>
+        </section>
+
+        <section class="panel view-section" data-view-panel="tickets">
+          <div class="panel-head"><span>발권 상세</span><span class="muted">선택 조건 기준 샘플 발권 데이터</span></div>
+          <div class="panel-body"><div class="table-wrap"><table class="table ticket-table" id="ticketTable"></table></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="ticketModal" role="dialog" aria-modal="true" aria-labelledby="ticketModalTitle" hidden>
+    <div class="ticket-modal">
+      <div class="modal-head">
+        <strong id="ticketModalTitle">발권 상세</strong>
+        <button class="btn small" type="button" id="closeTicketModal" aria-label="발권 상세 닫기" title="닫기">닫기</button>
+      </div>
+      <div class="modal-body" id="ticketModalBody"></div>
+    </div>
+  </div>
+
+  <script src="./js/common.js"></script>
+  <script src="./js/components.js"></script>
+  <script src="./js/statistics-sales-air.js"></script>
+</body>
+</html>

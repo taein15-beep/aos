@@ -1,0 +1,124 @@
+body[data-page="statistics_sales"] .flight-sales-page{max-width:1800px}
+body[data-page="statistics_sales"] .flight-filter{display:grid;grid-template-columns:170px repeat(7,minmax(104px,1fr)) auto;gap:8px 10px;align-items:end}
+body[data-page="statistics_sales"] .segmented{display:flex;border:1px solid #cfd5dd;border-radius:4px;overflow:hidden;min-height:36px;background:#fff}
+body[data-page="statistics_sales"] .segment{flex:1;border:0;border-right:1px solid #cfd5dd;background:#fff;font-weight:800;color:#344054;cursor:pointer}
+body[data-page="statistics_sales"] .segment:last-child{border-right:0}
+body[data-page="statistics_sales"] .segment.active{background:#2f63f6;color:#fff}
+body[data-page="statistics_sales"] .filter-actions{display:flex;gap:6px;align-items:end}
+body[data-page="statistics_sales"] .filter-actions .btn{min-height:34px;padding:6px 10px}
+body[data-page="statistics_sales"] .flight-kpi{grid-template-columns:repeat(6,minmax(0,1fr))}
+body[data-page="statistics_sales"] .flight-kpi .card{display:flex;flex-direction:column;gap:4px}
+body[data-page="statistics_sales"] .flight-kpi .card span{margin:0}
+body[data-page="statistics_sales"] .flight-kpi .card small{color:#667085;font-weight:800}
+body[data-page="statistics_sales"] .metric-delta{font-size:12px;font-weight:900}
+body[data-page="statistics_sales"] .metric-delta.up{color:#0f8738}
+body[data-page="statistics_sales"] .metric-delta.down{color:#b45309}
+body[data-page="statistics_sales"] .metric-delta.bad{color:#d92d20}
+body[data-page="statistics_sales"] .view-section{display:none}
+body[data-page="statistics_sales"] .view-section.active{display:block}
+body[data-page="statistics_sales"] .airline-summary-panel.view-section.active{display:block}
+body[data-page="statistics_sales"] .view-tab.active{background:#071122;border-color:#071122;color:#fff}
+body[data-page="statistics_sales"] .calendar-layout{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(330px,.95fr);gap:12px;align-items:start}
+body[data-page="statistics_sales"] .calendar-head{align-items:center}
+body[data-page="statistics_sales"] .month-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+body[data-page="statistics_sales"] .month-nav strong{font-size:16px;color:#172033;min-width:120px;text-align:center}
+body[data-page="statistics_sales"] .toggle-check{display:inline-flex;align-items:center;gap:6px;font-weight:900;color:#344054;white-space:nowrap}
+body[data-page="statistics_sales"] .calendar-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid #d9dde3;border-bottom:0;background:#f7f9fb}
+body[data-page="statistics_sales"] .calendar-weekdays span{padding:8px;text-align:center;font-weight:900;color:#475467}
+body[data-page="statistics_sales"] .sales-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-left:1px solid #d9dde3;border-top:1px solid #d9dde3}
+body[data-page="statistics_sales"] .day-cell{min-height:148px;border-right:1px solid #d9dde3;border-bottom:1px solid #d9dde3;background:#fff;text-align:left;padding:9px;cursor:pointer;display:flex;flex-direction:column;gap:6px;color:#172033}
+body[data-page="statistics_sales"] .day-cell:hover,body[data-page="statistics_sales"] .day-cell:focus{outline:2px solid #8fb3ff;outline-offset:-2px;background:#f8fbff}
+body[data-page="statistics_sales"] .day-cell.is-selected{background:#eaf1ff}
+body[data-page="statistics_sales"] .day-cell.is-today{box-shadow:inset 0 0 0 2px #2f63f6}
+body[data-page="statistics_sales"] .day-cell.is-outside{background:#f5f6f8;color:#98a2b3}
+body[data-page="statistics_sales"] .day-cell.has-refund{box-shadow:inset 3px 0 0 #d92d20}
+body[data-page="statistics_sales"] .day-cell.heat-1{background:#f7fbff}
+body[data-page="statistics_sales"] .day-cell.heat-2{background:#f1f7ff}
+body[data-page="statistics_sales"] .day-cell.heat-3{background:#eaf1ff}
+body[data-page="statistics_sales"] .day-cell.heat-4{background:#dfeaff}
+body[data-page="statistics_sales"] .day-cell.heat-5{background:#d3e2ff}
+body[data-page="statistics_sales"] .day-top{display:flex;justify-content:space-between;gap:8px;font-weight:900}
+body[data-page="statistics_sales"] .day-total-money{font-size:17px;font-weight:900;text-align:right;color:#172033;word-break:keep-all}
+body[data-page="statistics_sales"] .day-people{font-weight:900;color:#2f63f6}
+body[data-page="statistics_sales"] .day-sub{display:grid;gap:2px;color:#667085;font-size:12px}
+body[data-page="statistics_sales"] .day-refund{font-size:12px;font-weight:900;color:#d92d20}
+body[data-page="statistics_sales"] .day-empty{margin:auto;color:#98a2b3;font-weight:800}
+body[data-page="statistics_sales"] .airline-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:auto}
+body[data-page="statistics_sales"] .airline-badge{display:inline-flex;border:1px solid #d9dde3;background:#f7f9fb;border-radius:12px;padding:2px 6px;font-size:11px;font-weight:900;color:#344054}
+body[data-page="statistics_sales"] .change-pill{display:inline-flex;align-self:flex-start;font-size:11px;font-weight:900;border-radius:12px;padding:2px 6px;background:#eef1f5;color:#667085}
+body[data-page="statistics_sales"] .change-pill.up{background:#e7f8ee;color:#0f8738}
+body[data-page="statistics_sales"] .change-pill.down{background:#fff4de;color:#b45309}
+body[data-page="statistics_sales"] .day-total{border:1px solid #edf0f3;background:#f8fafc;border-radius:6px;padding:12px;margin-bottom:10px}
+body[data-page="statistics_sales"] .day-total h2{font-size:18px;margin:0 0 8px;color:#172033}
+body[data-page="statistics_sales"] .day-total strong{color:#2f63f6}
+body[data-page="statistics_sales"] .airline-day-list{display:grid;gap:8px}
+body[data-page="statistics_sales"] .airline-row{border:1px solid #edf0f3;border-radius:6px;background:#fff;padding:10px;cursor:pointer}
+body[data-page="statistics_sales"] .airline-row:hover,body[data-page="statistics_sales"] .airline-row:focus{outline:2px solid #8fb3ff;outline-offset:0;background:#f8fbff}
+body[data-page="statistics_sales"] .airline-row-head{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:8px}
+body[data-page="statistics_sales"] .rank-no{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:#eef1f5;border-radius:50%;font-weight:900}
+body[data-page="statistics_sales"] .airline-name{font-weight:900;color:#172033;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body[data-page="statistics_sales"] .airline-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;color:#667085;font-size:12px}
+body[data-page="statistics_sales"] .airline-meta .money{text-align:right;color:#172033;font-weight:900}
+body[data-page="statistics_sales"] .share-line{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center;margin-top:8px;font-size:12px;font-weight:900}
+body[data-page="statistics_sales"] .share-track{height:7px;background:#edf0f3;border-radius:8px;overflow:hidden}
+body[data-page="statistics_sales"] .share-fill{height:100%;background:#2f63f6}
+body[data-page="statistics_sales"] .share-fill.w-0{width:0}
+body[data-page="statistics_sales"] .share-fill.w-5{width:5%}
+body[data-page="statistics_sales"] .share-fill.w-10{width:10%}
+body[data-page="statistics_sales"] .share-fill.w-15{width:15%}
+body[data-page="statistics_sales"] .share-fill.w-20{width:20%}
+body[data-page="statistics_sales"] .share-fill.w-25{width:25%}
+body[data-page="statistics_sales"] .share-fill.w-30{width:30%}
+body[data-page="statistics_sales"] .share-fill.w-35{width:35%}
+body[data-page="statistics_sales"] .share-fill.w-40{width:40%}
+body[data-page="statistics_sales"] .share-fill.w-45{width:45%}
+body[data-page="statistics_sales"] .share-fill.w-50{width:50%}
+body[data-page="statistics_sales"] .share-fill.w-55{width:55%}
+body[data-page="statistics_sales"] .share-fill.w-60{width:60%}
+body[data-page="statistics_sales"] .share-fill.w-65{width:65%}
+body[data-page="statistics_sales"] .share-fill.w-70{width:70%}
+body[data-page="statistics_sales"] .share-fill.w-75{width:75%}
+body[data-page="statistics_sales"] .share-fill.w-80{width:80%}
+body[data-page="statistics_sales"] .share-fill.w-85{width:85%}
+body[data-page="statistics_sales"] .share-fill.w-90{width:90%}
+body[data-page="statistics_sales"] .share-fill.w-95{width:95%}
+body[data-page="statistics_sales"] .share-fill.w-100{width:100%}
+body[data-page="statistics_sales"] .summary-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+body[data-page="statistics_sales"] .summary-tools input{min-width:180px}
+body[data-page="statistics_sales"] .airline-summary-table th button{border:0;background:transparent;font:inherit;font-weight:900;cursor:pointer;color:inherit}
+body[data-page="statistics_sales"] .airline-summary-table tfoot td{position:sticky;bottom:0;background:#f7f9fb;font-weight:900}
+body[data-page="statistics_sales"] .negative{color:#d92d20;font-weight:900}
+body[data-page="statistics_sales"] .positive{color:#0f8738;font-weight:900}
+body[data-page="statistics_sales"] .modal-backdrop{position:fixed;inset:0;background:rgba(7,17,34,.42);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px}
+body[data-page="statistics_sales"] .modal-backdrop[hidden]{display:none}
+body[data-page="statistics_sales"] .ticket-modal{width:min(980px,100%);max-height:86vh;overflow:auto;background:#fff;border-radius:7px;border:1px solid #d9dde3;box-shadow:0 18px 44px rgba(7,17,34,.22)}
+body[data-page="statistics_sales"] .modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid #d9dde3;background:#f7f9fb}
+body[data-page="statistics_sales"] .modal-body{padding:14px}
+body[data-page="statistics_sales"] .ticket-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+body[data-page="statistics_sales"] .ticket-field{border:1px solid #edf0f3;border-radius:6px;padding:9px;background:#fff}
+body[data-page="statistics_sales"] .ticket-field span{display:block;color:#667085;font-size:12px;font-weight:800;margin-bottom:4px}
+body[data-page="statistics_sales"] .ticket-field strong{font-size:13px;color:#172033;word-break:keep-all}
+
+@media(max-width:1440px){
+  body[data-page="statistics_sales"] .flight-filter{grid-template-columns:170px repeat(4,minmax(118px,1fr)) auto}
+  body[data-page="statistics_sales"] .flight-kpi{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body[data-page="statistics_sales"] .calendar-layout{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+  body[data-page="statistics_sales"] .flight-filter{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body[data-page="statistics_sales"] .segmented,body[data-page="statistics_sales"] .keyword-field,body[data-page="statistics_sales"] .filter-actions{grid-column:1/-1}
+  body[data-page="statistics_sales"] .filter-actions{justify-content:flex-start;flex-wrap:wrap}
+  body[data-page="statistics_sales"] .flight-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body[data-page="statistics_sales"] .sales-calendar{display:block;border-top:0}
+  body[data-page="statistics_sales"] .calendar-weekdays{display:none}
+  body[data-page="statistics_sales"] .day-cell{min-height:98px;border-top:1px solid #d9dde3}
+  body[data-page="statistics_sales"] .day-sub .mobile-hide,body[data-page="statistics_sales"] .day-refund,body[data-page="statistics_sales"] .airline-badges{display:none}
+  body[data-page="statistics_sales"] .ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  body[data-page="statistics_sales"] .flight-filter,body[data-page="statistics_sales"] .flight-kpi{grid-template-columns:1fr}
+  body[data-page="statistics_sales"] .top-actions{justify-content:flex-start}
+  body[data-page="statistics_sales"] .calendar-head{display:block}
+  body[data-page="statistics_sales"] .toggle-check{margin-top:8px}
+  body[data-page="statistics_sales"] .ticket-grid{grid-template-columns:1fr}
+}
