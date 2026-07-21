@@ -22,7 +22,7 @@
 
       <nav class="setting-tabs" aria-label="사이트 설정 메뉴">
         <button class="active" type="button" aria-current="page">사이트 설정</button>
-        <button type="button" data-preparing>홈페이지 관련 설정</button>
+        <a href="homepage_setting.html">홈페이지 관련 설정</a>
         <button type="button" data-preparing>결제 관련 설정</button>
         <button type="button" data-preparing>예약 관련 설정</button>
         <button type="button" data-preparing>회원 관련 설정</button>
@@ -31,10 +31,10 @@
       <form id="siteSettingForm" novalidate>
         <section class="setting-card">
           <div class="card-head"><h2>사이트 기본정보</h2><p>사이트명과 검색엔진에 노출되는 정보를 설정합니다.</p></div>
-          <div class="card-body form-grid">
+          <div class="card-body form-grid site-info-grid">
             <div class="field"><label for="siteName">사이트 이름 <span class="required">필수</span></label><input id="siteName" name="siteName" value="AviaNext" placeholder="사이트 이름을 입력해주세요." aria-describedby="siteNameError"><p class="error" id="siteNameError"></p></div>
+            <div class="field"><label for="keywordInput">SEO 키워드</label><div class="tag-editor" id="tagEditor"><div id="keywordTags" class="keyword-tags"></div><input id="keywordInput" autocomplete="off" placeholder="키워드를 입력하고 Enter를 눌러주세요."></div><p class="help">여러 키워드는 쉼표로 구분하여 입력해주세요. 최대 20개까지 등록할 수 있습니다.</p></div>
             <div class="field wide"><label for="seoDescription">SEO 사이트 설명</label><textarea id="seoDescription" name="seoDescription" maxlength="200" rows="4" placeholder="검색결과에 노출될 사이트 설명을 입력해주세요."></textarea><div class="field-meta"><span>검색결과 노출을 고려해 80~160자 내외로 작성하는 것을 권장합니다.</span><strong id="seoCount">0 / 200</strong></div></div>
-            <div class="field wide"><label for="keywordInput">SEO 키워드</label><div class="tag-editor" id="tagEditor"><div id="keywordTags" class="keyword-tags"></div><input id="keywordInput" autocomplete="off" placeholder="키워드를 입력하고 Enter를 눌러주세요."></div><p class="help">여러 키워드는 쉼표로 구분하여 입력해주세요. 최대 20개까지 등록할 수 있습니다.</p></div>
           </div>
         </section>
 

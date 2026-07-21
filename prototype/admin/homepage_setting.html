@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>홈페이지 관련 설정</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/homepage-setting.css">
+</head>
+<body data-page="homepage_setting">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong>홈페이지 관련 설정</strong><span>관리자 · 기본설정</span></header>
+    <div class="page">
+      <div class="page-head">
+        <div><div class="breadcrumb">기본설정 &gt; 사이트설정 &gt; 홈페이지 관련 설정</div><h1>홈페이지 관련 설정</h1><div class="desc">홈페이지의 검색엔진, 간편로그인, SMS 연동정보를 관리합니다.</div></div>
+        <button class="btn blue save-action" type="button">변경사항 저장</button>
+      </div>
+
+      <nav class="setting-tabs" aria-label="사이트 설정 메뉴">
+        <a href="site_setting.html" data-page-link>사이트 설정</a>
+        <a class="active" href="homepage_setting.html" aria-current="page">홈페이지 관련 설정</a>
+        <button type="button" data-preparing>결제 관련 설정</button>
+        <button type="button" data-preparing>예약 관련 설정</button>
+        <button type="button" data-preparing>회원 관련 설정</button>
+      </nav>
+
+      <form id="homepageSettingForm" novalidate>
+        <section class="setting-card">
+          <div class="card-head"><h2>일반 설정</h2><p>홈페이지 연결주소와 검색엔진 등록정보를 설정합니다.</p></div>
+          <div class="card-body form-grid">
+            <div class="field wide"><label for="kakaoChatUrl">카카오 채팅 URL</label><div class="input-actions"><input id="kakaoChatUrl" name="kakaoChatUrl" type="url" placeholder="카카오톡 채널 또는 채팅 URL을 입력해주세요." aria-describedby="kakaoChatUrlError"><button class="btn" id="checkKakaoLink" type="button">링크 확인 ↗</button></div><p class="error" id="kakaoChatUrlError"></p></div>
+            <div class="field wide"><label for="naverMetaTag">네이버 소유권 확인 메타태그</label><textarea id="naverMetaTag" name="naverMetaTag" rows="3" spellcheck="false" placeholder="네이버 서치어드바이저에서 발급받은 메타태그를 입력해주세요."></textarea><p class="help">네이버 서치어드바이저에서 발급받은 소유권 확인 메타태그 전체를 입력해주세요. 예: &lt;meta name=&quot;naver-site-verification&quot; content=&quot;발급값&quot; /&gt;</p></div>
+            <div class="field wide"><label for="googleMetaTag">구글 소유권 확인 메타태그</label><textarea id="googleMetaTag" name="googleMetaTag" rows="3" spellcheck="false" placeholder="Google Search Console에서 발급받은 메타태그를 입력해주세요."></textarea><p class="help">Google Search Console에서 발급받은 소유권 확인 메타태그 전체를 입력해주세요. 예: &lt;meta name=&quot;google-site-verification&quot; content=&quot;발급값&quot; /&gt;</p></div>
+            <div class="field wide"><label for="sitemapUrl">사이트맵 URL</label><!-- TODO: 실제 서비스 도메인 API 또는 서버 설정값으로 교체 --><div class="readonly-url"><input id="sitemapUrl" name="sitemapUrl" value="https://example.com/sitemap.xml" readonly><button class="btn small" type="button" data-copy-target="sitemapUrl" data-copy-message="사이트맵 URL이 복사되었습니다.">복사</button><button class="btn small" type="button" data-open-target="sitemapUrl">새 창에서 확인 ↗</button></div><p class="help">검색엔진 등록 시 위 사이트맵 URL을 제출해주세요.</p></div>
+          </div>
+        </section>
+
+        <section class="setting-card">
+          <div class="card-head"><h2>간편로그인 설정</h2><p>홈페이지에서 사용할 네이버와 카카오 간편로그인 정보를 설정합니다.</p></div>
+          <div class="card-body provider-grid">
+            <article class="provider-card naver-card">
+              <div class="provider-head"><h3><span class="brand-dot">N</span> 네이버 로그인</h3><label class="switch-label"><span>네이버 간편로그인 사용</span><input id="naverEnabled" name="naverEnabled" type="checkbox"><i aria-hidden="true"></i></label></div>
+              <div class="provider-body">
+                <div class="field"><label for="naverClientId">Client ID <span class="required">사용 시 필수</span></label><input id="naverClientId" name="naverClientId" autocomplete="off" placeholder="네이버 Client ID를 입력해주세요." aria-describedby="naverClientIdError"><p class="error" id="naverClientIdError"></p></div>
+                <div class="field"><label for="naverClientSecret">Client Secret <span class="required">사용 시 필수</span></label><div class="secret-input"><input id="naverClientSecret" name="naverClientSecret" type="password" autocomplete="new-password" placeholder="네이버 Client Secret을 입력해주세요." aria-describedby="naverClientSecretError"><button class="btn small" type="button" data-secret-target="naverClientSecret" aria-label="Client Secret 보기">보기</button></div><p class="error" id="naverClientSecretError"></p></div>
+                <div class="field"><label for="naverCallbackUrl">Callback URL</label><!-- TODO: 실제 서비스 도메인 API 또는 서버 설정값으로 교체 --><div class="readonly-url"><input id="naverCallbackUrl" name="naverCallbackUrl" value="https://example.com/auth/naver/callback" readonly><button class="btn small" type="button" data-copy-target="naverCallbackUrl" data-copy-message="네이버 Callback URL이 복사되었습니다.">복사</button></div></div>
+                <div class="provider-foot"><a class="btn external-link" href="https://developers.naver.com/apps/#/register?api=nvlogin" target="_blank" rel="noopener noreferrer">Client ID 발급 ↗</a><p class="help">네이버 개발자센터에서 애플리케이션을 등록한 후 Client ID와 Client Secret을 입력해주세요.</p></div>
+              </div>
+            </article>
+
+            <article class="provider-card kakao-card">
+              <div class="provider-head"><h3><span class="brand-dot">K</span> 카카오 로그인</h3><label class="switch-label"><span>카카오 간편로그인 사용</span><input id="kakaoEnabled" name="kakaoEnabled" type="checkbox"><i aria-hidden="true"></i></label></div>
+              <div class="provider-body">
+                <div class="field"><label for="kakaoJavascriptKey">앱키(JavaScript 키) <span class="required">사용 시 필수</span></label><div class="secret-input"><input id="kakaoJavascriptKey" name="kakaoJavascriptKey" type="password" autocomplete="new-password" placeholder="카카오 JavaScript 키를 입력해주세요." aria-describedby="kakaoJavascriptKeyError"><button class="btn small" type="button" data-secret-target="kakaoJavascriptKey" aria-label="JavaScript 키 보기">보기</button></div><p class="error" id="kakaoJavascriptKeyError"></p></div>
+                <div class="field"><label for="kakaoRedirectUri">Redirect URI</label><!-- TODO: 실제 서비스 도메인 API 또는 서버 설정값으로 교체 --><div class="readonly-url"><input id="kakaoRedirectUri" name="kakaoRedirectUri" value="https://example.com/auth/kakao/callback" readonly><button class="btn small" type="button" data-copy-target="kakaoRedirectUri" data-copy-message="카카오 Redirect URI가 복사되었습니다.">복사</button></div></div>
+                <div class="provider-foot"><a class="btn external-link" href="https://developers.kakao.com/console/app" target="_blank" rel="noopener noreferrer">앱키 발급 ↗</a><p class="help">카카오 개발자 콘솔에서 애플리케이션을 생성한 후 JavaScript 키를 입력해주세요.</p></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="setting-card">
+          <div class="card-head"><h2>SMS 연동 설정</h2><p>팝빌 계정을 연결하여 문자와 알림 발송에 사용할 정보를 설정합니다.</p></div>
+          <div class="card-body">
+            <div class="service-toggle"><label class="switch-label"><span>팝빌 SMS 사용</span><input id="popbillEnabled" name="popbillEnabled" type="checkbox"><i aria-hidden="true"></i></label></div>
+            <div class="form-grid sms-grid">
+              <div class="field"><label for="popbillId">팝빌 ID <span class="required">사용 시 필수</span></label><input id="popbillId" name="popbillId" autocomplete="off" placeholder="팝빌 ID를 입력해주세요." aria-describedby="popbillIdError"><p class="error" id="popbillIdError"></p></div>
+              <div class="field"><label>연동회원 회원가입</label><a class="btn external-link" href="https://www.popbill.com/App/SignUp" target="_blank" rel="noopener noreferrer">연동회원 회원가입 ↗</a></div>
+              <div class="link-id-notice wide"><div><strong>팝빌 회원가입 시 링크아이디는 <code>avianext</code>를 입력해주세요.</strong><span>링크아이디는 고정값이며 수정할 수 없습니다.</span></div><button class="btn small" type="button" data-copy-value="avianext" data-copy-message="링크아이디 avianext가 복사되었습니다.">복사</button></div>
+              <div class="field"><label for="popbillBusinessNumber">사업자등록번호 <span class="required">사용 시 필수</span></label><input id="popbillBusinessNumber" name="popbillBusinessNumber" inputmode="numeric" placeholder="사업자등록번호를 입력해주세요." aria-describedby="popbillBusinessNumberError"><p class="error" id="popbillBusinessNumberError"></p></div>
+              <div class="field wide"><label for="popbillWebhookUrl">Webhook URL</label><!-- TODO: 실제 서비스 도메인 API 또는 서버 설정값으로 교체 --><div class="readonly-url"><input id="popbillWebhookUrl" name="popbillWebhookUrl" value="https://example.com/webhook/popbill" readonly><button class="btn small" type="button" data-copy-target="popbillWebhookUrl" data-copy-message="Webhook URL이 복사되었습니다.">복사</button></div><p class="help">팝빌 연동 또는 발송 결과 수신을 위해 제공되는 URL입니다. 관리자 안내에 따라 등록해주세요.</p></div>
+            </div>
+          </div>
+        </section>
+      </form>
+
+      <div class="save-bar"><div><strong id="lastSaved">마지막 저장: 2026.07.21 15:20</strong><span id="changeStatus">저장된 상태입니다.</span></div><div class="save-buttons"><button class="btn cancel-action" type="button" disabled>취소</button><button class="btn blue save-action" type="button">변경사항 저장</button></div></div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="homepageToast" role="status" aria-live="polite"></div>
+<script src="./js/common.js"></script>
+<script src="./js/components.js"></script>
+<script src="./js/homepage-setting.js"></script>
+</body>
+</html>

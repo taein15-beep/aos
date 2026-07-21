@@ -28,14 +28,15 @@ body[data-page="site_setting"] .btn.blue{background:#2f63f6;border-color:#2f63f6
 body[data-page="site_setting"] .btn.red{color:#d92d20;border-color:#f0b9b5}
 body[data-page="site_setting"] .btn:disabled{opacity:.45;cursor:not-allowed}
 body[data-page="site_setting"] .setting-tabs{display:flex;overflow-x:auto;background:#fff;border:1px solid #d9dde3;border-radius:7px 7px 0 0;padding:0 10px;margin-bottom:12px}
-body[data-page="site_setting"] .setting-tabs button{min-width:max-content;padding:14px 17px 12px;border:0;border-bottom:3px solid transparent;background:transparent;color:#667085;font:inherit;font-weight:800;cursor:pointer}
-body[data-page="site_setting"] .setting-tabs button.active{border-bottom-color:#2f63f6;color:#2455dc}
+body[data-page="site_setting"] .setting-tabs button,body[data-page="site_setting"] .setting-tabs a{min-width:max-content;padding:14px 17px 12px;border:0;border-bottom:3px solid transparent;background:transparent;color:#667085;font:inherit;font-weight:800;cursor:pointer;text-decoration:none}
+body[data-page="site_setting"] .setting-tabs button.active,body[data-page="site_setting"] .setting-tabs a.active{border-bottom-color:#2f63f6;color:#2455dc}
 body[data-page="site_setting"] .setting-card{background:#fff;border:1px solid #d9dde3;border-radius:7px;margin-bottom:12px;overflow:hidden}
 body[data-page="site_setting"] .card-head{padding:14px 16px;border-bottom:1px solid #e4e7ec;background:#f8fafc}
 body[data-page="site_setting"] .card-head h2{font-size:16px;margin:0 0 5px;color:#172033}
 body[data-page="site_setting"] .card-head p,body[data-page="site_setting"] .sub-head p{margin:0;color:#667085;font-size:12px;font-weight:700}
 body[data-page="site_setting"] .card-body{padding:16px}
 body[data-page="site_setting"] .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px}
+body[data-page="site_setting"] .site-info-grid{grid-template-columns:minmax(0,3fr) minmax(0,7fr)}
 body[data-page="site_setting"] .company-info-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 body[data-page="site_setting"] .field.wide{grid-column:1/-1}
 body[data-page="site_setting"] .field label{display:block;margin-bottom:7px;font-weight:900;color:#344054}

@@ -38,7 +38,8 @@
       'member_web_form.html': 'member_web_list.html',
       'member_web_detail.html': 'member_web_list.html',
       'member_admin_form.html': 'member_admin_list.html',
-      'member_admin_detail.html': 'member_admin_list.html'
+      'member_admin_detail.html': 'member_admin_list.html',
+      'homepage_setting.html': 'site_setting.html'
     };
     var activePage = activePageMap[page] || page;
     var links = Array.prototype.slice.call(container.querySelectorAll('a[href]'));
