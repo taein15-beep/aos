@@ -39,27 +39,24 @@
         </section>
 
         <section class="setting-card">
-          <div class="card-head"><h2>회사 기본정보</h2><p>홈페이지 하단과 약관 등에 표시되는 회사 정보를 관리합니다.</p></div>
-          <div class="card-body form-grid">
-            <div class="field"><label for="companyName">회사명</label><input id="companyName" name="companyName" placeholder="회사명을 입력해주세요."></div>
-            <div class="field"><label for="ceoName">대표자</label><input id="ceoName" name="ceoName" placeholder="대표자명을 입력해주세요."></div>
-            <div class="field"><label for="phone">전화번호</label><input id="phone" name="phone" inputmode="numeric" data-phone placeholder="02-0000-0000"></div>
-            <div class="field"><label for="fax">팩스번호</label><input id="fax" name="fax" inputmode="numeric" data-phone placeholder="02-0000-0000"></div>
-            <div class="field"><label for="email">이메일</label><input id="email" name="email" type="email" placeholder="company@example.com" aria-describedby="emailError"><p class="error" id="emailError"></p></div>
-            <div class="field"><label for="privacyManager">개인정보책임자</label><input id="privacyManager" name="privacyManager" placeholder="개인정보책임자를 입력해주세요."></div>
-            <div class="field"><label for="businessType">업태</label><input id="businessType" name="businessType" placeholder="업태를 입력해주세요."></div>
-            <div class="field"><label for="businessItem">종목</label><input id="businessItem" name="businessItem" placeholder="종목을 입력해주세요."></div>
-          </div>
-        </section>
-
-        <section class="setting-card">
-          <div class="card-head"><h2>주소 및 계좌정보</h2><p>회사 주소와 고객에게 안내할 입금계좌 정보를 설정합니다.</p></div>
+          <div class="card-head"><h2>회사 기본정보</h2><p>홈페이지 하단과 약관 등에 표시되는 회사 정보와 주소·계좌 정보를 관리합니다.</p></div>
           <div class="card-body">
+            <div class="form-grid company-info-grid">
+              <div class="field"><label for="companyName">회사명</label><input id="companyName" name="companyName" placeholder="회사명을 입력해주세요."></div>
+              <div class="field"><label for="ceoName">대표자</label><input id="ceoName" name="ceoName" placeholder="대표자명을 입력해주세요."></div>
+              <div class="field"><label for="businessType">업태</label><input id="businessType" name="businessType" placeholder="업태를 입력해주세요."></div>
+              <div class="field"><label for="businessItem">종목</label><input id="businessItem" name="businessItem" placeholder="종목을 입력해주세요."></div>
+              <div class="field"><label for="privacyManager">개인정보책임자</label><input id="privacyManager" name="privacyManager" placeholder="개인정보책임자를 입력해주세요."></div>
+              <div class="field"><label for="phone">전화번호</label><input id="phone" name="phone" inputmode="numeric" data-phone placeholder="02-0000-0000"></div>
+              <div class="field"><label for="fax">팩스번호</label><input id="fax" name="fax" inputmode="numeric" data-phone placeholder="02-0000-0000"></div>
+              <div class="field"><label for="email">이메일</label><input id="email" name="email" type="email" placeholder="company@example.com" aria-describedby="emailError"><p class="error" id="emailError"></p></div>
+            </div>
+            <div class="section-divider"></div>
             <h3 class="sub-title">회사 주소</h3>
-            <div class="form-grid address-grid">
-              <div class="field"><label for="postcode">우편번호</label><div class="input-action"><input id="postcode" name="postcode" inputmode="numeric" placeholder="우편번호"><button class="btn" id="addressSearch" type="button">주소검색</button></div></div>
-              <div class="field wide"><label for="address">기본주소</label><input id="address" name="address" placeholder="주소검색을 이용해주세요."></div>
-              <div class="field wide"><label for="addressDetail">상세주소</label><input id="addressDetail" name="addressDetail" placeholder="상세주소를 입력해주세요."></div>
+            <div class="address-line">
+              <div class="field"><label for="address">기본주소</label><input id="address" name="address" placeholder="주소검색을 이용해주세요."></div>
+              <button class="btn address-search-button" id="addressSearch" type="button">주소검색</button>
+              <div class="field"><label for="addressDetail">상세주소</label><input id="addressDetail" name="addressDetail" placeholder="상세주소를 입력해주세요."></div>
             </div>
             <div class="section-divider"></div>
             <div class="sub-head"><div><h3 class="sub-title">입금계좌 정보</h3><p>고객에게 안내할 계좌를 등록하고 대표계좌를 선택해주세요.</p></div><button class="btn" id="addAccount" type="button">+ 계좌 추가</button></div>
@@ -69,18 +66,17 @@
 
         <section class="setting-card">
           <div class="card-head"><h2>사업자 및 증빙정보</h2><p>사업자 관련 등록번호와 증빙서류를 관리합니다.</p></div>
-          <div class="card-body document-list">
-            <div class="document-row">
-              <div class="field document-number"><label for="businessNumber">사업자등록번호</label><input id="businessNumber" name="businessNumber" inputmode="numeric" placeholder="123-45-67890"></div>
-              <div class="field"><label>사업자등록증 파일첨부</label><div class="upload-box" data-upload="businessLicense" tabindex="0"><input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden><strong>파일 선택 또는 드래그앤드롭</strong><span>PDF, JPG, JPEG, PNG · 최대 10MB</span></div><div class="file-result" data-file-result="businessLicense"></div></div>
+          <div class="card-body">
+            <div class="registration-number-grid">
+              <div class="field"><label for="businessNumber">사업자등록번호</label><input id="businessNumber" name="businessNumber" inputmode="numeric" placeholder="123-45-67890"></div>
+              <div class="field"><label for="onlineSalesNumber">통신판매신고번호</label><input id="onlineSalesNumber" name="onlineSalesNumber" placeholder="통신판매신고번호를 입력해주세요."></div>
+              <div class="field"><label for="tourismNumber">관광사업자등록번호</label><input id="tourismNumber" name="tourismNumber" placeholder="관광사업자등록번호를 입력해주세요."></div>
             </div>
-            <div class="document-row">
-              <div class="field document-number"><label for="onlineSalesNumber">통신판매신고번호</label><input id="onlineSalesNumber" name="onlineSalesNumber" placeholder="통신판매신고번호를 입력해주세요."></div>
-              <div class="field"><label>통신판매업 신고증 파일첨부</label><div class="upload-box" data-upload="onlineSalesLicense" tabindex="0"><input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden><strong>파일 선택 또는 드래그앤드롭</strong><span>PDF, JPG, JPEG, PNG · 최대 10MB</span></div><div class="file-result" data-file-result="onlineSalesLicense"></div></div>
-            </div>
-            <div class="document-row">
-              <div class="field document-number"><label for="tourismNumber">관광사업등록번호</label><input id="tourismNumber" name="tourismNumber" placeholder="관광사업등록번호를 입력해주세요."></div>
-              <div class="field"><label>관광사업등록증 파일첨부</label><div class="upload-box" data-upload="tourismLicense" tabindex="0"><input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden><strong>파일 선택 또는 드래그앤드롭</strong><span>PDF, JPG, JPEG, PNG · 최대 10MB</span></div><div class="file-result" data-file-result="tourismLicense"></div></div>
+            <div class="section-divider"></div>
+            <div class="attachment-grid">
+              <div class="field"><label>사업자등록증</label><div class="upload-box" data-upload="businessLicense" tabindex="0"><input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden><strong>파일첨부</strong></div><div class="file-result" data-file-result="businessLicense"></div><p class="help">PDF, JPG, JPEG, PNG · 최대 10MB</p></div>
+              <div class="field"><label>통신판매업 신고증</label><div class="upload-box" data-upload="onlineSalesLicense" tabindex="0"><input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden><strong>파일첨부</strong></div><div class="file-result" data-file-result="onlineSalesLicense"></div><p class="help">PDF, JPG, JPEG, PNG · 최대 10MB</p></div>
+              <div class="field"><label>관광사업등록증</label><div class="upload-box" data-upload="tourismLicense" tabindex="0"><input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden><strong>파일첨부</strong></div><div class="file-result" data-file-result="tourismLicense"></div><p class="help">PDF, JPG, JPEG, PNG · 최대 10MB</p></div>
             </div>
           </div>
         </section>

@@ -36,6 +36,7 @@ body[data-page="site_setting"] .card-head h2{font-size:16px;margin:0 0 5px;color
 body[data-page="site_setting"] .card-head p,body[data-page="site_setting"] .sub-head p{margin:0;color:#667085;font-size:12px;font-weight:700}
 body[data-page="site_setting"] .card-body{padding:16px}
 body[data-page="site_setting"] .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px}
+body[data-page="site_setting"] .company-info-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 body[data-page="site_setting"] .field.wide{grid-column:1/-1}
 body[data-page="site_setting"] .field label{display:block;margin-bottom:7px;font-weight:900;color:#344054}
 body[data-page="site_setting"] input,body[data-page="site_setting"] select,body[data-page="site_setting"] textarea{width:100%;border:1px solid #cfd5de;border-radius:6px;background:#fff;padding:9px 11px;color:#222;font:inherit;outline:none}
@@ -54,7 +55,8 @@ body[data-page="site_setting"] .keyword-tags{display:contents}
 body[data-page="site_setting"] .keyword-tag{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:14px;background:#eaf1ff;color:#2556d9;font-weight:800}
 body[data-page="site_setting"] .keyword-tag button{border:0;background:transparent;color:inherit;padding:0;cursor:pointer;font-weight:900}
 body[data-page="site_setting"] .sub-title{font-size:14px;margin:0 0 12px;color:#172033}
-body[data-page="site_setting"] .input-action{display:flex;gap:8px}
+body[data-page="site_setting"] .address-line{display:grid;grid-template-columns:minmax(0,1.25fr) auto minmax(0,1fr);gap:8px;align-items:end}
+body[data-page="site_setting"] .address-search-button{margin-bottom:0}
 body[data-page="site_setting"] .section-divider{height:1px;background:#e4e7ec;margin:20px 0}
 body[data-page="site_setting"] .sub-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
 body[data-page="site_setting"] .sub-head .sub-title{margin-bottom:4px}
@@ -63,13 +65,13 @@ body[data-page="site_setting"] .account-row{display:grid;grid-template-columns:1
 body[data-page="site_setting"] .account-row label{display:block;margin-bottom:6px;font-weight:800;font-size:12px;color:#475467}
 body[data-page="site_setting"] .primary-radio{height:38px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:800}
 body[data-page="site_setting"] .primary-radio input{width:auto;height:auto}
-body[data-page="site_setting"] .document-list{display:grid;gap:12px}
-body[data-page="site_setting"] .document-row{display:grid;grid-template-columns:minmax(240px,.65fr) minmax(0,1.35fr);gap:18px;padding:14px;border:1px solid #e4e7ec;border-radius:7px;background:#fafbfc}
-body[data-page="site_setting"] .upload-box{min-height:82px;border:1px dashed #98a2b3;border-radius:7px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#475467;cursor:pointer;text-align:center}
+body[data-page="site_setting"] .registration-number-grid,body[data-page="site_setting"] .attachment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+body[data-page="site_setting"] .upload-box{display:inline-flex;min-height:34px;padding:0 12px;border:1px solid #cfd5de;border-radius:6px;background:#fff;align-items:center;justify-content:center;color:#344054;cursor:pointer;text-align:center;font-size:12px}
+body[data-page="site_setting"] .upload-box:hover{background:#f8fafc}
 body[data-page="site_setting"] .upload-box.dragover{border-color:#2f63f6;background:#f0f5ff}
-body[data-page="site_setting"] .upload-box span{font-size:11px;color:#667085}
 body[data-page="site_setting"] .file-result{margin-top:7px}
 body[data-page="site_setting"] .file-info{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid #d9dde3;border-radius:6px;background:#fff}
+body[data-page="site_setting"] .attachment-grid .file-info{align-items:flex-start;flex-direction:column}
 body[data-page="site_setting"] .file-name{min-width:0}
 body[data-page="site_setting"] .file-name strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 body[data-page="site_setting"] .file-name span{color:#667085;font-size:11px}
@@ -82,5 +84,6 @@ body[data-page="site_setting"] .save-bar.dirty span{color:#b54708}
 body[data-page="site_setting"] .save-buttons{display:flex;gap:8px}
 body[data-page="site_setting"] .toast{position:fixed;left:50%;bottom:28px;z-index:100;transform:translate(-50%,20px);padding:11px 16px;border-radius:7px;background:#172033;color:#fff;font-weight:800;opacity:0;pointer-events:none;transition:.2s}
 body[data-page="site_setting"] .toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1200px){body[data-page="site_setting"] .company-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:1000px){body[data-page="site_setting"] .account-row{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-page="site_setting"] .account-row .account-delete{grid-column:2;justify-self:end}}
-@media(max-width:760px){body[data-page="site_setting"] .app{grid-template-columns:1fr}body[data-page="site_setting"] .sidebar{display:none}body[data-page="site_setting"] .page{padding:12px}body[data-page="site_setting"] .page-head{align-items:flex-start}body[data-page="site_setting"] .page-head .save-action{display:none}body[data-page="site_setting"] .form-grid,body[data-page="site_setting"] .document-row,body[data-page="site_setting"] .account-row{grid-template-columns:1fr}body[data-page="site_setting"] .account-row .account-delete{grid-column:auto;justify-self:stretch}body[data-page="site_setting"] .save-bar{align-items:flex-start;flex-direction:column}body[data-page="site_setting"] .save-buttons{width:100%}body[data-page="site_setting"] .save-buttons .btn{flex:1}body[data-page="site_setting"] .field-meta{display:block}body[data-page="site_setting"] .field-meta strong{display:block;margin-top:4px}}
+@media(max-width:760px){body[data-page="site_setting"] .app{grid-template-columns:1fr}body[data-page="site_setting"] .sidebar{display:none}body[data-page="site_setting"] .page{padding:12px}body[data-page="site_setting"] .page-head{align-items:flex-start}body[data-page="site_setting"] .page-head .save-action{display:none}body[data-page="site_setting"] .form-grid,body[data-page="site_setting"] .registration-number-grid,body[data-page="site_setting"] .attachment-grid,body[data-page="site_setting"] .account-row,body[data-page="site_setting"] .address-line{grid-template-columns:1fr}body[data-page="site_setting"] .address-search-button{width:100%}body[data-page="site_setting"] .account-row .account-delete{grid-column:auto;justify-self:stretch}body[data-page="site_setting"] .save-bar{align-items:flex-start;flex-direction:column}body[data-page="site_setting"] .save-buttons{width:100%}body[data-page="site_setting"] .save-buttons .btn{flex:1}body[data-page="site_setting"] .field-meta{display:block}body[data-page="site_setting"] .field-meta strong{display:block;margin-top:4px}}
