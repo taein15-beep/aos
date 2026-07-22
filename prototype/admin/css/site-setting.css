@@ -22,10 +22,10 @@ body[data-page="site_setting"] .page-head{display:flex;justify-content:space-bet
 body[data-page="site_setting"] h1{font-size:24px;margin:3px 0 6px}
 body[data-page="site_setting"] .breadcrumb{color:#667085;font-size:12px;font-weight:700}
 body[data-page="site_setting"] .desc{font-weight:700;color:#555}
-body[data-page="site_setting"] .btn{height:38px;padding:0 14px;border:1px solid #cfd5de;border-radius:6px;background:#fff;color:#344054;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}
-body[data-page="site_setting"] .btn:hover{background:#f8fafc}
-body[data-page="site_setting"] .btn.blue{background:#2f63f6;border-color:#2f63f6;color:#fff}
-body[data-page="site_setting"] .btn.red{color:#d92d20;border-color:#f0b9b5}
+body[data-page="site_setting"] .btn{height:38px;padding:0 14px;border:1px solid #6b6b6b;border-radius:0;background:#6b6b6b;color:#fff;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}
+body[data-page="site_setting"] .btn:hover{background:#555;border-color:#555;color:#fff}
+body[data-page="site_setting"] .btn.blue,body[data-page="site_setting"] .btn.red{background:#6b6b6b;border-color:#6b6b6b;color:#fff}
+body[data-page="site_setting"] .btn.blue:hover,body[data-page="site_setting"] .btn.red:hover{background:#555;border-color:#555;color:#fff}
 body[data-page="site_setting"] .btn:disabled{opacity:.45;cursor:not-allowed}
 body[data-page="site_setting"] .setting-tabs{display:flex;overflow-x:auto;background:#fff;border:1px solid #d9dde3;border-radius:7px 7px 0 0;padding:0 10px;margin-bottom:12px}
 body[data-page="site_setting"] .setting-tabs button,body[data-page="site_setting"] .setting-tabs a{min-width:max-content;padding:14px 17px 12px;border:0;border-bottom:3px solid transparent;background:transparent;color:#667085;font:inherit;font-weight:800;cursor:pointer;text-decoration:none}
@@ -40,6 +40,27 @@ body[data-page="site_setting"] .site-info-grid{grid-template-columns:minmax(0,3f
 body[data-page="site_setting"] .company-info-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 body[data-page="site_setting"] .field.wide{grid-column:1/-1}
 body[data-page="site_setting"] .field label{display:block;margin-bottom:7px;font-weight:900;color:#344054}
+body[data-page="site_setting"] .inline-label-help{margin-left:5px;color:#667085;font-size:12px;font-weight:700}
+body[data-page="site_setting"] .field label:before,body[data-page="site_setting"] .account-row label:before{display:inline-block;margin-right:5px;font-size:14px;line-height:1;vertical-align:-1px}
+body[data-page="site_setting"] label[for="siteName"]:before{content:"🌐"}
+body[data-page="site_setting"] label[for="keywordInput"]:before{content:"🔑"}
+body[data-page="site_setting"] label[for="seoDescription"]:before{content:"📝"}
+body[data-page="site_setting"] label[for="companyName"]:before{content:"🏢"}
+body[data-page="site_setting"] label[for="ceoName"]:before{content:"👤"}
+body[data-page="site_setting"] label[for="businessType"]:before{content:"💼"}
+body[data-page="site_setting"] label[for="businessItem"]:before{content:"📋"}
+body[data-page="site_setting"] label[for="privacyManager"]:before{content:"🛡️"}
+body[data-page="site_setting"] label[for="phone"]:before{content:"☎️"}
+body[data-page="site_setting"] label[for="fax"]:before{content:"📠"}
+body[data-page="site_setting"] label[for="email"]:before{content:"✉️"}
+body[data-page="site_setting"] label[for="address"]:before{content:"📍"}
+body[data-page="site_setting"] label[for="addressDetail"]:before{content:"🏠"}
+body[data-page="site_setting"] label[for="businessNumber"]:before{content:"🪪"}
+body[data-page="site_setting"] label[for="onlineSalesNumber"]:before{content:"🛒"}
+body[data-page="site_setting"] label[for="tourismNumber"]:before{content:"✈️"}
+body[data-page="site_setting"] .attachment-grid .field:nth-child(1)>label:before{content:"📄"}
+body[data-page="site_setting"] .attachment-grid .field:nth-child(2)>label:before{content:"📄"}
+body[data-page="site_setting"] .attachment-grid .field:nth-child(3)>label:before{content:"📄"}
 body[data-page="site_setting"] input,body[data-page="site_setting"] select,body[data-page="site_setting"] textarea{width:100%;border:1px solid #cfd5de;border-radius:6px;background:#fff;padding:9px 11px;color:#222;font:inherit;outline:none}
 body[data-page="site_setting"] input,body[data-page="site_setting"] select{height:38px}
 body[data-page="site_setting"] textarea{resize:vertical;line-height:1.5}
@@ -49,14 +70,14 @@ body[data-page="site_setting"] .required{display:inline-block;margin-left:5px;pa
 body[data-page="site_setting"] .error{min-height:15px;margin:5px 0 0;color:#d92d20;font-size:12px;font-weight:700}
 body[data-page="site_setting"] .help,body[data-page="site_setting"] .field-meta{margin:6px 0 0;color:#667085;font-size:12px;font-weight:700}
 body[data-page="site_setting"] .field-meta{display:flex;justify-content:space-between;gap:12px}
-body[data-page="site_setting"] .field-meta strong{color:#475467;white-space:nowrap}
+body[data-page="site_setting"] .field-meta strong{margin-left:auto;color:#475467;white-space:nowrap}
 body[data-page="site_setting"] .tag-editor{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:44px;padding:6px 8px;border:1px solid #cfd5de;border-radius:6px}
 body[data-page="site_setting"] .tag-editor input{flex:1;min-width:230px;height:30px;padding:4px;border:0;box-shadow:none!important}
 body[data-page="site_setting"] .keyword-tags{display:contents}
 body[data-page="site_setting"] .keyword-tag{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:14px;background:#eaf1ff;color:#2556d9;font-weight:800}
 body[data-page="site_setting"] .keyword-tag button{border:0;background:transparent;color:inherit;padding:0;cursor:pointer;font-weight:900}
 body[data-page="site_setting"] .sub-title{font-size:14px;margin:0 0 12px;color:#172033}
-body[data-page="site_setting"] .address-line{display:grid;grid-template-columns:minmax(0,1.25fr) auto minmax(0,1fr);gap:8px;align-items:end}
+body[data-page="site_setting"] .address-line{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) auto;gap:8px;align-items:end}
 body[data-page="site_setting"] .address-search-button{margin-bottom:0}
 body[data-page="site_setting"] .section-divider{height:1px;background:#e4e7ec;margin:20px 0}
 body[data-page="site_setting"] .sub-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
@@ -64,11 +85,14 @@ body[data-page="site_setting"] .sub-head .sub-title{margin-bottom:4px}
 body[data-page="site_setting"] .account-list{display:grid;gap:8px}
 body[data-page="site_setting"] .account-row{display:grid;grid-template-columns:1.15fr 1.5fr 1.15fr 110px 72px;gap:8px;align-items:end;padding:12px;border:1px solid #e4e7ec;border-radius:7px;background:#fafbfc}
 body[data-page="site_setting"] .account-row label{display:block;margin-bottom:6px;font-weight:800;font-size:12px;color:#475467}
+body[data-page="site_setting"] .account-row>div:nth-child(1) label:before{content:"🏦"}
+body[data-page="site_setting"] .account-row>div:nth-child(2) label:before{content:"🔢"}
+body[data-page="site_setting"] .account-row>div:nth-child(3) label:before{content:"👤"}
 body[data-page="site_setting"] .primary-radio{height:38px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:800}
 body[data-page="site_setting"] .primary-radio input{width:auto;height:auto}
 body[data-page="site_setting"] .registration-number-grid,body[data-page="site_setting"] .attachment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-body[data-page="site_setting"] .upload-box{display:inline-flex;min-height:34px;padding:0 12px;border:1px solid #cfd5de;border-radius:6px;background:#fff;align-items:center;justify-content:center;color:#344054;cursor:pointer;text-align:center;font-size:12px}
-body[data-page="site_setting"] .upload-box:hover{background:#f8fafc}
+body[data-page="site_setting"] .upload-box{display:inline-flex;min-height:34px;padding:0 12px;border:1px solid #6b6b6b;border-radius:0;background:#6b6b6b;align-items:center;justify-content:center;color:#fff;cursor:pointer;text-align:center;font-size:12px;font-weight:800}
+body[data-page="site_setting"] .upload-box:hover{background:#555;border-color:#555;color:#fff}
 body[data-page="site_setting"] .upload-box.dragover{border-color:#2f63f6;background:#f0f5ff}
 body[data-page="site_setting"] .file-result{margin-top:7px}
 body[data-page="site_setting"] .file-info{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid #d9dde3;border-radius:6px;background:#fff}

@@ -181,13 +181,6 @@
   });
   form.addEventListener('change', markDirty);
 
-  document.getElementById('checkKakaoLink').addEventListener('click', function () {
-    var field = document.getElementById('kakaoChatUrl');
-    document.getElementById('kakaoChatUrlError').textContent = '';
-    field.classList.remove('invalid');
-    if (!openExternal(field.value.trim())) setError('kakaoChatUrl', 'kakaoChatUrlError', '올바른 URL을 입력해주세요.');
-  });
-
   document.querySelectorAll('[data-copy-target]').forEach(function (button) {
     button.addEventListener('click', function () {
       copyText(document.getElementById(button.getAttribute('data-copy-target')).value, button.getAttribute('data-copy-message'));

@@ -33,8 +33,8 @@
           <div class="card-head"><h2>사이트 기본정보</h2><p>사이트명과 검색엔진에 노출되는 정보를 설정합니다.</p></div>
           <div class="card-body form-grid site-info-grid">
             <div class="field"><label for="siteName">사이트 이름 <span class="required">필수</span></label><input id="siteName" name="siteName" value="AviaNext" placeholder="사이트 이름을 입력해주세요." aria-describedby="siteNameError"><p class="error" id="siteNameError"></p></div>
-            <div class="field"><label for="keywordInput">SEO 키워드</label><div class="tag-editor" id="tagEditor"><div id="keywordTags" class="keyword-tags"></div><input id="keywordInput" autocomplete="off" placeholder="키워드를 입력하고 Enter를 눌러주세요."></div><p class="help">여러 키워드는 쉼표로 구분하여 입력해주세요. 최대 20개까지 등록할 수 있습니다.</p></div>
-            <div class="field wide"><label for="seoDescription">SEO 사이트 설명</label><textarea id="seoDescription" name="seoDescription" maxlength="200" rows="4" placeholder="검색결과에 노출될 사이트 설명을 입력해주세요."></textarea><div class="field-meta"><span>검색결과 노출을 고려해 80~160자 내외로 작성하는 것을 권장합니다.</span><strong id="seoCount">0 / 200</strong></div></div>
+            <div class="field"><label for="keywordInput">SEO 키워드 <span class="inline-label-help">(여러 키워드는 쉼표로 구분하여 입력해주세요. 최대 20개까지 등록할 수 있습니다)</span></label><div class="tag-editor" id="tagEditor"><div id="keywordTags" class="keyword-tags"></div><input id="keywordInput" autocomplete="off" placeholder="키워드를 입력하고 Enter를 눌러주세요."></div></div>
+            <div class="field wide"><label for="seoDescription">SEO 사이트 설명 <span class="inline-label-help">(검색결과 노출을 고려해 80~160자 내외로 작성하는 것을 권장합니다)</span></label><input id="seoDescription" name="seoDescription" maxlength="200" placeholder="검색결과에 노출될 사이트 설명을 입력해주세요."><div class="field-meta"><strong id="seoCount">0 / 200</strong></div></div>
           </div>
         </section>
 
@@ -52,11 +52,10 @@
               <div class="field"><label for="email">이메일</label><input id="email" name="email" type="email" placeholder="company@example.com" aria-describedby="emailError"><p class="error" id="emailError"></p></div>
             </div>
             <div class="section-divider"></div>
-            <h3 class="sub-title">회사 주소</h3>
             <div class="address-line">
               <div class="field"><label for="address">기본주소</label><input id="address" name="address" placeholder="주소검색을 이용해주세요."></div>
-              <button class="btn address-search-button" id="addressSearch" type="button">주소검색</button>
               <div class="field"><label for="addressDetail">상세주소</label><input id="addressDetail" name="addressDetail" placeholder="상세주소를 입력해주세요."></div>
+              <button class="btn address-search-button" id="addressSearch" type="button">주소검색</button>
             </div>
             <div class="section-divider"></div>
             <div class="sub-head"><div><h3 class="sub-title">입금계좌 정보</h3><p>고객에게 안내할 계좌를 등록하고 대표계좌를 선택해주세요.</p></div><button class="btn" id="addAccount" type="button">+ 계좌 추가</button></div>
