@@ -91,6 +91,10 @@ body[data-page="site_setting"] .account-row>div:nth-child(3) label:before{conten
 body[data-page="site_setting"] .primary-radio{height:38px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:800}
 body[data-page="site_setting"] .primary-radio input{width:auto;height:auto}
 body[data-page="site_setting"] .registration-number-grid,body[data-page="site_setting"] .attachment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+body[data-page="site_setting"] .registration-upload-line{display:flex;align-items:stretch;gap:8px}
+body[data-page="site_setting"] .registration-upload-line>input{min-width:0;flex:1}
+body[data-page="site_setting"] .registration-upload-line .upload-box{height:38px;flex:0 0 auto}
+body[data-page="site_setting"] .registration-document-help{text-align:right}
 body[data-page="site_setting"] .upload-box{display:inline-flex;min-height:34px;padding:0 12px;border:1px solid #6b6b6b;border-radius:0;background:#6b6b6b;align-items:center;justify-content:center;color:#fff;cursor:pointer;text-align:center;font-size:12px;font-weight:800}
 body[data-page="site_setting"] .upload-box:hover{background:#555;border-color:#555;color:#fff}
 body[data-page="site_setting"] .upload-box.dragover{border-color:#2f63f6;background:#f0f5ff}
