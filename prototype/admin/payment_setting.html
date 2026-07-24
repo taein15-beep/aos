@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>결제관련설정</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/payment-setting.css">
+</head>
+<body data-page="payment_setting">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong>결제관련설정</strong><span>관리자 · 기본설정</span></header>
+    <div class="page">
+      <div class="page-head">
+        <div>
+          <div class="breadcrumb">기본설정 &gt; 사이트설정 &gt; 결제관련설정</div>
+          <h1>결제관련설정</h1>
+          <div class="desc">결제대행사별 연동 정보를 설정합니다.</div>
+        </div>
+        <button class="btn blue save-action" type="button">변경사항 저장</button>
+      </div>
+
+      <nav class="setting-tabs" aria-label="사이트 설정 메뉴">
+        <a href="site_setting.html" data-page-link>사이트설정</a>
+        <a href="homepage_setting.html" data-page-link>홈페이지 관련설정</a>
+        <a class="active" href="payment_setting.html" aria-current="page">결제관련설정</a>
+        <button type="button" data-preparing>예약 관련 설정</button>
+        <button type="button" data-preparing>회원 관련 설정</button>
+      </nav>
+
+      <form id="paymentSettingForm" novalidate>
+        <section class="payment-setting-card">
+          <div class="card-head">
+            <h2>고객 결제 설정</h2>
+            <p>사이트 전체 상품에 적용할 결제 및 취소 정책을 설정합니다.</p>
+          </div>
+          <div class="card-body payment-option-list">
+            <div class="payment-option">
+              <div class="option-copy">
+                <strong><span class="option-icon" aria-hidden="true">💳</span>신용카드 결제 사용여부</strong>
+                <p>모든상품의 신용카드 결제가 제한됩니다. 상품별 설정 불가</p>
+              </div>
+              <label class="switch-label">
+                <span class="switch-state">비사용</span>
+                <input id="credit_card_enabled" name="credit_card_enabled" type="checkbox">
+                <i aria-hidden="true"></i>
+              </label>
+            </div>
+            <div class="payment-option">
+              <div class="option-copy">
+                <strong><span class="option-icon" aria-hidden="true">🪙</span>포인트 사용여부</strong>
+                <p>모든상품의 포인트사용이 제한됩니다. 상품별 설정 불가</p>
+              </div>
+              <label class="switch-label">
+                <span class="switch-state">비사용</span>
+                <input id="point_enabled" name="point_enabled" type="checkbox">
+                <i aria-hidden="true"></i>
+              </label>
+            </div>
+            <div class="payment-option">
+              <div class="option-copy">
+                <strong><span class="option-icon" aria-hidden="true">↩️</span>고객 취소요청 시 자동취소</strong>
+                <p>고객이 홈페이지에서 예약 취소시 관리자 승인없이 바로 예약이 취소됩니다</p>
+              </div>
+              <label class="switch-label">
+                <span class="switch-state">비사용</span>
+                <input id="customer_auto_cancel_enabled" name="customer_auto_cancel_enabled" type="checkbox">
+                <i aria-hidden="true"></i>
+              </label>
+            </div>
+            <div class="payment-option">
+              <div class="option-copy">
+                <strong><span class="option-icon" aria-hidden="true">🔄</span>카드결제 자동취소</strong>
+                <p>고객이 홈페이지에서 취소 시 PG결제도 함께 취소합니다</p>
+              </div>
+              <label class="switch-label">
+                <span class="switch-state">비사용</span>
+                <input id="card_payment_auto_cancel_enabled" name="card_payment_auto_cancel_enabled" type="checkbox">
+                <i aria-hidden="true"></i>
+              </label>
+            </div>
+            <div class="payment-option receipt-option">
+              <div class="option-copy">
+                <strong><span class="option-icon" aria-hidden="true">🧾</span>현금영수증 자동발행</strong>
+                <p>출발일 이후 자동으로 현금영수증이 발행됩니다</p>
+              </div>
+              <div class="receipt-controls">
+                <label class="switch-label">
+                  <span class="switch-state">비사용</span>
+                  <input id="cash_receipt_enabled" name="cash_receipt_enabled" type="checkbox">
+                  <i aria-hidden="true"></i>
+                </label>
+                <div class="receipt-rate">
+                  <label for="cash_receipt_rate">입금액의</label>
+                  <input id="cash_receipt_rate" name="cash_receipt_rate" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="0">
+                  <span>%를 발행</span>
+                </div>
+                <div class="receipt-tax-type" role="radiogroup" aria-label="현금영수증 과세 유형">
+                  <label><input name="cash_receipt_tax_type" type="radio" value="taxable" checked> 과세</label>
+                  <label><input name="cash_receipt_tax_type" type="radio" value="tax_free"> 비과세</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="payment-provider-grid">
+          <article class="payment-provider-card ksnet-provider">
+            <div class="provider-head">
+              <div><h2><img class="provider-logo ksnet-logo" src="./images/payment/ksnet-logo.png" alt="KSNET"></h2></div>
+            </div>
+            <div class="provider-body ksnet-fields">
+              <div class="field">
+                <label for="ksnet_approval_kspay">KSPAY(승인용)</label>
+                <input id="ksnet_approval_kspay" name="ksnet_approval_kspay" type="text" autocomplete="off" placeholder="발급받은 값을 입력해주세요" aria-describedby="ksnet_approval_kspay_error">
+                <p class="error" id="ksnet_approval_kspay_error"></p>
+              </div>
+              <div class="field">
+                <label for="ksnet_approval_key">key(승인용)</label>
+                <input id="ksnet_approval_key" name="ksnet_approval_key" type="text" autocomplete="off" placeholder="발급받은 값을 입력해주세요" aria-describedby="ksnet_approval_key_error">
+                <p class="error" id="ksnet_approval_key_error"></p>
+              </div>
+              <div class="field">
+                <label for="ksnet_nonapproval_kspay">KSPAY(비승인용)</label>
+                <input id="ksnet_nonapproval_kspay" name="ksnet_nonapproval_kspay" type="text" autocomplete="off" placeholder="발급받은 값을 입력해주세요" aria-describedby="ksnet_nonapproval_kspay_error">
+                <p class="error" id="ksnet_nonapproval_kspay_error"></p>
+              </div>
+              <div class="field">
+                <label for="ksnet_nonapproval_key">key(비승인용)</label>
+                <input id="ksnet_nonapproval_key" name="ksnet_nonapproval_key" type="text" autocomplete="off" placeholder="발급받은 값을 입력해주세요" aria-describedby="ksnet_nonapproval_key_error">
+                <p class="error" id="ksnet_nonapproval_key_error"></p>
+              </div>
+            </div>
+          </article>
+
+          <article class="payment-provider-card inicis-provider">
+            <div class="provider-head">
+              <div><h2><img class="provider-logo inicis-logo" src="./images/payment/inicis-logo.png" alt="KG이니시스"></h2></div>
+            </div>
+            <div class="provider-body inicis-fields">
+              <div class="field">
+                <label for="inicis_approval_kspay">KSPAY(승인용)</label>
+                <input id="inicis_approval_kspay" name="inicis_approval_kspay" type="text" autocomplete="off" placeholder="발급받은 값을 입력해주세요" aria-describedby="inicis_approval_kspay_error">
+                <p class="error" id="inicis_approval_kspay_error"></p>
+              </div>
+              <div class="field">
+                <label for="inicis_approval_key">key(승인용)</label>
+                <input id="inicis_approval_key" name="inicis_approval_key" type="text" autocomplete="off" placeholder="발급받은 값을 입력해주세요" aria-describedby="inicis_approval_key_error">
+                <p class="error" id="inicis_approval_key_error"></p>
+              </div>
+              <div class="field">
+                <label for="inicis_nonapproval_kspay">KSPAY(비승인용)</label>
+                <input id="inicis_nonapproval_kspay" name="inicis_nonapproval_kspay" type="text" autocomplete="off" placeholder="발급받은 값을 입력해주세요" aria-describedby="inicis_nonapproval_kspay_error">
+                <p class="error" id="inicis_nonapproval_kspay_error"></p>
+              </div>
+              <div class="field">
+                <label for="inicis_nonapproval_key">key(비승인용)</label>
+                <input id="inicis_nonapproval_key" name="inicis_nonapproval_key" type="text" autocomplete="off" placeholder="발급받은 값을 입력해주세요" aria-describedby="inicis_nonapproval_key_error">
+                <p class="error" id="inicis_nonapproval_key_error"></p>
+              </div>
+            </div>
+          </article>
+        </section>
+      </form>
+
+      <div class="save-bar">
+        <div><strong id="lastSaved">아직 저장하지 않았습니다.</strong><span id="changeStatus">저장된 상태입니다.</span></div>
+        <div class="save-buttons">
+          <button class="btn cancel-action" type="button" disabled>취소</button>
+          <button class="btn blue save-action" type="button">저장</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="paymentToast" role="status" aria-live="polite"></div>
+<script src="./js/common.js"></script>
+<script src="./js/components.js"></script>
+<script src="./js/payment-setting.js"></script>
+</body>
+</html>
