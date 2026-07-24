@@ -31,7 +31,7 @@
       <form id="homepageSettingForm" novalidate>
         <section class="setting-card">
           <div class="card-head"><h2>일반 설정</h2><p>홈페이지 연결주소와 검색엔진 등록정보를 설정합니다.</p></div>
-          <div class="card-body form-grid">
+          <div class="card-body form-grid general-setting-grid">
             <div class="field"><label for="kakaoChatUrl"><span class="setting-title-icon kakao-title-icon" aria-hidden="true">K</span>카카오 채팅 URL</label><div class="input-actions"><input id="kakaoChatUrl" name="kakaoChatUrl" type="url" placeholder="카카오톡 채널 또는 채팅 URL을 입력해주세요." aria-describedby="kakaoChatUrlError"><a class="btn setting-tool-button" href="https://business.kakao.com" target="_blank" rel="noopener noreferrer">카카오비즈니스</a></div><p class="error" id="kakaoChatUrlError"></p></div>
             <div class="field"><label for="sitemapUrl"><span class="setting-title-icon emoji-title-icon" aria-hidden="true">🗺️</span>사이트맵 URL</label><!-- TODO: 실제 서비스 도메인 API 또는 서버 설정값으로 교체 --><div class="readonly-url"><input id="sitemapUrl" name="sitemapUrl" value="https://example.com/sitemap.xml" readonly><button class="btn setting-tool-button" type="button" data-copy-target="sitemapUrl" data-copy-message="사이트맵 URL이 복사되었습니다.">복사</button></div></div>
             <div class="setting-row-divider" aria-hidden="true"></div>
