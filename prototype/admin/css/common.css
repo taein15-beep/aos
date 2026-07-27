@@ -496,3 +496,16 @@ body{
   color:var(--admin-danger);
   font-weight:800;
 }
+
+/*
+ * Keep every admin screen on the desktop canvas. Narrow devices display this
+ * canvas as a scaled-down desktop page instead of switching to mobile layouts.
+ */
+:root{
+  --admin-desktop-width:1600px;
+}
+
+body[data-page] .app{
+  width:100%;
+  min-width:var(--admin-desktop-width);
+}
