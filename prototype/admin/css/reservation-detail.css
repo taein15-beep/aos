@@ -1,0 +1,305 @@
+body[data-page="reservation_detail"] .reservation-product-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #d9dde3;
+  border-left: 4px solid #5b8cff;
+  border-radius: 6px;
+  background: #fff;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+body[data-page="reservation_detail"] .page-title-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+body[data-page="reservation_detail"] .page-title-line h1 {
+  margin-bottom: 0;
+}
+
+body[data-page="reservation_detail"] .last-modified-info {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+body[data-page="reservation_detail"] .last-modified-info b {
+  color: #475467;
+}
+
+body[data-page="reservation_detail"].passenger-modal-open{overflow:hidden}
+body[data-page="reservation_detail"] .passenger-change-backdrop{z-index:6000}
+body[data-page="reservation_detail"] .passenger-change-modal{width:min(740px,calc(100vw - 32px));max-height:92vh;display:flex;flex-direction:column}
+body[data-page="reservation_detail"] .passenger-change-modal .modal-body{overflow-y:auto}
+body[data-page="reservation_detail"] .passenger-reservation-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 14px;border:1px solid #d9dde3;border-radius:6px;overflow:hidden}
+body[data-page="reservation_detail"] .passenger-reservation-info div{min-width:0;padding:9px 11px;border-bottom:1px solid #edf0f3}
+body[data-page="reservation_detail"] .passenger-reservation-info div:nth-child(odd){border-right:1px solid #edf0f3}
+body[data-page="reservation_detail"] .passenger-reservation-info dt{color:#667085;font-size:11px;font-weight:800}
+body[data-page="reservation_detail"] .passenger-reservation-info dd{margin:4px 0 0;font-weight:800;overflow-wrap:anywhere}
+body[data-page="reservation_detail"] .passenger-table-wrap{overflow-x:auto}
+body[data-page="reservation_detail"] .passenger-change-table{width:100%;border-collapse:collapse}
+body[data-page="reservation_detail"] .passenger-change-table th,body[data-page="reservation_detail"] .passenger-change-table td{padding:9px 8px;border:1px solid #d9dde3;vertical-align:middle}
+body[data-page="reservation_detail"] .passenger-change-table thead th{background:#f2f4f7;text-align:center;white-space:nowrap}
+body[data-page="reservation_detail"] .passenger-change-table tbody th{background:#fafbfc;text-align:center}
+body[data-page="reservation_detail"] .passenger-change-table tr.is-changed>*{background:#fff8e8}
+body[data-page="reservation_detail"] .passenger-stepper{display:grid;grid-template-columns:34px 48px 34px;justify-content:center}
+body[data-page="reservation_detail"] .passenger-stepper button,body[data-page="reservation_detail"] .passenger-stepper input{height:34px;border:1px solid #cfd5df;background:#fff;text-align:center;box-sizing:border-box}
+body[data-page="reservation_detail"] .passenger-stepper button{font-size:18px;cursor:pointer}
+body[data-page="reservation_detail"] .passenger-stepper input{width:48px;border-right:0;border-left:0;border-radius:0}
+body[data-page="reservation_detail"] .passenger-change-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+body[data-page="reservation_detail"] .passenger-change-summary>div{display:grid;gap:3px;padding:10px 12px;border:1px solid #d9dde3;border-radius:6px;background:#fafbfc}
+body[data-page="reservation_detail"] .passenger-change-summary span{color:#667085;font-size:12px;font-weight:800}
+body[data-page="reservation_detail"] .passenger-change-summary b{text-align:right}
+body[data-page="reservation_detail"] .passenger-change-summary .passenger-difference{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between}
+body[data-page="reservation_detail"] .passenger-difference.is-extra{border-color:#f4b183;background:#fff4e8;color:#b54708}
+body[data-page="reservation_detail"] .passenger-difference.is-refund{border-color:#84adff;background:#eff4ff;color:#175cd3}
+body[data-page="reservation_detail"] .passenger-difference.is-same{color:#667085}
+body[data-page="reservation_detail"] .passenger-payment-notice,body[data-page="reservation_detail"] .passenger-warning,body[data-page="reservation_detail"] .passenger-validation{margin:8px 0 0;padding:9px 11px;border-radius:5px}
+body[data-page="reservation_detail"] .passenger-payment-notice{background:#f8fafc}
+body[data-page="reservation_detail"] .passenger-warning{background:#fffaeb;color:#b54708}
+body[data-page="reservation_detail"] .passenger-validation{background:#fef3f2;color:#b42318}
+body[data-page="reservation_detail"] .passenger-reason-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+body[data-page="reservation_detail"] .passenger-reason-grid .full{grid-column:1/-1}
+body[data-page="reservation_detail"] .passenger-character-count{text-align:right;color:#667085;font-size:11px}
+body[data-page="reservation_detail"] .passenger-confirm-view p{margin:16px 0 0;font-weight:900;text-align:center}
+body[data-page="reservation_detail"] #passengerConfirmDetails{display:grid;gap:7px;padding:14px;border:1px solid #d9dde3;border-radius:6px;background:#fafbfc}
+body[data-page="reservation_detail"] #passengerConfirmDetails div{display:flex;justify-content:space-between;gap:12px}
+body[data-page="reservation_detail"] .passenger-modal-foot{display:flex;justify-content:flex-end;gap:8px}
+body[data-page="reservation_detail"] .required{color:#d92d20}
+@media(max-width:600px){
+body[data-page="reservation_detail"] .passenger-reservation-info,body[data-page="reservation_detail"] .passenger-change-summary,body[data-page="reservation_detail"] .passenger-reason-grid{grid-template-columns:1fr}
+body[data-page="reservation_detail"] .passenger-reservation-info div{border-right:0!important}
+body[data-page="reservation_detail"] .passenger-change-table{min-width:620px}
+}
+
+body[data-page="reservation_detail"] .reservation-product-heading .product-code {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border: 1px solid #d0d5dd;
+  border-radius: 12px;
+  background: #f2f4f7;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+body[data-page="reservation_detail"] .reservation-product-heading .product-name {
+  min-width: 0;
+  color: #172033;
+  font-size: clamp(22px, 1.7vw, 24px);
+  font-weight: 900;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+body[data-page="reservation_detail"] .reservation-product-heading .product-name:hover,
+body[data-page="reservation_detail"] .reservation-product-heading .product-name:focus-visible {
+  color: #2556d9;
+  text-decoration: underline;
+}
+
+body[data-page="reservation_detail"] .reservation-basic-row,
+body[data-page="reservation_detail"] .reservation-basic-row .panel {
+  min-width: 0;
+}
+
+body[data-page="reservation_detail"] .reservation-basic-grid {
+  grid-template-columns:
+    minmax(145px, 1.15fr)
+    minmax(150px, 1.2fr)
+    minmax(120px, 1fr)
+    minmax(120px, 1fr)
+    minmax(120px, 1fr)
+    minmax(110px, .9fr);
+}
+
+body[data-page="reservation_detail"] .reservation-basic-grid .value,
+body[data-page="reservation_detail"] .reservation-basic-grid select,
+body[data-page="reservation_detail"] .reservation-basic-grid textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body[data-page="reservation_detail"] .reservation-basic-grid textarea {
+  width: 100%;
+  min-height: 76px;
+  resize: vertical;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+body[data-page="reservation_detail"] .customer-sales-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+body[data-page="reservation_detail"] .customer-sales-option-grid > .panel {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+body[data-page="reservation_detail"] .reservation-customer-panel,
+body[data-page="reservation_detail"] .reservation-billing-panel {
+  grid-column: 1 / -1;
+}
+
+body[data-page="reservation_detail"] .reservation-customer-grid {
+  grid-template-columns:
+    minmax(80px, .55fr)
+    minmax(120px, .85fr)
+    minmax(180px, 1.35fr)
+    minmax(120px, .85fr)
+    minmax(60px, .45fr)
+    minmax(300px, 2.3fr);
+}
+
+body[data-page="reservation_detail"] .seller-supplier-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body[data-page="reservation_detail"] .reservation-option-panel .table-wrap {
+  max-width: 100%;
+}
+
+body[data-page="reservation_detail"] .reservation-option-panel td:first-child {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+body[data-page="reservation_detail"] .cancellation-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+body[data-page="reservation_detail"] .passenger-summary-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+body[data-page="reservation_detail"] .passenger-summary-content {
+  min-width: 0;
+}
+
+body[data-page="reservation_detail"] .passenger-unit-prices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+}
+
+body[data-page="reservation_detail"] .passenger-unit-prices > span {
+  display: inline;
+  margin: 0;
+  white-space: nowrap;
+}
+
+body[data-page="reservation_detail"] .passenger-unit-prices > span:not(:last-child)::after {
+  margin-left: 8px;
+  color: #98a2b3;
+  content: "/";
+}
+
+body[data-page="reservation_detail"] .passenger-unit-prices b {
+  color: #344054;
+  font-weight: 900;
+}
+
+body[data-page="reservation_detail"] .passenger-change-btn {
+  white-space: nowrap;
+}
+
+body[data-page="reservation_detail"] .passenger-payment-label {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 5px;
+}
+
+body[data-page="reservation_detail"] .passenger-payment-label small {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+body[data-page="reservation_detail"] .passenger-payment-label b {
+  color: #344054;
+  font-weight: 900;
+}
+
+body[data-page="reservation_detail"] .reservation-customer-grid input,
+body[data-page="reservation_detail"] .reservation-customer-grid select,
+body[data-page="reservation_detail"] .cancellation-grid input,
+body[data-page="reservation_detail"] .cancellation-grid select {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 1200px) {
+  body[data-page="reservation_detail"] .reservation-basic-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body[data-page="reservation_detail"] .reservation-customer-grid,
+  body[data-page="reservation_detail"] .cancellation-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1000px) {
+  body[data-page="reservation_detail"] .customer-sales-option-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page="reservation_detail"] .reservation-customer-panel,
+  body[data-page="reservation_detail"] .reservation-billing-panel {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  body[data-page="reservation_detail"] .reservation-product-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+    padding: 11px 12px;
+  }
+
+  body[data-page="reservation_detail"] .reservation-basic-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body[data-page="reservation_detail"] .reservation-customer-grid,
+  body[data-page="reservation_detail"] .cancellation-grid,
+  body[data-page="reservation_detail"] .seller-supplier-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  body[data-page="reservation_detail"] .reservation-basic-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page="reservation_detail"] .reservation-customer-grid,
+  body[data-page="reservation_detail"] .cancellation-grid,
+  body[data-page="reservation_detail"] .seller-supplier-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page="reservation_detail"] .passenger-summary-card {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page="reservation_detail"] .passenger-change-btn {
+    justify-self: start;
+  }
+}

@@ -1,0 +1,159 @@
+body[data-page="reservation_list"] .app,
+body[data-page="reservation_list"] main,
+body[data-page="reservation_list"] .page,
+body[data-page="reservation_list"] .panel {
+  min-width: 0;
+}
+
+body[data-page="reservation_list"] main,
+body[data-page="reservation_list"] .page {
+  max-width: 100%;
+}
+
+body[data-page="reservation_list"] .table-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+body[data-page="reservation_list"] .reservation-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+body[data-page="reservation_list"] .reservation-table th,
+body[data-page="reservation_list"] .reservation-table td {
+  padding-right: 5px;
+  padding-left: 5px;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+body[data-page="reservation_list"] .reservation-table th:nth-child(1) { width: 32px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(2) { width: 34px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(3) { width: 96px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(4) { width: 178px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(5),
+body[data-page="reservation_list"] .reservation-table th:nth-child(6) { width: 76px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(7) { width: 104px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(8) { width: 82px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(9) { width: 132px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(10),
+body[data-page="reservation_list"] .reservation-table th:nth-child(11) { width: 82px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(12) { width: 102px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(13) { width: 62px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(14) { width: 52px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(15) { width: 64px; }
+
+body[data-page="reservation_list"] .reservation-number,
+body[data-page="reservation_list"] .date-cell {
+  white-space: nowrap;
+}
+
+body[data-page="reservation_list"] .reservation-table td:nth-child(3),
+body[data-page="reservation_list"] .reservation-table td:nth-child(7),
+body[data-page="reservation_list"] .reservation-table td:nth-child(12) {
+  text-align: center;
+}
+
+body[data-page="reservation_list"] .product-name .detail-link {
+  display: inline-block;
+  max-width: 100%;
+  line-height: 1.45;
+}
+
+body[data-page="reservation_list"] .amount-breakdown span {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  white-space: nowrap;
+  line-height: 1.65;
+}
+
+body[data-page="reservation_list"] .amount-breakdown em {
+  color: #667085;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+body[data-page="reservation_list"] .amount-breakdown .balance {
+  color: #d92d20;
+  font-weight: 700;
+}
+
+body[data-page="reservation_list"] .memo-cell {
+  position: relative;
+  overflow: visible;
+}
+
+body[data-page="reservation_list"] .memo-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 26px;
+  padding: 3px 8px;
+  border: 1px solid #b8c4d3;
+  border-radius: 4px;
+  background: #f8fafc;
+  color: #344054;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: help;
+}
+
+body[data-page="reservation_list"] .memo-trigger:hover,
+body[data-page="reservation_list"] .memo-trigger:focus-visible {
+  border-color: #1570ef;
+  outline: 2px solid rgba(21, 112, 239, .18);
+  outline-offset: 1px;
+}
+
+body[data-page="reservation_list"] .memo-tooltip {
+  position: fixed;
+  z-index: 10000;
+  display: none;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #101828;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, .22);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  text-align: left;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+body[data-page="reservation_list"] .memo-trigger:hover .memo-tooltip,
+body[data-page="reservation_list"] .memo-trigger:focus .memo-tooltip,
+body[data-page="reservation_list"] .memo-trigger:focus-visible .memo-tooltip {
+  display: block;
+}
+
+body[data-page="reservation_list"] .settlement-statement-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 1000px) {
+  body[data-page="reservation_list"] .table-wrap {
+    max-width: calc(100vw - 32px);
+    overflow-x: auto;
+  }
+
+  body[data-page="reservation_list"] .reservation-table {
+    min-width: 1180px;
+  }
+}

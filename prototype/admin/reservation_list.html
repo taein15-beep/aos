@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./css/common.css">
   <link rel="stylesheet" href="./css/layout.css">
   <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/reservation-list.css">
 </head>
 <body data-page="reservation_list">
   <div class="app">
@@ -148,84 +149,94 @@
         <section class="panel">
           <div class="panel-head"><span>예약 목록</span><span class="muted">검색결과 4건 · 샘플 데이터</span></div>
           <div class="table-wrap">
-            <table class="table">
+            <table class="table reservation-table">
               <thead>
                 <tr>
                   <th><input id="checkAll" type="checkbox" onchange="toggleAll(this)" title="전체선택"></th>
                   <th>NO.</th>
-                  <th>예약번호 / 접수일</th>
-                  <th>상품명 / 출발일</th>
+                  <th>예약번호</th>
+                  <th>상품명</th>
+                  <th>예약일</th>
+                  <th>출발일</th>
                   <th>예약자 / 연락처</th>
                   <th>인원</th>
-                  <th>금액: 총금액 / 결제금액 / 미수금</th>
+                  <th>금액</th>
                   <th>예약상태</th>
                   <th>결제상태</th>
-                  <th>판매채널 / 판매점</th>
+                  <th>판매채널</th>
                   <th>담당자</th>
-                  <th>알림 / 메모</th>
-                  <th>관리 버튼</th>
+                  <th>메모</th>
+                  <th>정산서</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td class="center"><input class="row-check" type="checkbox" onchange="updateSelected()"></td>
                   <td class="center">1</td>
-                  <td><a class="detail-link" href="reservation_detail.html">RV20260612001</a><br><span class="muted">2026-06-12 09:18</span></td>
-                  <td><a class="detail-link" href="reservation_detail.html">화성·수원 만원의행복 나들이</a><br><span class="muted">2026-06-30 출발</span></td>
+                  <td class="reservation-number"><a class="detail-link" href="reservation_detail.html">RV20260612001</a></td>
+                  <td class="product-name"><a class="detail-link" href="reservation_detail.html">화성·수원 만원의행복 나들이</a></td>
+                  <td class="center date-cell">2026-06-12<br><span class="muted">09:18</span></td>
+                  <td class="center date-cell">2026-06-30</td>
                   <td>홍길동<br><span class="muted">010-1234-5678</span></td>
-                  <td class="center">총 3명<br><span class="muted">대2 소1</span></td>
-                  <td class="money">48,000원<br>0원<br><strong class="memo">48,000원</strong></td>
+                  <td class="center">총 3명<br><span class="muted">성인 2 · 아동 1</span></td>
+                  <td class="money amount-breakdown"><span><em>총금액</em>48,000원</span><span><em>결제금액</em>0원</span><span class="balance"><em>미수금</em>48,000원</span></td>
                   <td class="center"><span class="badge b-blue">예약접수</span></td>
                   <td class="center"><span class="badge b-red">미결제</span></td>
                   <td>자사몰<br><span class="muted">직접판매</span></td>
                   <td class="center">김윤호</td>
-                  <td><span class="note">접수안내 미발송</span><br><span class="memo">메모 있음</span></td>
-                  <td><div class="manage"><button class="btn small" onclick="location.href='product_detail.html'">상품상세</button><button class="btn small green" onclick="openTalkModal('RV20260612001','홍길동','010-1234-5678','화성·수원 만원의행복 나들이','2026-06-30','예약접수','미결제','48,000원')">알림톡</button><button class="btn small blue" onclick="openPaymentModal('RV20260612001','홍길동','010-1234-5678','화성·수원 만원의행복 나들이','2026-06-30','예약접수','미결제','48,000원','0원','48,000원','자사몰')">결제</button></div></td>
+                  <td class="center memo-cell"><button class="memo-trigger" type="button" aria-label="관리자 메모: 예약자 요청으로 창가 좌석 우선 배정. 출발 전날 탑승 안내 재확인 필요."><span aria-hidden="true">메모</span><span class="memo-tooltip" role="tooltip">예약자 요청으로 창가 좌석 우선 배정. 출발 전날 탑승 안내 재확인 필요.</span></button></td>
+                  <td class="center"><button class="btn small settlement-statement-btn" type="button" data-reservation-no="RV20260612001">정산서</button></td>
                 </tr>
                 <tr>
                   <td class="center"><input class="row-check" type="checkbox" onchange="updateSelected()"></td>
                   <td class="center">2</td>
-                  <td><a class="detail-link" href="reservation_detail.html">RV20260611008</a><br><span class="muted">2026-06-11 16:42</span></td>
-                  <td><a class="detail-link" href="reservation_detail.html">제부도 해상케이블카 당일여행</a><br><span class="muted">2026-06-21 출발</span></td>
+                  <td class="reservation-number"><a class="detail-link" href="reservation_detail.html">RV20260611008</a></td>
+                  <td class="product-name"><a class="detail-link" href="reservation_detail.html">제부도 해상케이블카 당일여행</a></td>
+                  <td class="center date-cell">2026-06-11<br><span class="muted">16:42</span></td>
+                  <td class="center date-cell">2026-06-21</td>
                   <td>박민지<br><span class="muted">010-2345-6789</span></td>
-                  <td class="center">총 2명<br><span class="muted">대2</span></td>
-                  <td class="money">96,000원<br>96,000원<br><strong>0원</strong></td>
+                  <td class="center">총 2명<br><span class="muted">성인 2</span></td>
+                  <td class="money amount-breakdown"><span><em>총금액</em>96,000원</span><span><em>결제금액</em>96,000원</span><span><em>미수금</em>0원</span></td>
                   <td class="center"><span class="badge b-green">예약확정</span></td>
                   <td class="center"><span class="badge b-green">전액결제완료</span></td>
                   <td>판매점<br><span class="muted">하나투어 제휴</span></td>
                   <td class="center">박서연</td>
-                  <td><span class="note">확정안내 발송</span><br><span class="empty-memo">메모 없음</span></td>
-                  <td><div class="manage"><button class="btn small" onclick="location.href='product_detail.html'">상품상세</button><button class="btn small green" onclick="openTalkModal('RV20260611008','박민지','010-2345-6789','제부도 해상케이블카 당일여행','2026-06-21','예약확정','전액결제완료','0원')">알림톡</button><button class="btn small blue" onclick="openPaymentModal('RV20260611008','박민지','010-2345-6789','제부도 해상케이블카 당일여행','2026-06-21','예약확정','전액결제완료','96,000원','96,000원','0원','판매점')">결제</button></div></td>
+                  <td class="center memo-cell"></td>
+                  <td class="center"><button class="btn small settlement-statement-btn" type="button" data-reservation-no="RV20260611008">정산서</button></td>
                 </tr>
                 <tr>
                   <td class="center"><input class="row-check" type="checkbox" onchange="updateSelected()"></td>
                   <td class="center">3</td>
-                  <td><a class="detail-link" href="reservation_detail.html">RV20260610015</a><br><span class="muted">2026-06-10 11:05</span></td>
-                  <td><a class="detail-link" href="reservation_detail.html">강화 역사문화 테마여행</a><br><span class="muted">2026-06-18 출발</span></td>
+                  <td class="reservation-number"><a class="detail-link" href="reservation_detail.html">RV20260610015</a></td>
+                  <td class="product-name"><a class="detail-link" href="reservation_detail.html">강화 역사문화 테마여행</a></td>
+                  <td class="center date-cell">2026-06-10<br><span class="muted">11:05</span></td>
+                  <td class="center date-cell">2026-06-18</td>
                   <td>최정우<br><span class="muted">010-3456-7890</span></td>
-                  <td class="center">총 4명<br><span class="muted">대3 소1</span></td>
-                  <td class="money">240,000원<br>80,000원<br><strong class="memo">160,000원</strong></td>
+                  <td class="center">총 4명<br><span class="muted">성인 3 · 아동 1</span></td>
+                  <td class="money amount-breakdown"><span><em>총금액</em>240,000원</span><span><em>결제금액</em>80,000원</span><span class="balance"><em>미수금</em>160,000원</span></td>
                   <td class="center"><span class="badge b-orange">대기예약</span></td>
                   <td class="center"><span class="badge b-blue">예약금완료</span></td>
                   <td>관리자등록<br><span class="muted">콜센터</span></td>
                   <td class="center">이도현</td>
-                  <td><span class="note">결제요청 발송</span><br><span class="memo">메모 있음</span></td>
-                  <td><div class="manage"><button class="btn small" onclick="location.href='product_detail.html'">상품상세</button><button class="btn small green" onclick="openTalkModal('RV20260610015','최정우','010-3456-7890','강화 역사문화 테마여행','2026-06-18','대기예약','예약금완료','160,000원')">알림톡</button><button class="btn small blue" onclick="openPaymentModal('RV20260610015','최정우','010-3456-7890','강화 역사문화 테마여행','2026-06-18','대기예약','예약금완료','240,000원','80,000원','160,000원','관리자등록')">결제</button></div></td>
+                  <td class="center memo-cell"><button class="memo-trigger" type="button" aria-label="관리자 메모: 아동 식사 알레르기 여부 확인 필요. 예약자에게 증빙서류 제출 방법 안내 완료."><span aria-hidden="true">메모</span><span class="memo-tooltip" role="tooltip">아동 식사 알레르기 여부 확인 필요. 예약자에게 증빙서류 제출 방법 안내 완료.</span></button></td>
+                  <td class="center"><button class="btn small settlement-statement-btn" type="button" data-reservation-no="RV20260610015">정산서</button></td>
                 </tr>
                 <tr>
                   <td class="center"><input class="row-check" type="checkbox" onchange="updateSelected()"></td>
                   <td class="center">4</td>
-                  <td><a class="detail-link" href="reservation_detail.html">RV20260609004</a><br><span class="muted">2026-06-09 14:27</span></td>
-                  <td><a class="detail-link" href="reservation_detail.html">남이섬 힐링 패키지</a><br><span class="muted">2026-06-15 출발</span></td>
+                  <td class="reservation-number"><a class="detail-link" href="reservation_detail.html">RV20260609004</a></td>
+                  <td class="product-name"><a class="detail-link" href="reservation_detail.html">남이섬 힐링 패키지</a></td>
+                  <td class="center date-cell">2026-06-09<br><span class="muted">14:27</span></td>
+                  <td class="center date-cell">2026-06-15</td>
                   <td>이수진<br><span class="muted">010-4567-8901</span></td>
-                  <td class="center">총 1명<br><span class="muted">대1</span></td>
-                  <td class="money">120,000원<br>120,000원<br><strong>0원</strong></td>
+                  <td class="center">총 1명<br><span class="muted">성인 1</span></td>
+                  <td class="money amount-breakdown"><span><em>총금액</em>120,000원</span><span><em>결제금액</em>120,000원</span><span><em>미수금</em>0원</span></td>
                   <td class="center"><span class="badge b-red">취소요청</span></td>
                   <td class="center"><span class="badge b-purple">환불요청</span></td>
                   <td>판매점<br><span class="muted">복지몰B</span></td>
                   <td class="center">박서연</td>
-                  <td><span class="note">취소접수 발송</span><br><span class="memo">메모 있음</span></td>
-                  <td><div class="manage"><button class="btn small" onclick="location.href='product_detail.html'">상품상세</button><button class="btn small green" onclick="openTalkModal('RV20260609004','이수진','010-4567-8901','남이섬 힐링 패키지','2026-06-15','취소요청','환불요청','0원')">알림톡</button><button class="btn small blue" onclick="openPaymentModal('RV20260609004','이수진','010-4567-8901','남이섬 힐링 패키지','2026-06-15','취소요청','환불요청','120,000원','120,000원','0원','판매점')">결제</button></div></td>
+                  <td class="center memo-cell"><button class="memo-trigger" type="button" aria-label="관리자 메모: 고객 사정으로 취소 요청. 환불 계좌 확인 후 처리 예정이며 판매점 담당자에게 취소 내용을 공유함."><span aria-hidden="true">메모</span><span class="memo-tooltip" role="tooltip">고객 사정으로 취소 요청. 환불 계좌 확인 후 처리 예정이며 판매점 담당자에게 취소 내용을 공유함.</span></button></td>
+                  <td class="center"><button class="btn small settlement-statement-btn" type="button" data-reservation-no="RV20260609004">정산서</button></td>
                 </tr>
               </tbody>
             </table>
@@ -301,6 +312,7 @@
   </div>
   <script src="./js/common.js"></script>
   <script src="./js/components.js"></script>
+  <script src="./js/reservation-list.js"></script>
 </body>
 </html>
 
