@@ -35,35 +35,45 @@ body[data-page="reservation_list"] .reservation-table td {
 
 body[data-page="reservation_list"] .reservation-table th:nth-child(1) { width: 32px; }
 body[data-page="reservation_list"] .reservation-table th:nth-child(2) { width: 34px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(3) { width: 96px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(4) { width: 178px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(5),
-body[data-page="reservation_list"] .reservation-table th:nth-child(6) { width: 76px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(7) { width: 104px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(8) { width: 82px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(9) { width: 132px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(10),
-body[data-page="reservation_list"] .reservation-table th:nth-child(11) { width: 82px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(12) { width: 102px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(13) { width: 62px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(14) { width: 52px; }
-body[data-page="reservation_list"] .reservation-table th:nth-child(15) { width: 64px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(3) { width: 230px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(4) { width: 76px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(5) { width: 76px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(6) { width: 104px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(7) { width: 82px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(8) { width: 132px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(9),
+body[data-page="reservation_list"] .reservation-table th:nth-child(10) { width: 82px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(11) { width: 102px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(12) { width: 62px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(13) { width: 52px; }
+body[data-page="reservation_list"] .reservation-table th:nth-child(14) { width: 64px; }
 
-body[data-page="reservation_list"] .reservation-number,
 body[data-page="reservation_list"] .date-cell {
   white-space: nowrap;
 }
 
-body[data-page="reservation_list"] .reservation-table td:nth-child(3),
-body[data-page="reservation_list"] .reservation-table td:nth-child(7),
-body[data-page="reservation_list"] .reservation-table td:nth-child(12) {
+body[data-page="reservation_list"] .reservation-table td:nth-child(6),
+body[data-page="reservation_list"] .reservation-table td:nth-child(11) {
   text-align: center;
 }
 
-body[data-page="reservation_list"] .product-name .detail-link {
-  display: inline-block;
+body[data-page="reservation_list"] .reservation-product {
+  text-align: left;
+}
+
+body[data-page="reservation_list"] .reservation-product .reservation-number-label,
+body[data-page="reservation_list"] .reservation-product .detail-link {
+  display: block;
   max-width: 100%;
   line-height: 1.45;
+}
+
+body[data-page="reservation_list"] .reservation-product .reservation-number-label {
+  margin-bottom: 4px;
+  color: #667085;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 body[data-page="reservation_list"] .amount-breakdown span {
