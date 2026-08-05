@@ -27,7 +27,8 @@ function features(region='일본'){return regionNames[region].map((n,i)=>`<a cla
 function rank(region='일본'){return regionNames[region].map((n,i)=>`<li><a href="${detail(productCodes[i])}"><b>${i+1}</b><img src="${img(i+5)}" alt="${n}"><div><h3>${n}</h3><p>${adminProducts[i].name}</p></div><strong>${formatPrice(adminProducts[i].price)}</strong><span aria-hidden="true">→</span></a></li>`).join('')}
 quickMenu();
 ['wish-grid','popular-grid','recommend-grid','world-grid'].forEach((id,i)=>document.querySelector('#'+id).innerHTML=cards('일본',i*3));
-document.querySelector('#circle-list').innerHTML=['도쿄 자유여행','오사카 미식여행','후쿠오카 힐링','오키나와 휴양','홋카이도 여행'].map((n,i)=>`<a class="circle-item" href="${list('theme='+i)}"><img src="${img(i+5)}" alt="${n}"><b>${n}</b><span>지금 가장 사랑받는 여행</span></a>`).join('');
+const popularRegions=[['베트남','다낭·하롱베이',8,'sea'],['장가계','대자연의 절경',5,'china'],['일본','가까운 설렘',3,'japan'],['몽골','초원과 별빛',14,'mongolia'],['대만','미식과 야경',12,'taiwan'],['유럽','도시와 예술',17,'europe'],['이집트','시간을 걷는 여행',10,'egypt']];
+document.querySelector('#circle-list').innerHTML=popularRegions.map(([name,copy,imageIndex,region])=>`<a class="circle-item" href="${list('region='+region)}"><span class="circle-image"><img src="${img(imageIndex)}" alt="${name} 대표 여행지"></span><b>${name}</b><span class="circle-copy">${copy}</span></a>`).join('');
 document.querySelector('#mini-grid').innerHTML=['다낭 여행','나트랑 여행','푸꾸옥 여행','하노이 여행','호치민 여행','사파 여행'].map((n,i)=>`<a class="mini" href="${list('theme='+i)}"><img src="${img(i+8)}" alt="${n}"><div><b>${n}</b><p>가족과 함께하는 특별한 휴양</p></div></a>`).join('');
 document.querySelector('#theme-grid').innerHTML=features();
 document.querySelector('#poster-grid').innerHTML=['도쿄의 낮과 밤','오사카 미식 산책','홋카이도 자연'].map((n,i)=>`<a class="poster" href="${detail(productCodes[i])}"><img src="${img(i+10)}" alt="${n}"><div><b>${n}</b><p>감각적인 여행의 순간</p></div></a>`).join('');
