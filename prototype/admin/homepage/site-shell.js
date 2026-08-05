@@ -1,0 +1,1 @@
+window.siteShellReady=Promise.all(Array.from(document.querySelectorAll('[data-site-include]')).map(function(target){return fetch(target.getAttribute('data-site-include'),{cache:'no-cache'}).then(function(response){if(!response.ok)throw new Error('공통 레이아웃을 불러오지 못했습니다.');return response.text()}).then(function(html){target.outerHTML=html})}));
