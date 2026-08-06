@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>예약달력 | AviaNext AOS</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/reservation-calendar.css">
+</head>
+<body data-page="reservation_calendar">
+<div class="app">
+  <aside class="sidebar" data-include="./includes/sidebar.html"></aside>
+  <main>
+    <header class="topbar"><strong>예약현황 &gt; 예약달력</strong><span>윤호님 · 로그아웃</span></header>
+    <div class="page reservation-calendar-page">
+      <div class="page-head calendar-page-head">
+        <div><div class="breadcrumb">예약현황 &gt; 예약달력</div><h1>예약달력</h1><div class="desc">상품별 출발 일정과 예약 고객을 달력에서 확인할 수 있습니다.</div></div>
+        <div class="head-actions"><span id="updatedAt">마지막 업데이트 -</span><button class="btn" id="pageRefresh" type="button">새로고침</button></div>
+      </div>
+
+      <section class="panel filter-panel" aria-labelledby="filterTitle">
+        <div class="panel-head"><span id="filterTitle">검색 조건</span><button class="text-button" id="topReset" type="button">조건 초기화</button></div>
+        <div class="panel-body">
+          <form id="filterForm" class="filter-form">
+            <div class="field"><label for="category1">대분류</label><select id="category1"><option value="">전체</option><option>국내여행</option><option>해외여행</option></select></div>
+            <div class="field"><label for="category2">중분류</label><select id="category2"><option value="">전체</option></select></div>
+            <div class="field"><label for="category3">소분류</label><select id="category3"><option value="">전체</option></select></div>
+            <div class="field date-field"><label for="dateFrom">시작일</label><input id="dateFrom" type="date"></div>
+            <div class="field date-field"><label for="dateTo">종료일</label><input id="dateTo" type="date"></div>
+            <div class="quick-dates"><button type="button" data-range="month">이번 달</button><button type="button" data-range="next">다음 달</button><button type="button" data-range="3months">최근 3개월</button></div>
+            <div class="field keyword-field"><label for="keyword">통합검색</label><input id="keyword" type="search" placeholder="상품명, 상품코드, 예약번호, 예약자명 검색"></div>
+            <div class="field"><label for="seller">판매점</label><input id="seller" type="search" list="sellerList" placeholder="전체 판매점"><datalist id="sellerList"></datalist></div>
+            <div class="field"><label for="reservationStatus">예약상태</label><select id="reservationStatus"><option value="">전체</option><option>접수</option><option>확정</option><option>대기</option><option>취소</option></select></div>
+            <div class="field"><label for="paymentStatus">결제상태</label><select id="paymentStatus"><option value="">전체</option><option>미결제</option><option>부분결제</option><option>결제완료</option><option>환불</option></select></div>
+            <div class="field"><label for="departureStatus">출발상태</label><select id="departureStatus"><option value="">전체</option><option>예약가능</option><option>출발확정</option><option>대기</option><option>마감</option><option>취소</option><option>행사종료</option></select></div>
+            <div class="filter-actions"><button class="btn blue" type="submit">검색</button><button class="btn" id="reset" type="button">초기화</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="summary-grid" id="summary" aria-label="예약 현황 요약"></section>
+
+      <section class="panel calendar-panel">
+        <div class="calendar-toolbar">
+          <div class="month-controls"><button class="btn small" id="today" type="button">오늘</button><button class="icon-button" id="prev" type="button" aria-label="이전 기간">‹</button><button class="icon-button" id="next" type="button" aria-label="다음 기간">›</button><h2 id="periodTitle">2026년 8월</h2></div>
+          <div class="view-controls"><div class="segmented" role="group" aria-label="보기 방식"><button class="active" data-view="month" type="button">월간</button><button data-view="week" type="button">주간</button><button data-view="list" type="button">목록</button></div><button class="btn small" id="refresh" type="button">새로고침</button></div>
+        </div>
+        <div class="legend" aria-label="출발상태 범례"><span class="available">예약가능</span><span class="confirmed">출발확정</span><span class="waiting">대기</span><span class="closed">마감</span><span class="cancelled">취소</span><span class="finished">행사종료</span></div>
+        <div class="calendar-scroll">
+          <div id="monthView"><div class="weekdays"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div class="calendar-grid" id="calendarGrid"></div></div>
+          <div id="weekView" hidden></div>
+          <div id="listView" hidden></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="moreBackdrop" hidden><section class="day-modal" role="dialog" aria-modal="true" aria-labelledby="dayModalTitle"><header><h2 id="dayModalTitle"></h2><button class="icon-button" data-close-more type="button" aria-label="닫기">×</button></header><div id="dayModalList"></div></section></div>
+<div class="drawer-overlay" id="drawerOverlay" hidden></div>
+<aside class="detail-drawer" id="drawer" aria-hidden="true" aria-labelledby="drawerTitle">
+  <header class="drawer-head"><div><span id="drawerStatus" class="status-badge"></span><h2 id="drawerTitle"></h2><p id="drawerMeta"></p></div><button class="icon-button" id="closeDrawer" type="button" aria-label="상세 패널 닫기">×</button></header>
+  <div class="drawer-content">
+    <section class="product-summary" id="drawerSummary"></section>
+    <div class="customer-toolbar"><input id="customerSearch" type="search" placeholder="예약자명 또는 예약번호 검색"><select id="customerSeller"><option value="">판매점 전체</option></select><select id="customerReservationStatus"><option value="">예약상태 전체</option><option>접수</option><option>확정</option><option>대기</option><option>취소</option></select><select id="customerPaymentStatus"><option value="">결제상태 전체</option><option>미결제</option><option>부분결제</option><option>결제완료</option><option>환불</option></select></div>
+    <div class="customer-list" id="customerList"></div>
+  </div>
+  <footer class="drawer-footer"><a class="btn" id="productLink" href="product_detail.html">상품 상세보기</a><a class="btn blue" id="reservationLink" href="reservation_list.html">예약목록 보기</a><button class="btn" id="print" type="button">인쇄</button><button class="btn" id="drawerCloseBottom" type="button">닫기</button></footer>
+</aside>
+<div class="calendar-toast" id="toast" role="status" aria-live="polite"></div>
+<script src="./js/common.js"></script>
+<script src="./js/reservation-calendar.js"></script>
+</body>
+</html>
