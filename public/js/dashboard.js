@@ -75,27 +75,6 @@
     );
   }
 
-  function renderQuickActions(actions) {
-    return (
-      '<section class="quick-actions" aria-label="빠른 업무 메뉴">' +
-      '<strong>빠른 업무</strong>' +
-      actions
-        .map(function (action) {
-          return (
-            '<button type="button" data-quick-action="' +
-            escapeHtml(action.label) +
-            '"><span aria-hidden="true">' +
-            action.icon +
-            '</span>' +
-            escapeHtml(action.label) +
-            '</button>'
-          );
-        })
-        .join('') +
-      '</section>'
-    );
-  }
-
   function renderDepartures(rows) {
     var body = rows
       .map(function (row) {
@@ -643,7 +622,6 @@
     return [
       renderPageHead(data.meta),
       renderKpis(data.kpis),
-      renderQuickActions(data.quickActions),
       renderDepartures(data.departuresToday),
       '<div class="grid-main">' + renderSalesChart(data.salesChart) + renderStatus(data.reservationStatus) + '</div>',
       renderRecent(data.recentReservations),
@@ -690,11 +668,6 @@
 
       if (target.getAttribute('data-action') === 'ack-alerts') {
         toast('업무 알림을 모두 확인 처리했습니다.');
-        return;
-      }
-
-      if (target.hasAttribute('data-quick-action')) {
-        toast(target.getAttribute('data-quick-action') + ' 화면으로 이동합니다.');
         return;
       }
 

@@ -70,15 +70,6 @@
       }
     ],
 
-    quickActions: [
-      { label: '신규 상품 등록', icon: '＋' },
-      { label: '예약 등록', icon: '＋' },
-      { label: '고객 검색', icon: '⌕' },
-      { label: '요금 설정', icon: '₩' },
-      { label: '예약달력', icon: '▦' },
-      { label: '정산서 확인', icon: '▤' }
-    ],
-
     departuresToday: [
       {
         time: '09:00',
