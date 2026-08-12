@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>대시보드 | AOS Travel ERP</title>
+  <meta
+    name="description"
+    content="여행사 실무를 위한 AOS 통합 ERP 관리자 대시보드"
+  />
+  <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+  <div id="app-root"></div>
+
+  <div id="page-content" hidden>
+    <div id="dashboard-root" aria-live="polite"></div>
+  </div>
+
+  <script src="/js/admin-layout.js"></script>
+  <script src="/js/dashboard-data.js"></script>
+  <script src="/js/dashboard.js"></script>
+
+  <script>
+    AOSAdminLayout.mount({
+      activeNav: "dashboard",
+      openGroups: ["product", "reservation"],
+      breadcrumb: [
+        { label: "홈" },
+        { label: "대시보드", current: true }
+      ],
+      agency: "애비아넥스트",
+      userName: "관리자 장윤호",
+      avatar: "장",
+      noticeCount: 5
+    });
+
+    AOSDashboard.mount("#dashboard-root", window.AOSDashboardData);
+  </script>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>
