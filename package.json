@@ -1,0 +1,29 @@
+{
+  "name": "aos-platform",
+  "version": "1.0.0",
+  "description": "AOS Travel ERP Platform",
+  "main": "server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taein15-beep/aos-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/taein15-beep/aos-platform/issues"
+  },
+  "homepage": "https://github.com/taein15-beep/aos-platform#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
