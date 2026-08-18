@@ -598,7 +598,10 @@ function ReservationPage() {
     ...Array.from({ length: data.child }, (_, index) => ({ id: `child-${index}`, type: "소인", index: index + 1 })),
     ...Array.from({ length: data.infant }, (_, index) => ({ id: `infant-${index}`, type: "유아", index: index + 1 })),
   ];
-  const updateTraveler = (id: string, key: keyof TravelerData, value: string | boolean) => setTravelers((current) => ({ ...current, [id]: { same: false, name: "", birth: "", gender: "", phone: "", note: "", ...current[id], [key]: value } }));
+  const updateTraveler = (id: string, key: keyof TravelerData, value: string | boolean) => setTravelers((current) => {
+    const traveler = current[id] ?? { same: false, name: "", birth: "", gender: "", phone: "", note: "" };
+    return { ...current, [id]: { ...traveler, [key]: value } };
+  });
   const optionAmount = data.option === "specialty" ? 15000 : 0;
   const matchedDate = detailDates.find((date) => date.value === data.departureDate) || detailDates[0];
   const productAmount = data.adult * matchedDate.adultPrice + data.child * matchedDate.childPrice;
