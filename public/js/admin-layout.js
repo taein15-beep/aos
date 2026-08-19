@@ -187,6 +187,10 @@
       '<input type="search" aria-label="빠른 검색" placeholder="예약번호, 고객명, 상품명 검색" />' +
       '<kbd>⌘ K</kbd>' +
       '</label>' +
+      '<a class="website-link" href="https://aos-platform-home.vercel.app/domestic" target="_blank" rel="noopener noreferrer" aria-label="국내여행 홈페이지 보기 (새 창)">' +
+      '<span class="website-link-icon" aria-hidden="true">↗</span>' +
+      '<span class="website-link-label">홈페이지 보기</span>' +
+      '</a>' +
       '<button type="button" class="icon-btn" title="업무지원" data-action="support">?</button>' +
       '<div class="dropdown-wrap">' +
       '<button type="button" class="icon-btn notice" aria-label="알림" aria-expanded="false" data-dropdown="notice">' +
