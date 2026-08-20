@@ -31,7 +31,7 @@ export default function AttractionListPage(){
   const move=(id:number,direction:-1|1)=>{setRows(current=>{const index=current.findIndex(r=>r.id===id);const target=index+direction;if(index<0||target<0||target>=current.length)return current;const copy=[...current];[copy[index],copy[target]]=[copy[target],copy[index]];return copy});act("모바일 스탬프북 노출 순서를 변경했습니다.")};
   const toggleOperation=(id:number)=>{setRows(current=>current.map(r=>r.id===id?{...r,operation:r.operation==="운영 중"?"운영중지":"운영 중"}:r));setMore(null);act("관광지 운영상태를 변경했습니다.")};
   const remove=()=>{if(!deleteTarget)return;setRows(current=>current.filter(r=>r.id!==deleteTarget.id));act(`${deleteTarget.name} 관광지를 삭제했습니다.`);setDeleteTarget(null)};
-  const register=()=>act("관광지 등록 페이지는 다음 단계에서 제공될 예정입니다.");
+  const register=()=>window.location.assign("/stamp-tours/attractions/new");
   const total=rows.length, operating=rows.filter(r=>r.operation==="운영 중").length, stopped=rows.filter(r=>r.operation==="운영중지").length, issued=rows.filter(r=>r.qr==="발급 완료").length, unissued=rows.filter(r=>r.qr==="미발급").length;
   const summary=[["전체 관광지",`${total}곳`,MapPin,"blue"],["운영 중",`${operating}곳`,Check,"green"],["운영중지",`${stopped}곳`,StopCircle,"slate"],["QR 발급 완료",`${issued}곳`,QrCode,"indigo"],["QR 미발급",`${unissued}곳`,AlertTriangle,"amber"]] as const;
 
