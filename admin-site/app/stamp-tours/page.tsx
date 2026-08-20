@@ -55,7 +55,7 @@ export default function StampTourListPage() {
   const search=()=>{setQuery(draftQuery.trim());setStatus(draftStatus);setVisibility(draftVisibility);setAppliedStart(startDate);setAppliedEnd(endDate);setPage(1);act("검색 조건을 적용했습니다.")};
   const reset=()=>{setDraftQuery("");setQuery("");setDraftStatus("전체");setStatus("전체");setDraftVisibility("전체");setVisibility("전체");setStartDate("");setEndDate("");setAppliedStart("");setAppliedEnd("");setPage(1);act("검색 조건을 초기화했습니다.")};
   const toggleMenu=(label:string)=>setExpanded(v=>v.includes(label)?v.filter(x=>x!==label):[...v,label]);
-  const goChild=(group:string,child:string)=>{if(child==="상품목록")window.location.assign("/products");else if(child==="스탬프투어 목록")window.location.assign("/stamp-tours");else if(child==="관광지 관리")window.location.assign("/stamp-tours/attractions");else act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`)};
+  const goChild=(group:string,child:string)=>{if(child==="상품목록")window.location.assign("/products");else if(child==="스탬프투어 목록")window.location.assign("/stamp-tours");else if(child==="관광지 관리")window.location.assign("/stamp-tours/attractions");else if(child==="참여자·진행현황")window.location.assign("/stamp-tours/participants");else if(child==="인증 이력")window.location.assign("/stamp-tours/verifications");else if(child==="완주·경품 관리")window.location.assign("/stamp-tours/rewards");else if(child==="통계")window.location.assign("/stamp-tours/statistics");else act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`)};
 
   const totalParticipants=initialTours.reduce((s,t)=>s+t.participants,0), totalFinishers=initialTours.reduce((s,t)=>s+t.finishers,0);
   const kpis=[
