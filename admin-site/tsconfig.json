@@ -34,7 +34,9 @@
     "node_modules",
     "build",
     "db",
+    "drizzle.config.ts",
     "examples",
+    "vite.config.ts",
     "worker"
   ]
 }
