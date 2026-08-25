@@ -137,6 +137,17 @@ td.money,td.money-danger{text-align:right}
 .detail-content .spot-table td:nth-child(2) small{font-size:10px}
 .detail-content .spot-table td:last-child button{font-size:10px}
 .detail-content .qr-health{font-size:10px}
+.detail-content .spot-col-no{width:52px}
+.detail-content .spot-col-name{width:220px}
+.detail-content .spot-col-address{width:auto}
+.detail-content .spot-col-qr{width:130px}
+.detail-content .spot-col-count{width:120px}
+.detail-content .spot-col-status{width:110px}
+.detail-content .spot-table th{width:auto}
+.detail-content .spot-table .spot-address{position:relative;padding-left:33px;text-align:left;color:#59677b;white-space:normal;overflow:hidden;overflow-wrap:anywhere;word-break:keep-all}
+.detail-content .spot-address svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#8190a4}
+.detail-content .spot-address span{display:block;max-width:100%;line-height:1.45}
+.detail-content .spot-table td:nth-child(4){white-space:nowrap;overflow:hidden}
 .detail-content .section-title-row h2{font-size:16px}
 .detail-content .section-title-row p{font-size:11px}
 .detail-content .section-title-row>span{font-size:10px}
