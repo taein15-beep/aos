@@ -208,3 +208,49 @@ td.money,td.money-danger{text-align:right}
 .stamp-tour-create-mode .reward-card-scroll{overflow-x:auto}.stamp-tour-create-mode .reward-card-scroll .reward-card-grid{grid-template-columns:1fr 1.8fr 1fr 1fr 1.55fr}.stamp-tour-create-mode .reward-card-scroll .reward-option-card{grid-column:auto}
 .stamp-tour-create-mode .reward-toggle-card{grid-template-rows:auto auto;gap:9px}.stamp-tour-create-mode .reward-card-title-row{display:flex!important;align-items:center;justify-content:space-between;gap:8px}.stamp-tour-create-mode .reward-card-title-row .form-label{white-space:nowrap}.stamp-tour-create-mode .reward-toggle-card>small{display:block}
 .stamp-tour-create-mode .reward-period-card{grid-template-rows:auto auto;gap:9px}.stamp-tour-create-mode .reward-period-title-row .compact-date-range{flex:1;justify-content:flex-end}.stamp-tour-create-mode .reward-period-title-row .compact-date-range input{width:calc(50% - 9px);max-width:135px}.stamp-tour-create-mode .reward-period-card>small{display:block}
+/* 관광지 목록 가독성 개선: 목록 영역 텍스트를 기존보다 2px 확대 */
+.attraction-list-head strong{font-size:12px!important}
+.attraction-list-head .unlimited,
+.attraction-list-head p{font-size:10px!important}
+.attraction-table thead th{font-size:11px!important}
+.attraction-table tbody td{font-size:11px!important}
+.attraction-table tbody .order-control>b,
+.attraction-table tbody .attraction-name a,
+.attraction-table tbody .badge{font-size:12px!important}
+.attraction-table tbody .attraction-name small,
+.attraction-table tbody .visit-type,
+.attraction-table tbody .qr-status{font-size:10px!important}
+
+/* 관광지 노출 순서 드래그 앤 드롭 */
+.attraction-table tbody .order-control{display:inline-flex;grid-template-columns:none;user-select:none}
+.attraction-table tbody .order-control>.drag-handle{display:inline-flex;align-items:center;justify-content:center;grid-template-rows:none;gap:0;height:16px;line-height:1;color:#8795a8;cursor:grab}
+.attraction-table tbody .order-control>.drag-handle svg{display:block;transform:translateY(3px)}
+.attraction-table tbody .order-control>b{display:inline-flex;align-items:center;height:16px;line-height:1}
+.attraction-table tbody .drag-handle:active{cursor:grabbing;color:#2563eb}
+.attraction-table tbody tr.drag-target td{background:#eef5ff;border-top:2px solid #6b9ce8}
+
+/* 관광지 목록 열 단순화 및 상태 토글 */
+.attraction-table{min-width:1400px}
+.attraction-table th:nth-child(1){width:82px}
+.attraction-table th:nth-child(2){width:76px}
+.attraction-table th:nth-child(3){width:160px}
+.attraction-table th:nth-child(4){width:115px}
+.attraction-table th:nth-child(5){width:auto}
+.attraction-table th:nth-child(6){width:105px}
+.attraction-table th:nth-child(7){width:95px}
+.attraction-table th:nth-child(8){width:120px}
+.attraction-table th:nth-child(9),
+.attraction-table th:nth-child(10){width:115px}
+.attraction-table th:nth-child(11){width:82px}
+.status-toggle{border:0;background:transparent;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:4px;white-space:nowrap;font-size:10px;font-weight:700}
+.status-toggle .switch-track{position:relative;display:inline-block;width:34px;height:20px;flex:0 0 34px;border-radius:10px;background:#cbd5e1;box-shadow:inset 0 0 0 1px rgba(15,23,42,.08);transition:background .18s}
+.status-toggle .switch-track>i{position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.3);transition:transform .18s}
+.status-toggle.on .switch-track>i{transform:translateX(14px)}
+.status-toggle b{font-size:10px}
+.status-toggle.operation.on{color:#15803d}
+.status-toggle.operation.on .switch-track{background:#22a45d}
+.status-toggle.visibility.on{color:#2563eb}
+.status-toggle.visibility.on .switch-track{background:#3b82f6}
+.status-toggle.off{color:#64748b}
+.row-delete-button{height:28px;padding:0 8px;border:1px solid #fecdd3;border-radius:5px;background:#fff;color:#dc2626;display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700}
+.row-delete-button:hover{background:#fff1f2;border-color:#fca5a5}
