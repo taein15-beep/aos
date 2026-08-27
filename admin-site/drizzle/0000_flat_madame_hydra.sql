@@ -193,38 +193,6 @@ CREATE INDEX `visit_participant_time_idx` ON `visit_verifications` (`participant
 --> statement-breakpoint
 CREATE INDEX `visit_spot_time_idx` ON `visit_verifications` (`spot_id`,`verified_at`);
 --> statement-breakpoint
-CREATE TRIGGER `reward_application_validate_before_insert`
-BEFORE INSERT ON `reward_applications`
-BEGIN
-  SELECT CASE WHEN NOT EXISTS (
-    SELECT 1 FROM `tier_rewards` r JOIN `tour_participants` p ON p.tour_id = r.tour_id
-    WHERE r.id = NEW.reward_id AND p.id = NEW.participant_id
-      AND r.status = 'ACTIVE' AND r.stock_remaining > 0
-      AND r.required_spot_count <= p.verified_spot_count
-  ) THEN RAISE(ABORT, 'REWARD_OUT_OF_STOCK_OR_INELIGIBLE') END;
-END;
---> statement-breakpoint
-CREATE TRIGGER `reward_application_decrement_stock_after_insert`
-AFTER INSERT ON `reward_applications`
-BEGIN
-  UPDATE `tier_rewards`
-  SET stock_remaining = stock_remaining - 1,
-      status = CASE WHEN stock_remaining - 1 = 0 THEN 'SOLD_OUT' ELSE status END,
-      updated_at = CURRENT_TIMESTAMP
-  WHERE id = NEW.reward_id;
-END;
---> statement-breakpoint
-CREATE TRIGGER `reward_application_restore_stock_after_close`
-AFTER UPDATE OF status ON `reward_applications`
-WHEN OLD.status NOT IN ('CANCELLED', 'REJECTED') AND NEW.status IN ('CANCELLED', 'REJECTED')
-BEGIN
-  UPDATE `tier_rewards`
-  SET stock_remaining = MIN(stock_total, stock_remaining + 1),
-      status = CASE WHEN status = 'SOLD_OUT' THEN 'ACTIVE' ELSE status END,
-      updated_at = CURRENT_TIMESTAMP
-  WHERE id = NEW.reward_id;
-END;
---> statement-breakpoint
 INSERT INTO `stamp_tours` (`id`,`tour_code`,`name`,`description`,`status`,`is_public`,`starts_at`,`ends_at`,`privacy_retention_days`,`location_retention_days`,`reward_limit_per_participant`)
 VALUES ('tour_cheorwon_dmz_2026','CHEORWON-DMZ-2026','철원 DMZ 평화관광 스탬프투어','철원의 DMZ 평화관광 명소를 방문하고 단계별 경품을 신청하는 모바일 스탬프투어입니다.','ACTIVE',1,'2026-01-01T00:00:00+09:00','2027-12-31T23:59:59+09:00',365,90,1);
 --> statement-breakpoint

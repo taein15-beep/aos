@@ -5,6 +5,7 @@ export type Row = Record<string, string | number | null>;
 export async function rows(statement: string, values: unknown[] = []) { const result = await (await getD1Binding()).prepare(statement).bind(...values).all<Row>(); return result.results; }
 export async function first(statement: string, values: unknown[] = []) { return await (await getD1Binding()).prepare(statement).bind(...values).first<Row>(); }
 export async function run(statement: string, values: unknown[] = []) { return await (await getD1Binding()).prepare(statement).bind(...values).run(); }
+export async function batch(statements: Array<{ statement: string; values?: unknown[] }>) { const db = await getD1Binding(); return db.batch(statements.map(({statement,values=[]})=>db.prepare(statement).bind(...values))); }
 export function id(prefix: string) { return `${prefix}_${crypto.randomUUID().replaceAll("-", "")}`; }
 export async function publicTour(tourCode: string) {
   const tour = await first(`SELECT id,tour_code tourCode,name,description,detail,hero_image_url heroImageUrl,region,participation_opens_at participationOpensAt,participation_closes_at participationClosesAt,use_location useLocation,default_radius_meters defaultRadiusMeters,participation_condition participationCondition,status,starts_at startsAt,ends_at endsAt,privacy_retention_days privacyRetentionDays,location_retention_days locationRetentionDays FROM stamp_tours WHERE tour_code=? AND is_public=1`, [tourCode]);

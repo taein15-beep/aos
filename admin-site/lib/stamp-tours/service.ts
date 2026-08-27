@@ -1,4 +1,5 @@
 import {
+  batch,
   first,
   id,
   participantInTour,
@@ -571,8 +572,8 @@ export async function applyReward(
     now = new Date().toISOString(),
     delivery = input.fulfillmentMethod === "DELIVERY";
   try {
-    await run(
-      `INSERT INTO reward_applications(id,participant_id,reward_id,achieved_spot_count_at_application,request_key,fulfillment_method,recipient_name_encrypted,phone_encrypted,postal_code_encrypted,address_encrypted,address_detail_encrypted,delivery_request_encrypted,pickup_location,pickup_period,pickup_hours,reward_privacy_agreed_at,delivery_outsourcing_agreed_at,policy_agreed_at,privacy_expires_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    const results = await batch([
+      { statement: `INSERT INTO reward_applications(id,participant_id,reward_id,achieved_spot_count_at_application,request_key,fulfillment_method,recipient_name_encrypted,phone_encrypted,postal_code_encrypted,address_encrypted,address_detail_encrypted,delivery_request_encrypted,pickup_location,pickup_period,pickup_hours,reward_privacy_agreed_at,delivery_outsourcing_agreed_at,policy_agreed_at,privacy_expires_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? FROM tier_rewards r JOIN tour_participants p ON p.tour_id=r.tour_id WHERE r.id=? AND p.id=? AND r.status='ACTIVE' AND r.stock_remaining>0 AND r.required_spot_count<=p.verified_spot_count AND (r.application_starts_at IS NULL OR r.application_starts_at<=?) AND (r.application_ends_at IS NULL OR r.application_ends_at>=?)`, values:
       [
         applicationId,
         participantId,
@@ -595,8 +596,14 @@ export async function applyReward(
         delivery ? now : null,
         now,
         participant.privacyExpiresAt,
-      ],
-    );
+        reward.id,
+        participantId,
+        now,
+        now,
+      ] },
+      { statement: `UPDATE tier_rewards SET stock_remaining=stock_remaining-1,status=CASE WHEN stock_remaining-1=0 THEN 'SOLD_OUT' ELSE status END,updated_at=CURRENT_TIMESTAMP WHERE id=? AND EXISTS(SELECT 1 FROM reward_applications WHERE id=?)`, values:[reward.id,applicationId] },
+    ]);
+    if (!Number(results[0]?.meta?.changes)) throw new Error("REWARD_OUT_OF_STOCK_OR_INELIGIBLE");
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message.includes("REWARD_OUT_OF_STOCK"))
