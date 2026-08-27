@@ -18,8 +18,10 @@ CREATE TABLE `tour_participants` (
 	FOREIGN KEY (`tour_id`) REFERENCES `stamp_tours`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `participants_tour_phone_uq` ON `tour_participants` (`tour_id`,`phone_lookup_hash`);--> statement-breakpoint
-CREATE UNIQUE INDEX `participants_code_uq` ON `tour_participants` (`participant_code`);--> statement-breakpoint
+CREATE UNIQUE INDEX `participants_tour_phone_uq` ON `tour_participants` (`tour_id`,`phone_lookup_hash`);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `participants_code_uq` ON `tour_participants` (`participant_code`);
+--> statement-breakpoint
 CREATE TABLE `participation_consents` (
 	`id` text PRIMARY KEY NOT NULL,
 	`participant_id` text NOT NULL,
@@ -32,7 +34,8 @@ CREATE TABLE `participation_consents` (
 	FOREIGN KEY (`participant_id`) REFERENCES `tour_participants`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `participation_consents_participant_idx` ON `participation_consents` (`participant_id`,`consent_type`);--> statement-breakpoint
+CREATE INDEX `participation_consents_participant_idx` ON `participation_consents` (`participant_id`,`consent_type`);
+--> statement-breakpoint
 CREATE TABLE `phone_auth_challenges` (
 	`id` text PRIMARY KEY NOT NULL,
 	`phone_lookup_hash` text NOT NULL,
@@ -45,7 +48,8 @@ CREATE TABLE `phone_auth_challenges` (
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
-CREATE INDEX `phone_auth_lookup_time_idx` ON `phone_auth_challenges` (`phone_lookup_hash`,`created_at`);--> statement-breakpoint
+CREATE INDEX `phone_auth_lookup_time_idx` ON `phone_auth_challenges` (`phone_lookup_hash`,`created_at`);
+--> statement-breakpoint
 CREATE TABLE `reward_applications` (
 	`id` text PRIMARY KEY NOT NULL,
 	`participant_id` text NOT NULL,
@@ -64,8 +68,10 @@ CREATE TABLE `reward_applications` (
 	FOREIGN KEY (`reward_id`) REFERENCES `tier_rewards`(`id`) ON UPDATE no action ON DELETE restrict
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `reward_applications_participant_uq` ON `reward_applications` (`participant_id`);--> statement-breakpoint
-CREATE INDEX `reward_applications_status_idx` ON `reward_applications` (`status`,`applied_at`);--> statement-breakpoint
+CREATE UNIQUE INDEX `reward_applications_participant_uq` ON `reward_applications` (`participant_id`);
+--> statement-breakpoint
+CREATE INDEX `reward_applications_status_idx` ON `reward_applications` (`status`,`applied_at`);
+--> statement-breakpoint
 CREATE TABLE `reward_process_history` (
 	`id` text PRIMARY KEY NOT NULL,
 	`application_id` text NOT NULL,
@@ -78,7 +84,8 @@ CREATE TABLE `reward_process_history` (
 	FOREIGN KEY (`application_id`) REFERENCES `reward_applications`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `reward_history_application_time_idx` ON `reward_process_history` (`application_id`,`created_at`);--> statement-breakpoint
+CREATE INDEX `reward_history_application_time_idx` ON `reward_process_history` (`application_id`,`created_at`);
+--> statement-breakpoint
 CREATE TABLE `spot_qrs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`spot_id` text NOT NULL,
@@ -92,8 +99,10 @@ CREATE TABLE `spot_qrs` (
 	FOREIGN KEY (`spot_id`) REFERENCES `tour_spots`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `spot_qrs_token_hash_uq` ON `spot_qrs` (`token_hash`);--> statement-breakpoint
-CREATE INDEX `spot_qrs_spot_status_idx` ON `spot_qrs` (`spot_id`,`status`);--> statement-breakpoint
+CREATE UNIQUE INDEX `spot_qrs_token_hash_uq` ON `spot_qrs` (`token_hash`);
+--> statement-breakpoint
+CREATE INDEX `spot_qrs_spot_status_idx` ON `spot_qrs` (`spot_id`,`status`);
+--> statement-breakpoint
 CREATE TABLE `stamp_tours` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tour_code` text NOT NULL,
@@ -110,8 +119,10 @@ CREATE TABLE `stamp_tours` (
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `stamp_tours_tour_code_uq` ON `stamp_tours` (`tour_code`);--> statement-breakpoint
-CREATE INDEX `stamp_tours_public_status_idx` ON `stamp_tours` (`is_public`,`status`);--> statement-breakpoint
+CREATE UNIQUE INDEX `stamp_tours_tour_code_uq` ON `stamp_tours` (`tour_code`);
+--> statement-breakpoint
+CREATE INDEX `stamp_tours_public_status_idx` ON `stamp_tours` (`is_public`,`status`);
+--> statement-breakpoint
 CREATE TABLE `tier_rewards` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tour_id` text NOT NULL,
@@ -126,8 +137,10 @@ CREATE TABLE `tier_rewards` (
 	FOREIGN KEY (`tour_id`) REFERENCES `stamp_tours`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `tier_rewards_tour_threshold_uq` ON `tier_rewards` (`tour_id`,`required_spot_count`);--> statement-breakpoint
-CREATE INDEX `tier_rewards_tour_status_idx` ON `tier_rewards` (`tour_id`,`status`);--> statement-breakpoint
+CREATE UNIQUE INDEX `tier_rewards_tour_threshold_uq` ON `tier_rewards` (`tour_id`,`required_spot_count`);
+--> statement-breakpoint
+CREATE INDEX `tier_rewards_tour_status_idx` ON `tier_rewards` (`tour_id`,`status`);
+--> statement-breakpoint
 CREATE TABLE `tour_spots` (
 	`id` text PRIMARY KEY NOT NULL,
 	`tour_id` text NOT NULL,
@@ -147,8 +160,10 @@ CREATE TABLE `tour_spots` (
 	FOREIGN KEY (`tour_id`) REFERENCES `stamp_tours`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `tour_spots_tour_code_uq` ON `tour_spots` (`tour_id`,`spot_code`);--> statement-breakpoint
-CREATE INDEX `tour_spots_tour_sort_idx` ON `tour_spots` (`tour_id`,`sort_order`);--> statement-breakpoint
+CREATE UNIQUE INDEX `tour_spots_tour_code_uq` ON `tour_spots` (`tour_id`,`spot_code`);
+--> statement-breakpoint
+CREATE INDEX `tour_spots_tour_sort_idx` ON `tour_spots` (`tour_id`,`sort_order`);
+--> statement-breakpoint
 CREATE TABLE `visit_verifications` (
 	`id` text PRIMARY KEY NOT NULL,
 	`participant_id` text NOT NULL,
@@ -172,8 +187,10 @@ CREATE TABLE `visit_verifications` (
 	FOREIGN KEY (`qr_id`) REFERENCES `spot_qrs`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `visit_success_once_uq` ON `visit_verifications` (`participant_id`,`spot_id`) WHERE "visit_verifications"."result" = 'SUCCESS';--> statement-breakpoint
-CREATE INDEX `visit_participant_time_idx` ON `visit_verifications` (`participant_id`,`verified_at`);--> statement-breakpoint
+CREATE UNIQUE INDEX `visit_success_once_uq` ON `visit_verifications` (`participant_id`,`spot_id`) WHERE "visit_verifications"."result" = 'SUCCESS';
+--> statement-breakpoint
+CREATE INDEX `visit_participant_time_idx` ON `visit_verifications` (`participant_id`,`verified_at`);
+--> statement-breakpoint
 CREATE INDEX `visit_spot_time_idx` ON `visit_verifications` (`spot_id`,`verified_at`);
 --> statement-breakpoint
 CREATE TRIGGER `reward_application_validate_before_insert`
