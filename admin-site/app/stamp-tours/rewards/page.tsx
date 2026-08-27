@@ -17,18 +17,18 @@ type Status="확인 중"|"승인"|"발송 대기"|"지급 완료"|"반려";
 type RewardRow={id:number;number:string;applied:string;name:string;phone:string;tour:string;verified:number;total:number;completed:string;reward:string;method:Method;status:Status;tracking:string;manager:string;address:string;duplicate:"정상"|"확인 필요"};
 
 const rewards:RewardRow[]=[
-  {id:1,number:"RWD-20260820-00318",applied:"2026.08.20 17:42",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.17",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"발송 대기",tracking:"-",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"정상"},
-  {id:2,number:"RWD-20260820-00317",applied:"2026.08.20 16:18",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:7,total:8,completed:"2026.08.19",reward:"철원사랑상품권 3만원",method:"현장수령",status:"승인",tracking:"-",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"정상"},
-  {id:3,number:"RWD-20260820-00316",applied:"2026.08.20 15:37",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.20",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"확인 중",tracking:"-",manager:"미배정",address:"샘플 배송지",duplicate:"확인 필요"},
-  {id:4,number:"RWD-20260820-00315",applied:"2026.08.20 14:52",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:6,total:8,completed:"2026.08.20",reward:"철원 관광기념품 세트",method:"택배 배송",status:"지급 완료",tracking:"CJ 6891-****-2047",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"정상"},
-  {id:5,number:"RWD-20260820-00314",applied:"2026.08.20 13:29",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.19",reward:"철원사랑상품권 3만원",method:"현장수령",status:"지급 완료",tracking:"현장수령 완료",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"정상"},
-  {id:6,number:"RWD-20260820-00313",applied:"2026.08.20 11:46",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.19",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"반려",tracking:"-",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"확인 필요"},
-  {id:7,number:"RWD-20260819-00312",applied:"2026.08.19 18:04",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.19",reward:"철원 관광기념품 세트",method:"택배 배송",status:"승인",tracking:"-",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"정상"},
-  {id:8,number:"RWD-20260819-00311",applied:"2026.08.19 17:22",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:8,total:8,completed:"2026.08.19",reward:"철원사랑상품권 3만원",method:"현장수령",status:"확인 중",tracking:"-",manager:"미배정",address:"샘플 배송지",duplicate:"정상"},
-  {id:9,number:"RWD-20260819-00310",applied:"2026.08.19 16:43",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.18",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"발송 대기",tracking:"한진 5342-****-7180",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"정상"},
-  {id:10,number:"RWD-20260819-00309",applied:"2026.08.19 15:11",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.18",reward:"철원 관광기념품 세트",method:"택배 배송",status:"승인",tracking:"-",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"정상"},
-  {id:11,number:"RWD-20260819-00308",applied:"2026.08.19 13:58",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.18",reward:"철원사랑상품권 3만원",method:"현장수령",status:"반려",tracking:"-",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"확인 필요"},
-  {id:12,number:"RWD-20260819-00307",applied:"2026.08.19 11:26",name:"샘플 사용자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:6,total:8,completed:"2026.08.18",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"지급 완료",tracking:"우체국 6401-****-8832",manager:"샘플 사용자",address:"샘플 배송지",duplicate:"정상"},
+  {id:1,number:"RWD-20260820-00318",applied:"2026.08.20 17:42",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.17",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"발송 대기",tracking:"-",manager:"샘플 참여자",address:"서울특별시 영등포구 신길로 **, ***동 ***호",duplicate:"정상"},
+  {id:2,number:"RWD-20260820-00317",applied:"2026.08.20 16:18",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:7,total:8,completed:"2026.08.19",reward:"철원사랑상품권 3만원",method:"현장수령",status:"승인",tracking:"-",manager:"샘플 참여자",address:"철원역사문화공원 관광안내소",duplicate:"정상"},
+  {id:3,number:"RWD-20260820-00316",applied:"2026.08.20 15:37",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.20",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"확인 중",tracking:"-",manager:"미배정",address:"경기도 고양시 덕양구 중앙로 ***, ***호",duplicate:"확인 필요"},
+  {id:4,number:"RWD-20260820-00315",applied:"2026.08.20 14:52",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:6,total:8,completed:"2026.08.20",reward:"철원 관광기념품 세트",method:"택배 배송",status:"지급 완료",tracking:"CJ 6891-****-2047",manager:"샘플 참여자",address:"인천광역시 연수구 센트럴로 **, ***동 ***호",duplicate:"정상"},
+  {id:5,number:"RWD-20260820-00314",applied:"2026.08.20 13:29",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.19",reward:"철원사랑상품권 3만원",method:"현장수령",status:"지급 완료",tracking:"현장수령 완료",manager:"샘플 참여자",address:"고석정 관광안내소",duplicate:"정상"},
+  {id:6,number:"RWD-20260820-00313",applied:"2026.08.20 11:46",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.19",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"반려",tracking:"-",manager:"샘플 참여자",address:"부산광역시 해운대구 해운대로 ***, ***호",duplicate:"확인 필요"},
+  {id:7,number:"RWD-20260819-00312",applied:"2026.08.19 18:04",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.19",reward:"철원 관광기념품 세트",method:"택배 배송",status:"승인",tracking:"-",manager:"샘플 참여자",address:"서울특별시 마포구 월드컵로 **, ***동 ***호",duplicate:"정상"},
+  {id:8,number:"RWD-20260819-00311",applied:"2026.08.19 17:22",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:8,total:8,completed:"2026.08.19",reward:"철원사랑상품권 3만원",method:"현장수령",status:"확인 중",tracking:"-",manager:"미배정",address:"철원역사문화공원 관광안내소",duplicate:"정상"},
+  {id:9,number:"RWD-20260819-00310",applied:"2026.08.19 16:43",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.18",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"발송 대기",tracking:"한진 5342-****-7180",manager:"샘플 참여자",address:"대전광역시 유성구 대학로 **, ***동 ***호",duplicate:"정상"},
+  {id:10,number:"RWD-20260819-00309",applied:"2026.08.19 15:11",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.18",reward:"철원 관광기념품 세트",method:"택배 배송",status:"승인",tracking:"-",manager:"샘플 참여자",address:"강원특별자치도 춘천시 중앙로 **, ***호",duplicate:"정상"},
+  {id:11,number:"RWD-20260819-00308",applied:"2026.08.19 13:58",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.18",reward:"철원사랑상품권 3만원",method:"현장수령",status:"반려",tracking:"-",manager:"샘플 참여자",address:"고석정 관광안내소",duplicate:"확인 필요"},
+  {id:12,number:"RWD-20260819-00307",applied:"2026.08.19 11:26",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:6,total:8,completed:"2026.08.18",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"지급 완료",tracking:"우체국 6401-****-8832",manager:"샘플 참여자",address:"충청북도 청주시 상당구 상당로 **, ***호",duplicate:"정상"},
 ];
 
 const maskPhone=(phone:string)=>phone.replace(/(\d{3})-(\d{4})-(\d{4})/,"$1-****-$3");
@@ -61,6 +61,34 @@ export default function RewardManagementPage(){
   const kpis=[["전체 완주자","386명",UserCheck,"blue"],["경품 신청","318건",Gift,"purple"],["확인 중","24건",Clock3,"amber"],["승인","61건",ShieldCheck,"indigo"],["발송 대기","37건",Truck,"sky"],["지급 완료","184건",PackageCheck,"green"],["반려","12건",XCircle,"rose"]] as const;
 
   return <div className={`app-shell ${collapsed?"is-collapsed":""}`}>
+    <style>{`
+      .reward-content > .page-head h1 { font-size: 25px !important; }
+      .reward-content > .page-head p { font-size: 14px !important; }
+      .reward-content .reward-kpi small { font-size: 10px !important; }
+      .reward-content .reward-kpi strong { font-size: 19px !important; }
+      .reward-content .reward-filter label > span,
+      .reward-content .reward-filter input,
+      .reward-content .reward-filter select,
+      .reward-content .reward-period em { font-size: 11px !important; }
+      .reward-content .reward-filter-actions button { font-size: 15px !important; }
+      .reward-content .reward-list-head strong { font-size: 12px !important; }
+      .reward-content .reward-list-head > div:first-child > span,
+      .reward-content .bulk-tools > span,
+      .reward-content .bulk-tools select,
+      .reward-content .bulk-tools button { font-size: 10px !important; }
+      .reward-content .reward-table th,
+      .reward-content .reward-table td { font-size: 11px !important; }
+      .reward-content .reward-person b { font-size: 11px !important; }
+      .reward-content .reward-person small { font-size: 9px !important; }
+      .reward-content .receive-method,
+      .reward-content .reward-status,
+      .reward-content .tracking-cell,
+      .reward-content .reward-detail-button { font-size: 10px !important; }
+      .reward-content .participant-footer > span { font-size: 10px !important; }
+      .reward-content .pagination button { font-size: 12px !important; }
+      .reward-content .reward-empty strong { font-size: 13px !important; }
+      .reward-content .reward-empty p { font-size: 11px !important; }
+    `}</style>
     <aside className="sidebar"><div className="brand"><div className="brand-mark">A</div><div className="brand-copy"><strong>AOS</strong><span>TRAVEL ERP</span></div><button className="collapse" onClick={()=>setCollapsed(!collapsed)} aria-label="사이드바 접기">‹</button></div><nav aria-label="관리자 메뉴">{menu.map(item=><div className="nav-group" key={item.label}><button className={`nav-item ${item.label==="스탬프투어 관리"?"active":""}`} onClick={()=>item.label==="대시보드"?window.location.assign("/"):item.children?toggleMenu(item.label):act(`${item.label} 화면으로 이동합니다.`)}><span className="nav-icon">{item.icon==="qr"?<QrCode size={16}/>:item.icon}</span><span className="nav-label">{item.label}</span>{item.children&&<span className={`chevron ${expanded.includes(item.label)?"open":""}`}>⌄</span>}</button>{item.children&&expanded.includes(item.label)&&!collapsed&&<div className="subnav">{item.children.map(child=><button key={child} className={child==="완주·경품 관리"?"current":""} onClick={()=>goChild(child)}>{child}</button>)}</div>}</div>)}</nav><div className="sidebar-help"><span className="nav-icon">?</span><div><strong>업무지원센터</strong><p>평일 09:00–18:00</p></div></div></aside>
     <div className="workspace"><header className="topbar"><div className="breadcrumb"><span>스탬프투어 관리</span><b>/</b><strong>완주·경품 관리</strong></div><div className="top-actions"><label className="search"><span>⌕</span><input aria-label="빠른 검색" placeholder="예약번호, 고객명, 상품명 검색"/><kbd>⌘ K</kbd></label><button className="icon-btn">?</button><div className="dropdown-wrap"><button className="icon-btn notice" aria-label="알림" onClick={()=>{setNoticeOpen(!noticeOpen);setProfileOpen(false)}}>♢<i>5</i></button>{noticeOpen&&<div className="dropdown notice-menu"><div className="drop-head"><strong>알림</strong><button onClick={()=>setNoticeOpen(false)}>모두 읽음</button></div><button><span className="alert-dot warn"/><span>확인이 필요한 경품 신청 24건이 있습니다.<small>방금 전</small></span></button></div>}</div><div className="divider"/><div className="dropdown-wrap"><button className="profile" onClick={()=>{setProfileOpen(!profileOpen);setNoticeOpen(false)}}><span className="avatar">장</span><span><b>애비아넥스트</b><small>관리자 장윤호</small></span><em>⌄</em></button>{profileOpen&&<div className="dropdown profile-menu"><button>내 정보</button><button>환경설정</button><hr/><button className="logout">로그아웃</button></div>}</div></div></header>
       <main className="content reward-content"><LiveStampTourPanel section="rewards"/><section className="page-head reward-page-head"><div><h1>완주·경품 관리</h1><p>완주자의 경품 신청정보를 검수하고 승인·발송·현장수령을 처리합니다.</p></div><button className="excel-button" onClick={downloadExcel}><Download size={14}/>엑셀 다운로드</button></section>

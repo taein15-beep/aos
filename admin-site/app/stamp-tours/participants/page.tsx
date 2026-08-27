@@ -22,18 +22,18 @@ type Participant={
 };
 
 const participants:Participant[]=[
-  {id:1,number:"STP-20260815-01248",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.15 09:58",recent:"2026.08.17 15:36",authenticated:5,total:8,status:"완주",completed:"2026.08.17",reward:"신청 완료",anomaly:false},
-  {id:2,number:"PT-2026-01247",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.20 09:05",recent:"2026.08.20 13:57",authenticated:3,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
-  {id:3,number:"PT-2026-01246",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.20 08:51",recent:"2026.08.20 12:16",authenticated:4,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:true,anomalyText:"짧은 시간 내 원거리 인증"},
-  {id:4,number:"PT-2026-01245",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.19 16:32",recent:"2026.08.20 11:48",authenticated:6,total:8,status:"완주",completed:"2026.08.20",reward:"지급 완료",anomaly:false},
-  {id:5,number:"PT-2026-01244",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.19 15:10",recent:"2026.08.19 17:22",authenticated:2,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
-  {id:6,number:"PT-2026-01243",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.19 13:44",recent:"2026.08.19 16:05",authenticated:5,total:8,status:"완주",completed:"2026.08.19",reward:"미신청",anomaly:false},
-  {id:7,number:"PT-2026-01242",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.18 10:28",recent:"2026.08.18 10:31",authenticated:2,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:true,anomalyText:"동일 기기 반복 인증 의심"},
-  {id:8,number:"PT-2026-01241",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.17 14:02",recent:"2026.08.17 16:33",authenticated:1,total:8,status:"중도 이탈",completed:"-",reward:"대상 아님",anomaly:false},
-  {id:9,number:"PT-2026-01240",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.17 11:19",recent:"2026.08.19 15:20",authenticated:7,total:8,status:"완주",completed:"2026.08.19",reward:"신청 완료",anomaly:false},
-  {id:10,number:"PT-2026-01239",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.16 09:42",recent:"2026.08.18 14:09",authenticated:3,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
-  {id:11,number:"PT-2026-01238",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.15 13:15",recent:"2026.08.19 17:41",authenticated:5,total:8,status:"완주",completed:"2026.08.19",reward:"신청 완료",anomaly:true,anomalyText:"GPS 반경 이탈 인증"},
-  {id:12,number:"PT-2026-01237",name:"샘플 사용자",phone:"010-0000-0000",joined:"2026.08.14 10:06",recent:"2026.08.16 13:12",authenticated:2,total:8,status:"중도 이탈",completed:"-",reward:"대상 아님",anomaly:false},
+  {id:1,number:"STP-20260815-01248",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.15 09:58",recent:"2026.08.17 15:36",authenticated:5,total:8,status:"완주",completed:"2026.08.17",reward:"신청 완료",anomaly:false},
+  {id:2,number:"PT-2026-01247",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.20 09:05",recent:"2026.08.20 13:57",authenticated:3,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
+  {id:3,number:"PT-2026-01246",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.20 08:51",recent:"2026.08.20 12:16",authenticated:4,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:true,anomalyText:"짧은 시간 내 원거리 인증"},
+  {id:4,number:"PT-2026-01245",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.19 16:32",recent:"2026.08.20 11:48",authenticated:6,total:8,status:"완주",completed:"2026.08.20",reward:"지급 완료",anomaly:false},
+  {id:5,number:"PT-2026-01244",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.19 15:10",recent:"2026.08.19 17:22",authenticated:2,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
+  {id:6,number:"PT-2026-01243",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.19 13:44",recent:"2026.08.19 16:05",authenticated:5,total:8,status:"완주",completed:"2026.08.19",reward:"미신청",anomaly:false},
+  {id:7,number:"PT-2026-01242",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.18 10:28",recent:"2026.08.18 10:31",authenticated:2,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:true,anomalyText:"동일 기기 반복 인증 의심"},
+  {id:8,number:"PT-2026-01241",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.17 14:02",recent:"2026.08.17 16:33",authenticated:1,total:8,status:"중도 이탈",completed:"-",reward:"대상 아님",anomaly:false},
+  {id:9,number:"PT-2026-01240",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.17 11:19",recent:"2026.08.19 15:20",authenticated:7,total:8,status:"완주",completed:"2026.08.19",reward:"신청 완료",anomaly:false},
+  {id:10,number:"PT-2026-01239",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.16 09:42",recent:"2026.08.18 14:09",authenticated:3,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
+  {id:11,number:"PT-2026-01238",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.15 13:15",recent:"2026.08.19 17:41",authenticated:5,total:8,status:"완주",completed:"2026.08.19",reward:"신청 완료",anomaly:true,anomalyText:"GPS 반경 이탈 인증"},
+  {id:12,number:"PT-2026-01237",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.14 10:06",recent:"2026.08.16 13:12",authenticated:2,total:8,status:"중도 이탈",completed:"-",reward:"대상 아님",anomaly:false},
 ];
 
 const maskPhone=(phone:string)=>phone.replace(/(\d{3})-(\d{4})-(\d{4})/,"$1-****-$3");
@@ -43,7 +43,7 @@ export default function ParticipantProgressPage(){
   const [tour,setTour]=useState("철원 DMZ 평화관광 스탬프투어");const [page,setPage]=useState(1);const [sort,setSort]=useState("최신 참여순");
   const [name,setName]=useState("");const [phone,setPhone]=useState("");const [from,setFrom]=useState("");const [to,setTo]=useState("");const [status,setStatus]=useState("전체");const [reward,setReward]=useState("전체");const [anomaly,setAnomaly]=useState("전체");
   const [applied,setApplied]=useState({name:"",phone:"",from:"",to:"",status:"전체",reward:"전체",anomaly:"전체"});
-  const act=(message:string)=>{if(message.startsWith("샘플 사용자 참여자 상세")){window.location.assign("/stamp-tours/participants/1");return}setToast(message);window.setTimeout(()=>setToast(""),2300)};
+  const act=(message:string)=>{if(message.startsWith("샘플 참여자 참여자 상세")){window.location.assign("/stamp-tours/participants/1");return}setToast(message);window.setTimeout(()=>setToast(""),2300)};
   const toggleMenu=(label:string)=>setExpanded(v=>v.includes(label)?v.filter(x=>x!==label):[...v,label]);
   const goChild=(child:string)=>child==="스탬프투어 목록"?window.location.assign("/stamp-tours"):child==="관광지 관리"?window.location.assign("/stamp-tours/attractions"):child==="참여자·진행현황"?window.location.assign("/stamp-tours/participants"):child==="인증 이력"?window.location.assign("/stamp-tours/verifications"):child==="완주·경품 관리"?window.location.assign("/stamp-tours/rewards"):child==="통계"?window.location.assign("/stamp-tours/statistics"):child==="상품목록"?window.location.assign("/products"):act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
   const filtered=useMemo(()=>{
