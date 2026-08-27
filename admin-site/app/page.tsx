@@ -28,7 +28,7 @@ const kpis = [
 ];
 
 const departures = [
-  { time:"09:00", code:"PDT-TRV-2026-031", product:"다낭·호이안·바나힐 5일", duration:"3박 5일", people:"18명", mix:"대15 / 소3 / 유0", seats:"2석", paid:"14건", unpaid:"2건", amount:"680,000원", manager:"김태인", status:"출발확정" },
+  { time:"09:00", code:"PDT-TRV-2026-031", product:"다낭·호이안·바나힐 5일", duration:"3박 5일", people:"18명", mix:"대15 / 소3 / 유0", seats:"2석", paid:"14건", unpaid:"2건", amount:"680,000원", manager:"샘플 사용자", status:"출발확정" },
   { time:"10:30", code:"PDT-TRV-2026-042", product:"백두산·연길·용정 5일", duration:"4박 5일", people:"24명", mix:"대21 / 소3 / 유0", seats:"마감", paid:"19건", unpaid:"0건", amount:"-", manager:"이서준", status:"출발확정" },
   { time:"13:20", code:"PDT-TRV-2026-058", product:"울란바토르·테를지 5일", duration:"4박 5일", people:"16명", mix:"대14 / 소2 / 유0", seats:"3석", paid:"12건", unpaid:"1건", amount:"420,000원", manager:"박소연", status:"모객중" },
   { time:"18:45", code:"PDT-TRV-2026-017", product:"오사카·교토·고베 4일", duration:"3박 4일", people:"28명", mix:"대25 / 소2 / 유1", seats:"마감", paid:"23건", unpaid:"0건", amount:"-", manager:"정민수", status:"마감" },

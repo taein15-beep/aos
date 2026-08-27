@@ -12,10 +12,10 @@ const spots=[
 ];
 
 const verifications=[
-  ["박서윤","고석정","18:36","정상"],["최민지","은하수교","18:28","정상"],["김도현","소이산 모노레일","18:27","정상"],["정유진","월정리역","18:19","확인 필요"],
+  ["샘플 사용자","고석정","18:36","정상"],["샘플 사용자","은하수교","18:28","정상"],["샘플 사용자","소이산 모노레일","18:27","정상"],["샘플 사용자","월정리역","18:19","확인 필요"],
 ];
 const rewards=[
-  ["김태훈","완주","18:18","8곳 인증"],["오수빈","경품 신청","17:52","배송지 입력"],["한지민","완주","17:43","6곳 인증"],["윤준호","경품 신청","17:20","신청 완료"],
+  ["샘플 사용자","완주","18:18","8곳 인증"],["샘플 사용자","경품 신청","17:52","배송지 입력"],["샘플 사용자","완주","17:43","6곳 인증"],["샘플 사용자","경품 신청","17:20","신청 완료"],
 ];
 const anomalies=[
   ["동일 위치 반복 인증","3건","최근 1시간","danger"],["허용 반경 외 인증","4건","오늘","warn"],["짧은 시간 다중 인증","2건","오늘","warn"],["QR 상태 점검 필요","1곳","월정리역","info"],
@@ -38,7 +38,7 @@ export default function StampTourDetailPage(){
 
       <section className="detail-kpi-grid">{kpis.map(([title,value,note,Icon,color])=><button className={`detail-kpi ${color}`} key={title} onClick={()=>act(`${title} 관련 현황을 확인합니다.`)}><span className="detail-kpi-icon"><Icon size={17}/></span><span><small>{title}</small><strong>{value}</strong><em>{note}</em></span><ChevronRight size={14}/></button>)}</section>
 
-      <section className="panel operation-panel"><div className="panel-head"><div><h2>운영정보</h2><p>현재 적용 중인 투어 운영 기준</p></div><div className="updated"><Clock3 size={12}/>최종 업데이트 {updated}<button onClick={()=>{setUpdated("2026.08.19 18:42");act("운영정보를 새로고침했습니다.")}} aria-label="새로고침"><RefreshCw size={13}/></button></div></div><div className="operation-info">{[["운영기간","2026.08.01 ~ 2026.10.31",CalendarDays],["운영지역","강원특별자치도 철원군",MapPin],["관광지 수","총 8곳",QrCode],["완주조건","8곳 중 5곳 이상 인증",Trophy],["인증 반경","관광지 기준 100m",TicketCheck],["경품 신청기간","2026.08.01 ~ 2026.11.07",Gift],["담당자","관광마케팅팀 · 김태인",UserCheck]].map(([label,value,Icon])=><div key={String(label)}><span><Icon size={14}/>{String(label)}</span><strong>{String(value)}</strong></div>)}</div></section>
+      <section className="panel operation-panel"><div className="panel-head"><div><h2>운영정보</h2><p>현재 적용 중인 투어 운영 기준</p></div><div className="updated"><Clock3 size={12}/>최종 업데이트 {updated}<button onClick={()=>{setUpdated("2026.08.19 18:42");act("운영정보를 새로고침했습니다.")}} aria-label="새로고침"><RefreshCw size={13}/></button></div></div><div className="operation-info">{[["운영기간","2026.08.01 ~ 2026.10.31",CalendarDays],["운영지역","강원특별자치도 철원군",MapPin],["관광지 수","총 8곳",QrCode],["완주조건","8곳 중 5곳 이상 인증",Trophy],["인증 반경","관광지 기준 100m",TicketCheck],["경품 신청기간","2026.08.01 ~ 2026.11.07",Gift],["담당자","관광마케팅팀 · 샘플 사용자",UserCheck]].map(([label,value,Icon])=><div key={String(label)}><span><Icon size={14}/>{String(label)}</span><strong>{String(value)}</strong></div>)}</div></section>
 
       <section className="panel spot-progress-panel"><div className="panel-head"><div><h2>관광지 진행 요약 <span className="count">8</span></h2><p>오늘 QR 및 인증 운영상태를 관광지별로 확인합니다.</p></div><button className="text-btn" onClick={()=>window.location.assign("/stamp-tours/attractions")}>관광지 관리 →</button></div><div className="spot-table-wrap"><table className="spot-table"><colgroup><col className="spot-col-no"/><col className="spot-col-name"/><col className="spot-col-address"/><col className="spot-col-qr"/><col className="spot-col-count"/><col className="spot-col-count"/><col className="spot-col-status"/></colgroup><thead><tr>{["NO.","관광지명","주소","QR 상태","오늘 인증","누적 인증","운영상태"].map(x=><th key={x}>{x}</th>)}</tr></thead><tbody>{spots.map((spot,i)=><tr key={spot.code}><td>{i+1}</td><td><b>{spot.name}</b><small>{spot.code}</small></td><td className="spot-address"><MapPin size={13}/><span>{spot.address}</span></td><td><span className={`qr-health ${spot.qr==="정상"?"ok":"check"}`}><i/>{spot.qr}</span></td><td className="number"><b>{spot.today.toLocaleString()}건</b></td><td className="number">{spot.total.toLocaleString()}건</td><td><span className={`badge ${spot.status==="운영 중"?"success":"warn"}`}>{spot.status}</span></td></tr>)}</tbody></table></div></section>
 

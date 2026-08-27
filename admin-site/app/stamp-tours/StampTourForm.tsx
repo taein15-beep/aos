@@ -14,7 +14,7 @@ const menu = [
 ];
 
 const editSeed = {
-  name:"철원 DMZ 평화관광 스탬프투어", region:"강원 철원군", department:"관광마케팅팀", manager:"김태인",
+  name:"철원 DMZ 평화관광 스탬프투어", region:"강원 철원군", department:"관광마케팅팀", manager:"샘플 사용자",
   intro:"철원의 역사와 자연을 따라 여행하며 모바일 스탬프를 모아보세요.", detail:"각 관광지에 비치된 QR코드를 촬영하고 인증을 완료하면 스탬프가 적립됩니다.",
   startDate:"2026-07-01", endDate:"2026-10-31", status:"운영 중", startTime:"09:00", endTime:"18:00",
   completion:"count", requiredCount:"5", rewardNotice:"완주 확인 후 선착순으로 철원 관광 기념품을 보내드립니다.",
