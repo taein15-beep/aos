@@ -1,0 +1,2 @@
+import{availableRewards}from"@/lib/stamp-tours/service";import{ok,routeError}from"@/lib/stamp-tours/http";import{readParticipantToken}from"@/lib/stamp-tours/security";
+export async function GET(request:Request,{params}:{params:Promise<{tourCode:string}>}){try{const tourCode=(await params).tourCode;return ok(await availableRewards(tourCode,readParticipantToken(request,tourCode)));}catch(error){return routeError(error);}}

@@ -1,0 +1,2 @@
+import{requireAdmin}from"@/lib/stamp-tours/admin";import{jsonBody,ok,required,routeError}from"@/lib/stamp-tours/http";import{manualVerification}from"@/lib/stamp-tours/service";
+export async function POST(request:Request){try{const actor=requireAdmin(request);const body=await jsonBody<{participantId:string;spotId:string;reason:string}>(request);return ok(await manualVerification(required(body.participantId,"participantId"),required(body.spotId,"spotId"),required(body.reason,"reason"),actor),201);}catch(error){return routeError(error);}}

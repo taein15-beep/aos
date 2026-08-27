@@ -1,0 +1,4 @@
+import type{Metadata,Viewport}from"next";import SpotDetailClient from"./SpotDetailClient";import{fixtureSpots}from"../../tour-data";
+export const viewport:Viewport={width:"device-width",initialScale:1,viewportFit:"cover",themeColor:"#f7faf7"};
+export async function generateMetadata({params}:{params:Promise<{spotCode:string}>}):Promise<Metadata>{const{spotCode}=await params;const spot=fixtureSpots.find(s=>s.spotCode===spotCode);return{title:`${spot?.name??"관광지"} | 철원 스탬프투어`,description:spot?.description??"철원 스탬프투어 관광지 상세 정보",openGraph:{title:spot?.name??"관광지",description:spot?.description??"관광지 상세 정보",images:[]},twitter:{title:spot?.name??"관광지",description:spot?.description??"관광지 상세 정보",images:[]}}}
+export default async function Page({params}:{params:Promise<{tourCode:string;spotCode:string}>}){const p=await params;return <SpotDetailClient {...p}/>}

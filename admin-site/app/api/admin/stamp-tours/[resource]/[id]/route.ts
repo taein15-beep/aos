@@ -1,0 +1,3 @@
+import{getAdmin,requireAdmin,updateAdmin}from"@/lib/stamp-tours/admin";import{jsonBody,ok,routeError}from"@/lib/stamp-tours/http";type Params={resource:string;id:string};
+export async function GET(request:Request,{params}:{params:Promise<Params>}){try{requireAdmin(request);const p=await params;return ok(await getAdmin(p.resource,p.id));}catch(error){return routeError(error);}}
+export async function PATCH(request:Request,{params}:{params:Promise<Params>}){try{const actor=requireAdmin(request);const p=await params;return ok(await updateAdmin(p.resource,p.id,await jsonBody<Record<string,unknown>>(request),actor));}catch(error){return routeError(error);}}

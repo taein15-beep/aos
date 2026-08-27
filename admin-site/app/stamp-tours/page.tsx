@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CalendarDays, Copy, Plus, QrCode, RotateCcw, Search, Trash2, Users, Trophy, CirclePlay, Clock3, CircleStop } from "lucide-react";
+import LiveStampTourPanel from "./LiveStampTourPanel";
 
 const menu = [
   { icon: "▦", label: "대시보드" },
@@ -72,7 +73,7 @@ export default function StampTourListPage() {
 
     <div className="workspace"><header className="topbar"><div className="breadcrumb"><span>스탬프투어 관리</span><b>/</b><strong>스탬프투어 목록</strong></div><div className="top-actions"><label className="search"><span>⌕</span><input aria-label="빠른 검색" placeholder="예약번호, 고객명, 상품명 검색"/><kbd>⌘ K</kbd></label><button className="icon-btn" onClick={()=>act("업무지원센터를 엽니다.")}>?</button><div className="dropdown-wrap"><button className="icon-btn notice" aria-label="알림" onClick={()=>{setNoticeOpen(!noticeOpen);setProfileOpen(false)}}>♢<i>5</i></button>{noticeOpen&&<div className="dropdown notice-menu"><div className="drop-head"><strong>알림</strong><button onClick={()=>setNoticeOpen(false)}>모두 읽음</button></div><button><span className="alert-dot info"></span><span>새 스탬프 인증이 접수되었습니다.<small>방금 전</small></span></button><button className="drop-footer">알림 전체보기</button></div>}</div><div className="divider"/><div className="dropdown-wrap"><button className="profile" onClick={()=>{setProfileOpen(!profileOpen);setNoticeOpen(false)}}><span className="avatar">장</span><span><b>애비아넥스트</b><small>관리자 장윤호</small></span><em>⌄</em></button>{profileOpen&&<div className="dropdown profile-menu"><button>내 정보</button><button>환경설정</button><hr/><button className="logout">로그아웃</button></div>}</div></div></header>
 
-      <main className="content stamp-content"><section className="page-head stamp-page-head"><div><h1>스탬프투어 목록</h1><p>관광 스탬프투어 프로그램의 운영 상태와 참여 현황을 관리합니다.</p></div><button className="primary stamp-register" onClick={()=>window.location.assign("/stamp-tours/new")}><Plus size={16}/>스탬프투어 등록</button></section>
+      <main className="content stamp-content"><LiveStampTourPanel section="tours"/><section className="page-head stamp-page-head"><div><h1>스탬프투어 목록</h1><p>관광 스탬프투어 프로그램의 운영 상태와 참여 현황을 관리합니다.</p></div><button className="primary stamp-register" onClick={()=>window.location.assign("/stamp-tours/new")}><Plus size={16}/>스탬프투어 등록</button></section>
 
         <section className="stamp-kpi-grid">{kpis.map(([label,value,Icon,color])=><div className={`stamp-kpi ${color}`} key={label}><span><small>{label}</small><strong>{value}</strong></span><i><Icon size={18} strokeWidth={1.8}/></i></div>)}</section>
 

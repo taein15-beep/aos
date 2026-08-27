@@ -1,0 +1,3 @@
+import{createAdmin,listAdmin,requireAdmin}from"@/lib/stamp-tours/admin";import{jsonBody,ok,routeError}from"@/lib/stamp-tours/http";
+export async function GET(request:Request,{params}:{params:Promise<{resource:string}>}){try{requireAdmin(request);return ok(await listAdmin((await params).resource,request.url));}catch(error){return routeError(error);}}
+export async function POST(request:Request,{params}:{params:Promise<{resource:string}>}){try{requireAdmin(request);return ok(await createAdmin((await params).resource,await jsonBody<Record<string,unknown>>(request)),201);}catch(error){return routeError(error);}}

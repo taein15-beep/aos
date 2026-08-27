@@ -1,0 +1,2 @@
+import{confirmPhoneAuth}from"@/lib/stamp-tours/service";import{jsonBody,ok,required,routeError}from"@/lib/stamp-tours/http";
+export async function POST(request:Request){try{const b=await jsonBody<{challengeId:string;phone:string;code:string}>(request);return ok(await confirmPhoneAuth(required(b.challengeId,"challengeId"),required(b.phone,"phone"),required(b.code,"code")));}catch(error){return routeError(error);}}

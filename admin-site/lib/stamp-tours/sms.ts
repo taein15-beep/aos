@@ -1,0 +1,6 @@
+import { ApiError } from "./http";
+export interface SmsProvider { readonly name: string; sendVerificationCode(phone: string, code: string): Promise<void>; }
+class DevelopmentSmsProvider implements SmsProvider { readonly name = "development"; async sendVerificationCode() {} }
+class HttpSmsProvider implements SmsProvider { readonly name = "http"; constructor(private endpoint: string, private apiKey: string) {} async sendVerificationCode(phone: string, code: string) { const response = await fetch(this.endpoint, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${this.apiKey}` }, body: JSON.stringify({ phone, code, template: "STAMP_TOUR_PHONE_VERIFICATION" }) }); if (!response.ok) throw new ApiError(502, "SMS_DELIVERY_FAILED", "인증번호를 발송하지 못했습니다."); } }
+export function getSmsProvider(): SmsProvider { const endpoint = process.env.SMS_PROVIDER_ENDPOINT; const apiKey = process.env.SMS_PROVIDER_API_KEY; if (endpoint && apiKey) return new HttpSmsProvider(endpoint, apiKey); if (process.env.NODE_ENV !== "production") return new DevelopmentSmsProvider(); throw new ApiError(503, "SMS_PROVIDER_NOT_CONFIGURED", "배포 환경의 문자 인증 제공자 설정이 필요합니다."); }
+export function exposeDevelopmentCode(code: string) { return process.env.NODE_ENV !== "production" ? { developmentOnlyCode: code, warning: "개발 환경 전용 인증번호입니다." } : {}; }

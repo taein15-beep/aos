@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import LiveStampTourPanel from "../LiveStampTourPanel";
 import {
   AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Download, Gift,
   QrCode, RotateCcw, Search, ShieldAlert,
@@ -62,7 +63,7 @@ export default function ParticipantProgressPage(){
 
     <div className="workspace"><header className="topbar"><div className="breadcrumb"><span>스탬프투어 관리</span><b>/</b><strong>참여자·진행현황</strong></div><div className="top-actions"><label className="search"><span>⌕</span><input aria-label="빠른 검색" placeholder="예약번호, 고객명, 상품명 검색"/><kbd>⌘ K</kbd></label><button className="icon-btn" onClick={()=>act("업무지원센터를 엽니다.")}>?</button><div className="dropdown-wrap"><button className="icon-btn notice" aria-label="알림" onClick={()=>{setNoticeOpen(!noticeOpen);setProfileOpen(false)}}>♢<i>5</i></button>{noticeOpen&&<div className="dropdown notice-menu"><div className="drop-head"><strong>알림</strong><button onClick={()=>setNoticeOpen(false)}>모두 읽음</button></div><button><span className="alert-dot warn"/><span>확인이 필요한 이상 인증 12건이 있습니다.<small>방금 전</small></span></button></div>}</div><div className="divider"/><div className="dropdown-wrap"><button className="profile" onClick={()=>{setProfileOpen(!profileOpen);setNoticeOpen(false)}}><span className="avatar">장</span><span><b>애비아넥스트</b><small>관리자 장윤호</small></span><em>⌄</em></button>{profileOpen&&<div className="dropdown profile-menu"><button>내 정보</button><button>환경설정</button><hr/><button className="logout">로그아웃</button></div>}</div></div></header>
 
-      <main className="content participant-content"><section className="page-head participant-page-head"><div><h1>참여자·진행현황</h1><p>참여자별 관광지 인증 진행률과 완주·경품 신청 상태를 한눈에 확인합니다.</p></div><div className="participant-head-actions"><label><span>스탬프투어 선택</span><select value={tour} onChange={e=>{setTour(e.target.value);act(`${e.target.value} 참여자 현황을 불러왔습니다.`)}}><option>철원 DMZ 평화관광 스탬프투어</option><option>양평 자연휴양 산책 스탬프투어</option><option>고양 역사문화길 스탬프투어</option></select></label><button className="excel-button" onClick={downloadExcel}><Download size={14}/>엑셀 다운로드</button></div></section>
+      <main className="content participant-content"><LiveStampTourPanel section="participants"/><section className="page-head participant-page-head"><div><h1>참여자·진행현황</h1><p>참여자별 관광지 인증 진행률과 완주·경품 신청 상태를 한눈에 확인합니다.</p></div><div className="participant-head-actions"><label><span>스탬프투어 선택</span><select value={tour} onChange={e=>{setTour(e.target.value);act(`${e.target.value} 참여자 현황을 불러왔습니다.`)}}><option>철원 DMZ 평화관광 스탬프투어</option><option>양평 자연휴양 산책 스탬프투어</option><option>고양 역사문화길 스탬프투어</option></select></label><button className="excel-button" onClick={downloadExcel}><Download size={14}/>엑셀 다운로드</button></div></section>
 
         <section className="participant-summary">{summary.map(([title,value,Icon,color])=><div className={`participant-kpi ${color}`} key={title}><span><small>{title}</small><strong>{value}</strong></span><i><Icon size={18}/></i></div>)}</section>
 
