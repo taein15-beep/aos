@@ -94,9 +94,15 @@ function timer(value: number) {
 function safeReturn(tourCode: string) {
   if (typeof window === "undefined") return `/tour/${tourCode}`;
   const value = new URLSearchParams(window.location.search).get("returnTo");
-  return value?.startsWith(`/tour/${tourCode}/`) && !value.startsWith("//")
-    ? value
-    : `/tour/${tourCode}`;
+  if (!value || value.startsWith("//") || !value.startsWith("/tour/"))
+    return `/tour/${tourCode}`;
+  if (
+    value === `/tour/${tourCode}` ||
+    value.startsWith(`/tour/${tourCode}/`) ||
+    value.startsWith("/tour/verify/")
+  )
+    return value;
+  return `/tour/${tourCode}`;
 }
 export default function JoinClient({ tourCode }: { tourCode: string }) {
   const [name, setName] = useState("");
@@ -300,6 +306,7 @@ export default function JoinClient({ tourCode }: { tourCode: string }) {
       const json = (await response.json()) as Api<{ alreadyJoined: boolean }>;
       if (!response.ok) throw new Error(json.error?.message);
       setCompleted({ restored: Boolean(json.data?.alreadyJoined) });
+      window.location.assign(safeReturn(tourCode));
     } catch (cause) {
       setError(
         cause instanceof Error
