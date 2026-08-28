@@ -1,5 +1,12 @@
 # AOS Platform - AGENTS.md
 
+# AOS 플랫폼 작업 지침
+
+- 이 프로젝트의 기본 작업 경로는 현재 저장소 루트다.
+- 스탬프투어 관련 작업의 기본 경로는 `app/stamp-tours`다.
+- 사용자가 스탬프투어 또는 Stamp Tour 작업을 요청하면 별도 경로 확인 없이 `app/stamp-tours`를 우선 확인한다.
+- 사용자가 별도의 범위를 지정하지 않는 한 `admin-site` 저장소 안에서만 파일을 수정한다.
+
 ## 1. 프로젝트 개요
 
 AOS Platform은 여행사 업무를 통합 관리하기 위한 Travel ERP Platform이다.
