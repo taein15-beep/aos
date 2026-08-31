@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AlertTriangle, CalendarDays, ChevronRight, CirclePause, CirclePlay, Clock3, Eye, Gift, MapPin, Pencil, QrCode, RefreshCw, ShieldAlert, TicketCheck, Trophy, UserCheck, Users } from "lucide-react";
 
 const menu=[
-  {icon:"▦",label:"대시보드"},{icon:"◇",label:"상품관리",children:["상품목록","상품등록","일정표관리","요금관리"]},{icon:"▤",label:"예약관리",children:["예약접수현황","예약달력"]},{icon:"₩",label:"결제관리",children:["결제현황","취소/환불"]},{icon:"⇄",label:"정산관리",children:["정산현황","판매점정산","공급사정산"]},{icon:"♙",label:"회원관리",children:["웹회원","관리자/직원","그룹/권한"]},{icon:"▣",label:"판매점관리"},{icon:"⌂",label:"거래처관리"},{icon:"qr",label:"스탬프투어 관리",children:["스탬프투어 목록","관광지 관리","참여자·진행현황","인증 이력","완주·경품 관리","통계"]},{icon:"▥",label:"통계관리"},{icon:"◎",label:"운영관리",children:["팝업관리","알림관리","알림톡"]},{icon:"⚙",label:"시스템설정",children:["홈페이지설정","결제설정","기본설정"]},
+  {icon:"▦",label:"대시보드"},{icon:"◇",label:"상품관리",children:["상품목록","상품등록","일정표관리","요금관리"]},{icon:"▤",label:"예약관리",children:["예약접수현황","예약달력"]},{icon:"₩",label:"결제관리",children:["결제현황","취소/환불"]},{icon:"⇄",label:"정산관리",children:["정산현황","판매점정산","공급사정산"]},{icon:"♙",label:"회원관리",children:["웹회원","관리자/직원","그룹/권한"]},{icon:"▣",label:"판매점관리"},{icon:"⌂",label:"거래처관리"},{icon:"qr",label:"스탬프투어 관리",children:["스탬프투어 목록","관광지 관리","경품관리","참여자·진행현황","인증 이력","완주·경품 관리","통계"]},{icon:"▥",label:"통계관리"},{icon:"◎",label:"운영관리",children:["팝업관리","알림관리","알림톡"]},{icon:"⚙",label:"시스템설정",children:["홈페이지설정","결제설정","기본설정"]},
 ];
 
 const spots=[
@@ -25,7 +25,7 @@ export default function StampTourDetailPage(){
   const [collapsed,setCollapsed]=useState(false);const [expanded,setExpanded]=useState(["스탬프투어 관리"]);const [paused,setPaused]=useState(false);const [toast,setToast]=useState("");const [profileOpen,setProfileOpen]=useState(false);const [noticeOpen,setNoticeOpen]=useState(false);const [updated,setUpdated]=useState("2026.08.19 18:40");
   const act=(message:string)=>{setToast(message);window.setTimeout(()=>setToast(""),2200)};
   const toggleMenu=(label:string)=>setExpanded(v=>v.includes(label)?v.filter(x=>x!==label):[...v,label]);
-  const goChild=(child:string)=>child==="스탬프투어 목록"?window.location.assign("/stamp-tours"):child==="관광지 관리"?window.location.assign("/stamp-tours/attractions"):child==="참여자·진행현황"?window.location.assign("/stamp-tours/participants"):child==="인증 이력"?window.location.assign("/stamp-tours/verifications"):child==="완주·경품 관리"?window.location.assign("/stamp-tours/rewards"):child==="통계"?window.location.assign("/stamp-tours/statistics"):child==="상품목록"?window.location.assign("/products"):act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
+  const goChild=(child:string)=>child==="스탬프투어 목록"?window.location.assign("/stamp-tours"):child==="관광지 관리"?window.location.assign("/stamp-tours/attractions"):child==="경품관리"?window.location.assign("/stamp-tours/prizes"):child==="참여자·진행현황"?window.location.assign("/stamp-tours/participants"):child==="인증 이력"?window.location.assign("/stamp-tours/verifications"):child==="완주·경품 관리"?window.location.assign("/stamp-tours/rewards"):child==="통계"?window.location.assign("/stamp-tours/statistics"):child==="상품목록"?window.location.assign("/products"):act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
   const kpis=[
     ["전체 참여자","1,248명","누적 참여자",Users,"blue"],["오늘 신규 참여자","73명","전일 대비 +12명",UserCheck,"green"],["누적 인증","10,127건","오늘 448건",QrCode,"indigo"],["완주자","386명","오늘 29명",Trophy,"purple"],["완주율","30.9%","전체 참여자 기준",TicketCheck,"sky"],["경품 신청자","214명","미처리 18명",Gift,"amber"],["이상 인증","9건","확인 필요",ShieldAlert,"red"],
   ] as const;

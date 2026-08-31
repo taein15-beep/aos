@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { QrCode, RotateCcw, Search } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
@@ -142,7 +143,7 @@ export default function WebMembersPage() {
                       className={child === "웹회원관리" ? "current" : ""}
                       data-planned-path={
                         item.label === "스탬프투어 관리"
-                          ? `/stamp-tours/${({ "관광지 관리": "attractions", "참여자·진행현황": "participants", "인증 이력": "verifications", "완주·경품 관리": "rewards", 통계: "statistics" } as Record<string, string>)[child] || ""}`
+                          ? `/stamp-tours/${({ "관광지 관리": "attractions", "경품관리": "prizes", "참여자·진행현황": "participants", "인증 이력": "verifications", "완주·경품 관리": "rewards", 통계: "statistics" } as Record<string, string>)[child] || ""}`
                           : undefined
                       }
                       onClick={() => navigateAdminChild(child, act)}
@@ -405,12 +406,9 @@ export default function WebMembersPage() {
                         <td className="date-cell">{member.joinedAt}</td>
                         <td className="date-cell">{member.lastAccessAt}</td>
                         <td>
-                          <button
-                            className="member-detail-button"
-                            onClick={() => act(`${member.name} 회원 상세 화면은 다음 단계에서 제공될 예정입니다.`)}
-                          >
+                          <Link href={`/members/web/${member.id}`} className="member-detail-button">
                             상세보기
-                          </button>
+                          </Link>
                         </td>
                       </tr>
                     ))

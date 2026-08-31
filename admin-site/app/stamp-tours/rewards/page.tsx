@@ -9,13 +9,12 @@ import {
 } from "lucide-react";
 
 const menu=[
-  {icon:"▦",label:"대시보드"},{icon:"◇",label:"상품관리",children:["상품목록","상품등록","일정표관리","요금관리"]},{icon:"▤",label:"예약관리",children:["예약접수현황","예약달력"]},{icon:"₩",label:"결제관리",children:["결제현황","취소/환불"]},{icon:"⇄",label:"정산관리",children:["정산현황","판매점정산","공급사정산"]},{icon:"♙",label:"회원관리",children:["웹회원","관리자/직원","그룹/권한"]},{icon:"▣",label:"판매점관리"},{icon:"⌂",label:"거래처관리"},{icon:"qr",label:"스탬프투어 관리",children:["스탬프투어 목록","관광지 관리","참여자·진행현황","인증 이력","완주·경품 관리","통계"]},{icon:"▥",label:"통계관리"},{icon:"◎",label:"운영관리",children:["팝업관리","알림관리","알림톡"]},{icon:"⚙",label:"시스템설정",children:["홈페이지설정","결제설정","기본설정"]},
+  {icon:"▦",label:"대시보드"},{icon:"◇",label:"상품관리",children:["상품목록","상품등록","일정표관리","요금관리"]},{icon:"▤",label:"예약관리",children:["예약접수현황","예약달력"]},{icon:"₩",label:"결제관리",children:["결제현황","취소/환불"]},{icon:"⇄",label:"정산관리",children:["정산현황","판매점정산","공급사정산"]},{icon:"♙",label:"회원관리",children:["웹회원","관리자/직원","그룹/권한"]},{icon:"▣",label:"판매점관리"},{icon:"⌂",label:"거래처관리"},{icon:"qr",label:"스탬프투어 관리",children:["스탬프투어 목록","관광지 관리","경품관리","참여자·진행현황","인증 이력","완주·경품 관리","통계"]},{icon:"▥",label:"통계관리"},{icon:"◎",label:"운영관리",children:["팝업관리","알림관리","알림톡"]},{icon:"⚙",label:"시스템설정",children:["홈페이지설정","결제설정","기본설정"]},
 ];
 
 type Method="택배 배송"|"현장수령";
 type Status="확인 중"|"승인"|"발송 대기"|"지급 완료"|"반려";
 type RewardRow={id:number;number:string;applied:string;name:string;phone:string;tour:string;verified:number;total:number;completed:string;reward:string;method:Method;status:Status;tracking:string;manager:string;address:string;duplicate:"정상"|"확인 필요"};
-
 const rewards:RewardRow[]=[
   {id:1,number:"RWD-20260820-00318",applied:"2026.08.20 17:42",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:5,total:8,completed:"2026.08.17",reward:"철원 오대쌀 4kg",method:"택배 배송",status:"발송 대기",tracking:"-",manager:"샘플 참여자",address:"서울특별시 영등포구 신길로 **, ***동 ***호",duplicate:"정상"},
   {id:2,number:"RWD-20260820-00317",applied:"2026.08.20 16:18",name:"샘플 참여자",phone:"010-0000-0000",tour:"철원 DMZ 평화관광 스탬프투어",verified:7,total:8,completed:"2026.08.19",reward:"철원사랑상품권 3만원",method:"현장수령",status:"승인",tracking:"-",manager:"샘플 참여자",address:"철원역사문화공원 관광안내소",duplicate:"정상"},
@@ -45,7 +44,7 @@ export default function RewardManagementPage(){
   const [reasonError,setReasonError]=useState(false);
   const act=(message:string)=>{setToast(message);window.setTimeout(()=>setToast(""),2200)};
   const toggleMenu=(label:string)=>setExpanded(current=>current.includes(label)?current.filter(value=>value!==label):[...current,label]);
-  const goChild=(child:string)=>child==="스탬프투어 목록"?window.location.assign("/stamp-tours"):child==="관광지 관리"?window.location.assign("/stamp-tours/attractions"):child==="참여자·진행현황"?window.location.assign("/stamp-tours/participants"):child==="인증 이력"?window.location.assign("/stamp-tours/verifications"):child==="완주·경품 관리"?window.location.assign("/stamp-tours/rewards"):child==="통계"?window.location.assign("/stamp-tours/statistics"):child==="상품목록"?window.location.assign("/products"):act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
+  const goChild=(child:string)=>child==="스탬프투어 목록"?window.location.assign("/stamp-tours"):child==="관광지 관리"?window.location.assign("/stamp-tours/attractions"):child==="경품관리"?window.location.assign("/stamp-tours/prizes"):child==="참여자·진행현황"?window.location.assign("/stamp-tours/participants"):child==="인증 이력"?window.location.assign("/stamp-tours/verifications"):child==="완주·경품 관리"?window.location.assign("/stamp-tours/rewards"):child==="통계"?window.location.assign("/stamp-tours/statistics"):child==="상품목록"?window.location.assign("/products"):act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
   const filtered=useMemo(()=>rewards.filter(row=>{const date=row.applied.slice(0,10).replaceAll(".","-");return (!applied.name||row.name.includes(applied.name))&&(!applied.phone||row.phone.replaceAll("-","").includes(applied.phone.replaceAll("-","")))&&(!applied.from||date>=applied.from)&&(!applied.to||date<=applied.to)&&(applied.rewardKind==="전체"||row.reward===applied.rewardKind)&&(applied.method==="전체"||row.method===applied.method)&&(applied.status==="전체"||row.status===applied.status)}),[applied]);
   const pageSize=6,totalPages=Math.max(1,Math.ceil(filtered.length/pageSize)),visible=filtered.slice((page-1)*pageSize,page*pageSize);
   const search=()=>{setApplied({name:name.trim(),phone:phone.trim(),from,to,rewardKind,method,status});setPage(1);setSelectedIds([]);act("검색 조건을 적용했습니다.")};

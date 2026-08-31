@@ -16,7 +16,7 @@ export const ADMIN_MENU: AdminMenuItem[] = [
   {
     icon: "qr",
     label: "스탬프투어 관리",
-    children: ["스탬프투어 목록", "관광지 관리", "참여자·진행현황", "인증 이력", "완주·경품 관리", "통계"],
+    children: ["스탬프투어 목록", "관광지 관리", "경품관리", "참여자·진행현황", "인증 이력", "완주·경품 관리", "통계"],
   },
   { icon: "▥", label: "통계관리" },
   { icon: "◎", label: "운영관리", children: ["팝업관리", "알림관리", "알림톡"] },
@@ -25,6 +25,7 @@ export const ADMIN_MENU: AdminMenuItem[] = [
 
 const STAMP_TOUR_CHILD_PATHS: Record<string, string> = {
   "관광지 관리": "attractions",
+  경품관리: "prizes",
   "참여자·진행현황": "participants",
   "인증 이력": "verifications",
   "완주·경품 관리": "rewards",

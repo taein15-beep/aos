@@ -12,7 +12,7 @@ const menu = [
   { icon: "♙", label: "회원관리", children: ["웹회원관리", "관리자/직원", "그룹/권한"] },
   { icon: "▣", label: "판매점관리" },
   { icon: "⌂", label: "거래처관리" },
-  { icon: "qr", label: "스탬프투어 관리", children: ["스탬프투어 목록", "관광지 관리", "참여자·진행현황", "인증 이력", "완주·경품 관리", "통계"] },
+  { icon: "qr", label: "스탬프투어 관리", children: ["스탬프투어 목록", "관광지 관리", "경품관리", "참여자·진행현황", "인증 이력", "완주·경품 관리", "통계"] },
   { icon: "▥", label: "통계관리" },
   { icon: "◎", label: "운영관리", children: ["팝업관리", "알림관리", "알림톡"] },
   { icon: "⚙", label: "시스템설정", children: ["홈페이지설정", "결제설정", "기본설정"] },
@@ -109,7 +109,7 @@ export default function Home() {
             <button className={`nav-item ${item.label === "대시보드" ? "active" : ""}`} onClick={() => item.children ? toggleMenu(item.label) : act(`${item.label} 화면으로 이동합니다.`)}>
               <span className="nav-icon">{item.icon === "qr" ? <QrCode size={16} strokeWidth={1.8}/> : item.icon}</span><span className="nav-label">{item.label}</span>{item.children && <span className={`chevron ${expanded.includes(item.label) ? "open" : ""}`}>⌄</span>}
             </button>
-            {item.children && expanded.includes(item.label) && !collapsed && <div className="subnav">{item.children.map((child) => <button key={child} data-planned-path={item.label === "스탬프투어 관리" ? `/stamp-tours/${({"관광지 관리":"attractions","참여자·진행현황":"participants","인증 이력":"verifications","완주·경품 관리":"rewards","통계":"statistics"} as Record<string,string>)[child] || ""}` : undefined} onClick={() => child === "상품목록" ? window.location.assign("/products") : child === "웹회원관리" ? window.location.assign("/members/web") : child === "스탬프투어 목록" ? window.location.assign("/stamp-tours") : child === "관광지 관리" ? window.location.assign("/stamp-tours/attractions") : child === "참여자·진행현황" ? window.location.assign("/stamp-tours/participants") : child === "인증 이력" ? window.location.assign("/stamp-tours/verifications") : child === "완주·경품 관리" ? window.location.assign("/stamp-tours/rewards") : child === "통계" ? window.location.assign("/stamp-tours/statistics") : act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`)}>{child}</button>)}</div>}
+            {item.children && expanded.includes(item.label) && !collapsed && <div className="subnav">{item.children.map((child) => <button key={child} data-planned-path={item.label === "스탬프투어 관리" ? `/stamp-tours/${({"관광지 관리":"attractions","경품관리":"prizes","참여자·진행현황":"participants","인증 이력":"verifications","완주·경품 관리":"rewards","통계":"statistics"} as Record<string,string>)[child] || ""}` : undefined} onClick={() => child === "상품목록" ? window.location.assign("/products") : child === "웹회원관리" ? window.location.assign("/members/web") : child === "스탬프투어 목록" ? window.location.assign("/stamp-tours") : child === "관광지 관리" ? window.location.assign("/stamp-tours/attractions") : child === "경품관리" ? window.location.assign("/stamp-tours/prizes") : child === "참여자·진행현황" ? window.location.assign("/stamp-tours/participants") : child === "인증 이력" ? window.location.assign("/stamp-tours/verifications") : child === "완주·경품 관리" ? window.location.assign("/stamp-tours/rewards") : child === "통계" ? window.location.assign("/stamp-tours/statistics") : act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`)}>{child}</button>)}</div>}
           </div>)}
         </nav>
         <div className="sidebar-help"><span className="nav-icon">?</span><div><strong>업무지원센터</strong><p>평일 09:00–18:00</p></div></div>
