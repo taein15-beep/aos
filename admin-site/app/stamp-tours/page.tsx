@@ -376,7 +376,7 @@ export default function StampTourListPage() {
               <table className="stamp-list-table">
                 <thead>
                   <tr>
-                    {["No", "투어명", "운영기간", "관광지수", "완주조건", "참여자", "완주자", "완주율", "운영상태", "공개상태", "등록일", "관광지관리", "관리"].map(
+                    {["No", "투어명", "운영기간", "관광지수", "완주조건", "참여자", "완주자", "완주율", "운영상태", "공개상태", "등록일", "관광지관리", "경품관리"].map(
                       (title) => (
                         <th key={title}>{title}</th>
                       ),
@@ -432,7 +432,7 @@ export default function StampTourListPage() {
                           <button
                             type="button"
                             className="stamp-list-outline-btn"
-                            onClick={() => window.location.assign("/stamp-tours/attractions")}
+                            onClick={() => window.location.assign(`/stamp-tours/attractions?tourId=${tour.id}`)}
                           >
                             관광지관리
                           </button>
@@ -441,9 +441,9 @@ export default function StampTourListPage() {
                           <button
                             type="button"
                             className="stamp-list-outline-btn"
-                            onClick={() => window.location.assign(`/stamp-tours/${tour.id}/edit`)}
+                            onClick={() => window.location.assign(`/stamp-tours/prizes?tourId=${tour.id}`)}
                           >
-                            수정
+                            경품관리
                           </button>
                         </td>
                       </tr>
