@@ -1,16 +1,46 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Pencil, QrCode, RefreshCw, UserRound } from "lucide-react";
+import { ArrowLeft, Ban, Pencil, QrCode, ShieldOff, UserRound } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   getWebMemberDetail,
   memberStatusBadgeClass,
+  SAMPLE_STATUS_CHANGE_HISTORY,
   type WebMemberDetail,
+  type WebMemberStatusChangeHistory,
 } from "@/lib/admin/members-web-data";
 
-type DetailTab = "basic" | "reservation" | "history";
+const SUSPEND_REASON_OPTIONS = [
+  "운영정책 위반",
+  "부정 이용 의심",
+  "반복 취소/노쇼",
+  "고객 요청",
+  "기타",
+] as const;
+
+type SuspendReason = (typeof SUSPEND_REASON_OPTIONS)[number];
+type SuspendPeriodType = "무기한" | "기간 지정";
+type SuspendModalMode = "suspend" | "unsuspend" | null;
+
+function displayStatusBadgeClass(status: string) {
+  return memberStatusBadgeClass(status as "정상" | "휴면" | "탈퇴" | "차단" | "정지");
+}
+
+function isInitiallySuspended(status: string) {
+  return status === "차단";
+}
+
+function formatStatusHistoryTimestamp(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function statusActionBadgeClass(action: WebMemberStatusChangeHistory["action"]) {
+  return action === "회원정지" ? "danger" : "success";
+}
 
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
@@ -21,113 +51,183 @@ function InfoField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function DetailTabs({
-  active,
-  onChange,
-}: {
-  active: DetailTab;
-  onChange: (tab: DetailTab) => void;
-}) {
-  const tabs: { id: DetailTab; label: string }[] = [
-    { id: "basic", label: "기본정보" },
-    { id: "reservation", label: "예약내역" },
-    { id: "history", label: "변경이력" },
-  ];
-
+function YesNoField({ label, value }: { label: string; value: boolean }) {
   return (
-    <div className="member-web-detail-tabs" role="tablist" aria-label="웹회원 상세 탭">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          role="tab"
-          aria-selected={active === tab.id}
-          className={active === tab.id ? "active" : ""}
-          onClick={() => onChange(tab.id)}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div className="member-web-detail-field">
+      <span>{label}</span>
+      <strong>{value ? "동의" : "미동의"}</strong>
     </div>
   );
 }
 
-function BasicTab({ member }: { member: WebMemberDetail }) {
-  const [memoDraft, setMemoDraft] = useState("");
-
+function MemberStatusHistorySection({ history }: { history: WebMemberStatusChangeHistory[] }) {
   return (
-    <div className="member-web-detail-tab-panel">
-      <section className="panel member-web-detail-card">
-        <div className="member-web-detail-card-head">
-          <strong>기본정보</strong>
-        </div>
-        <div className="member-web-detail-info-grid">
-          <InfoField label="회원명" value={member.name} />
-          <InfoField label="아이디" value={member.loginId} />
-          <InfoField label="성별" value={member.gender} />
-          <InfoField label="휴대전화" value={member.phone} />
-          <InfoField label="이메일" value={member.email} />
-          <InfoField label="생년월일" value={member.birthDate} />
-          <InfoField label="가입일" value={member.joinedAt} />
-          <InfoField label="최근 로그인" value={member.lastAccessAt} />
-          <InfoField label="회원상태" value={member.status} />
-          <InfoField label="우편번호" value={member.zipCode} />
-          <InfoField label="주소" value={member.address} />
-          <InfoField label="상세주소" value={member.addressDetail} />
-        </div>
-      </section>
-
-      <section className="panel member-web-detail-card">
-        <div className="member-web-detail-card-head">
-          <strong>가입/추천정보</strong>
-        </div>
-        <div className="member-web-detail-info-grid member-web-detail-info-grid--7">
-          <InfoField label="가입경로" value={member.joinPath} />
-          <InfoField label="추천인코드" value={member.referralCode} />
-          <InfoField label="추천 판매점" value={member.agency} />
-          <InfoField label="추천일" value={member.referredAt} />
-          <InfoField label="판매점 담당자" value={member.agencyManager} />
-          <InfoField label="판매점 연락처" value={member.agencyPhone} />
-          <InfoField label="유입메모" value={member.inflowMemo} />
-        </div>
-      </section>
-
-      <section className="panel member-web-detail-card">
-        <div className="member-web-detail-card-head">
-          <strong>문의/상담내역</strong>
-        </div>
+    <section className="panel member-web-detail-card">
+      <div className="member-web-detail-card-head">
+        <strong>회원 상태 변경 이력</strong>
+        <span className="member-web-status-history-count">{history.length}건</span>
+      </div>
+      {history.length > 0 ? (
         <div className="member-web-detail-table-wrap">
-          <table className="member-web-detail-table">
+          <table className="member-web-detail-table member-web-detail-table--status-history">
             <thead>
               <tr>
-                <th>상담일</th>
-                <th>상담구분</th>
-                <th>상담내용</th>
-                <th>처리상태</th>
-                <th>담당자</th>
+                <th>처리일시</th>
+                <th>처리구분</th>
+                <th>변경 전 상태</th>
+                <th>변경 후 상태</th>
+                <th>사유</th>
+                <th>처리 관리자</th>
               </tr>
             </thead>
             <tbody>
-              {member.consultations.map((item) => (
-                <tr key={`${item.date}-${item.type}-${item.content}`}>
-                  <td className="date-cell">{item.date}</td>
-                  <td>{item.type}</td>
-                  <td className="text-left">{item.content}</td>
+              {history.map((item, index) => (
+                <tr key={`${item.processedAt}-${item.action}-${index}`}>
+                  <td className="date-cell">{item.processedAt}</td>
                   <td>
-                    <span
-                      className={`badge ${
-                        item.status === "완료" ? "success" : item.status === "처리중" ? "warn" : "info"
-                      }`}
-                    >
-                      {item.status}
-                    </span>
+                    <span className={`badge ${statusActionBadgeClass(item.action)}`}>{item.action}</span>
                   </td>
-                  <td>{item.manager}</td>
+                  <td>
+                    <span className={`badge ${displayStatusBadgeClass(item.statusBefore)}`}>{item.statusBefore}</span>
+                  </td>
+                  <td>
+                    <span className={`badge ${displayStatusBadgeClass(item.statusAfter)}`}>{item.statusAfter}</span>
+                  </td>
+                  <td className="text-left member-web-status-history-reason">{item.reason}</td>
+                  <td>{item.actor}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      ) : (
+        <div className="member-web-detail-empty">등록된 상태 변경 이력이 없습니다.</div>
+      )}
+    </section>
+  );
+}
+
+function MemberDetailContent({
+  member,
+  displayStatus,
+  statusHistory,
+}: {
+  member: WebMemberDetail;
+  displayStatus: string;
+  statusHistory: WebMemberStatusChangeHistory[];
+}) {
+  const [memoDraft, setMemoDraft] = useState("");
+
+  return (
+    <div className="member-web-detail-stack">
+      <section className="panel member-web-detail-card">
+        <div className="member-web-detail-card-head">
+          <strong>기본정보</strong>
+        </div>
+        <div className="member-web-detail-info-grid">
+          <InfoField label="이름" value={member.name} />
+          <InfoField label="아이디" value={member.loginId} />
+          <InfoField label="휴대전화" value={member.phone} />
+          <InfoField label="이메일" value={member.email} />
+          <InfoField label="생년월일" value={member.birthDate} />
+          <InfoField label="성별" value={member.gender} />
+          <InfoField label="가입일" value={member.joinedAt} />
+          <InfoField label="최근 로그인" value={member.lastAccessAt} />
+          <InfoField label="회원상태" value={displayStatus} />
+        </div>
+      </section>
+
+      <section className="panel member-web-detail-card">
+        <div className="member-web-detail-card-head">
+          <strong>동의/인증 정보</strong>
+        </div>
+        <div className="member-web-detail-info-grid">
+          <YesNoField label="휴대전화 본인인증" value={member.consent.phoneVerified} />
+          <YesNoField label="이메일 인증" value={member.consent.emailVerified} />
+          <InfoField label="이용약관 동의일" value={member.consent.termsAgreedAt} />
+          <InfoField label="개인정보 수집 동의일" value={member.consent.privacyAgreedAt} />
+          <YesNoField label="마케팅 수신 동의" value={member.consent.marketingAgreed} />
+        </div>
+      </section>
+
+      <section className="panel member-web-detail-card">
+        <div className="member-web-detail-card-head">
+          <strong>이용현황</strong>
+        </div>
+        <div className="member-web-detail-usage-grid">
+          <article className="member-web-detail-kpi">
+            <span>
+              <small>예약 건수</small>
+              <strong>{member.usage.reservationCount}건</strong>
+            </span>
+          </article>
+          <article className="member-web-detail-kpi">
+            <span>
+              <small>완료 여행 건수</small>
+              <strong>{member.usage.completedTripCount}건</strong>
+            </span>
+          </article>
+          <article className="member-web-detail-kpi">
+            <span>
+              <small>취소 건수</small>
+              <strong>{member.usage.cancelCount}건</strong>
+            </span>
+          </article>
+          <article className="member-web-detail-kpi">
+            <span>
+              <small>누적 결제금액</small>
+              <strong>{member.usage.totalPaidAmount}</strong>
+            </span>
+          </article>
+          <article className="member-web-detail-kpi">
+            <span>
+              <small>최근 예약일</small>
+              <strong>{member.usage.latestReservedAt}</strong>
+            </span>
+          </article>
+        </div>
+      </section>
+
+      <section className="panel member-web-detail-card">
+        <div className="member-web-detail-card-head">
+          <strong>최근 예약내역</strong>
+        </div>
+        {member.reservations.length > 0 ? (
+          <div className="member-web-detail-table-wrap">
+            <table className="member-web-detail-table member-web-detail-table--recent">
+              <thead>
+                <tr>
+                  <th>예약번호</th>
+                  <th>예약일</th>
+                  <th>상품명</th>
+                  <th>출발일</th>
+                  <th>예약상태</th>
+                  <th>결제금액</th>
+                </tr>
+              </thead>
+              <tbody>
+                {member.reservations.map((item) => (
+                  <tr key={item.code}>
+                    <td className="member-number">
+                      <Link href={`/reservations/${item.code}`} className="reservation-code-link">
+                        {item.code}
+                      </Link>
+                    </td>
+                    <td className="date-cell">{item.reservedAt}</td>
+                    <td className="text-left">{item.productName}</td>
+                    <td className="date-cell">{item.departureAt}</td>
+                    <td>
+                      <span className={`badge ${item.reserveStatusClass}`}>{item.reserveStatus}</span>
+                    </td>
+                    <td className="amount-cell">{item.amount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="member-web-detail-empty">등록된 예약내역이 없습니다.</div>
+        )}
       </section>
 
       <section className="panel member-web-detail-card">
@@ -156,125 +256,12 @@ function BasicTab({ member }: { member: WebMemberDetail }) {
             />
           </label>
           <button type="button" className="primary" onClick={() => setMemoDraft("")}>
-            등록
+            저장
           </button>
         </div>
       </section>
-    </div>
-  );
-}
 
-function ReservationTab({ member }: { member: WebMemberDetail }) {
-  return (
-    <div className="member-web-detail-tab-panel">
-      <div className="member-web-detail-summary">
-        <article className="member-web-detail-kpi">
-          <span>
-            <small>전체 예약건수</small>
-            <strong>{member.reservationSummary.totalCount}건</strong>
-          </span>
-        </article>
-        <article className="member-web-detail-kpi">
-          <span>
-            <small>최근 예약일</small>
-            <strong>{member.reservationSummary.latestReservedAt}</strong>
-          </span>
-        </article>
-        <article className="member-web-detail-kpi">
-          <span>
-            <small>총 결제금액</small>
-            <strong>{member.reservationSummary.totalPaidAmount}</strong>
-          </span>
-        </article>
-        <article className="member-web-detail-kpi">
-          <span>
-            <small>예약상태 요약</small>
-            <strong>{member.reservationSummary.statusSummary}</strong>
-          </span>
-        </article>
-      </div>
-
-      <section className="panel member-web-detail-card">
-        <div className="member-web-detail-card-head">
-          <strong>예약내역</strong>
-        </div>
-        {member.reservations.length > 0 ? (
-          <div className="member-web-detail-table-wrap">
-            <table className="member-web-detail-table member-web-detail-table--reservation">
-              <thead>
-                <tr>
-                  <th>예약번호</th>
-                  <th>예약일</th>
-                  <th>출발일</th>
-                  <th>상품명</th>
-                  <th>인원</th>
-                  <th>예약상태</th>
-                  <th>입금상태</th>
-                  <th>결제금액</th>
-                  <th>판매점</th>
-                </tr>
-              </thead>
-              <tbody>
-                {member.reservations.map((item) => (
-                  <tr key={item.code}>
-                    <td className="member-number">{item.code}</td>
-                    <td className="date-cell">{item.reservedAt}</td>
-                    <td className="date-cell">{item.departureAt}</td>
-                    <td className="text-left">{item.productName}</td>
-                    <td>{item.people}</td>
-                    <td>
-                      <span className={`badge ${item.reserveStatusClass}`}>{item.reserveStatus}</span>
-                    </td>
-                    <td>
-                      <span className={`badge ${item.paymentStatusClass}`}>{item.paymentStatus}</span>
-                    </td>
-                    <td className="amount-cell">{item.amount}</td>
-                    <td>{item.agency}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="member-web-detail-empty">등록된 예약내역이 없습니다.</div>
-        )}
-      </section>
-    </div>
-  );
-}
-
-function HistoryTab({ member }: { member: WebMemberDetail }) {
-  return (
-    <div className="member-web-detail-tab-panel">
-      <section className="panel member-web-detail-card">
-        <div className="member-web-detail-card-head">
-          <strong>변경이력</strong>
-        </div>
-        <div className="member-web-detail-table-wrap">
-          <table className="member-web-detail-table member-web-detail-table--history">
-            <thead>
-              <tr>
-                <th>변경일시</th>
-                <th>변경항목</th>
-                <th>변경 전</th>
-                <th>변경 후</th>
-                <th>처리자</th>
-              </tr>
-            </thead>
-            <tbody>
-              {member.changeHistory.map((item) => (
-                <tr key={`${item.changedAt}-${item.field}`}>
-                  <td className="date-cell">{item.changedAt}</td>
-                  <td>{item.field}</td>
-                  <td className="text-left">{item.before}</td>
-                  <td className="text-left">{item.after}</td>
-                  <td>{item.actor}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <MemberStatusHistorySection history={statusHistory} />
     </div>
   );
 }
@@ -289,11 +276,111 @@ export default function WebMemberDetailPage() {
   const [toast, setToast] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<DetailTab>("basic");
+  const [displayStatus, setDisplayStatus] = useState(() =>
+    member && isInitiallySuspended(member.status) ? "정지" : member?.status ?? "정상",
+  );
+  const [suspendModal, setSuspendModal] = useState<SuspendModalMode>(null);
+  const [suspendReason, setSuspendReason] = useState<SuspendReason | "">("");
+  const [suspendOtherReason, setSuspendOtherReason] = useState("");
+  const [suspendPeriodType, setSuspendPeriodType] = useState<SuspendPeriodType>("무기한");
+  const [suspendStartDate, setSuspendStartDate] = useState("");
+  const [suspendEndDate, setSuspendEndDate] = useState("");
+  const [suspendAdminMemo, setSuspendAdminMemo] = useState("");
+  const [unsuspendReason, setUnsuspendReason] = useState("");
+  const [suspendReasonError, setSuspendReasonError] = useState(false);
+  const [unsuspendReasonError, setUnsuspendReasonError] = useState(false);
+  const [statusHistory, setStatusHistory] = useState<WebMemberStatusChangeHistory[]>(() =>
+    SAMPLE_STATUS_CHANGE_HISTORY.map((item) => ({ ...item })),
+  );
+
+  const isSuspended = displayStatus === "정지";
+
+  const prependStatusHistory = (entry: WebMemberStatusChangeHistory) => {
+    setStatusHistory((current) => [entry, ...current]);
+  };
 
   const act = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2200);
+  };
+
+  const resetSuspendForm = () => {
+    setSuspendReason("");
+    setSuspendOtherReason("");
+    setSuspendPeriodType("무기한");
+    setSuspendStartDate("");
+    setSuspendEndDate("");
+    setSuspendAdminMemo("");
+    setSuspendReasonError(false);
+  };
+
+  const resetUnsuspendForm = () => {
+    setUnsuspendReason("");
+    setUnsuspendReasonError(false);
+  };
+
+  const closeSuspendModal = () => {
+    setSuspendModal(null);
+    resetSuspendForm();
+    resetUnsuspendForm();
+  };
+
+  const openSuspendAction = () => {
+    if (isSuspended) {
+      setSuspendModal("unsuspend");
+      resetUnsuspendForm();
+      return;
+    }
+    setSuspendModal("suspend");
+    resetSuspendForm();
+  };
+
+  const confirmSuspend = () => {
+    if (!suspendReason) {
+      setSuspendReasonError(true);
+      return;
+    }
+    if (suspendReason === "기타" && !suspendOtherReason.trim()) {
+      setSuspendReasonError(true);
+      act("기타 사유를 입력해 주세요.");
+      return;
+    }
+    if (suspendPeriodType === "기간 지정" && (!suspendStartDate || !suspendEndDate)) {
+      act("정지 기간의 시작일과 종료일을 선택해 주세요.");
+      return;
+    }
+    const reasonText = suspendReason === "기타" ? suspendOtherReason.trim() : suspendReason;
+    const statusBefore = displayStatus;
+    setDisplayStatus("정지");
+    prependStatusHistory({
+      processedAt: formatStatusHistoryTimestamp(new Date()),
+      action: "회원정지",
+      statusBefore,
+      statusAfter: "정지",
+      reason: reasonText,
+      actor: "장윤호",
+    });
+    closeSuspendModal();
+    act("회원 이용이 정지되었습니다.");
+  };
+
+  const confirmUnsuspend = () => {
+    if (!unsuspendReason.trim()) {
+      setUnsuspendReasonError(true);
+      return;
+    }
+    const statusBefore = displayStatus;
+    setDisplayStatus("정상");
+    prependStatusHistory({
+      processedAt: formatStatusHistoryTimestamp(new Date()),
+      action: "정지해제",
+      statusBefore,
+      statusAfter: "정상",
+      reason: unsuspendReason.trim(),
+      actor: "장윤호",
+    });
+    closeSuspendModal();
+    act("회원 이용 정지가 해제되었습니다.");
   };
 
   const toggleMenu = (label: string) =>
@@ -380,7 +467,7 @@ export default function WebMemberDetailPage() {
             <b>/</b>
             <span>웹회원관리</span>
             <b>/</b>
-            <strong>웹회원 상세</strong>
+            <strong>회원상세</strong>
           </div>
           <div className="top-actions">
             <label className="search">
@@ -410,7 +497,6 @@ export default function WebMemberDetailPage() {
                   </div>
                   <button>예약 확정 요청 2건</button>
                   <button>결제 대기 1건</button>
-                  <button>정산 마감 알림</button>
                 </div>
               )}
             </div>
@@ -444,9 +530,12 @@ export default function WebMemberDetailPage() {
         <main className="content member-web-detail-content">
           <section className="page-head member-web-detail-page-head">
             <div>
-              <p className="member-web-breadcrumb">회원관리 &gt; 웹회원관리 &gt; 웹회원 상세</p>
-              <h1>웹회원 상세</h1>
-              <p>홈페이지 가입 회원의 기본정보와 이용내역을 확인합니다.</p>
+              <p className="member-web-breadcrumb">회원관리 &gt; 웹회원관리 &gt; 회원상세</p>
+              <div className="member-web-detail-title-row">
+                <h1>{member.name}</h1>
+                <span className={`badge ${displayStatusBadgeClass(displayStatus)}`}>{displayStatus}</span>
+              </div>
+              <p className="member-web-detail-subtitle">회원번호 {member.id}</p>
             </div>
             <div className="member-web-detail-actions">
               <button type="button" className="secondary" onClick={() => window.location.assign("/members/web")}>
@@ -456,14 +545,18 @@ export default function WebMemberDetailPage() {
               <button
                 type="button"
                 className="secondary"
-                onClick={() => act("정보수정 화면은 다음 단계에서 제공될 예정입니다.")}
+                onClick={() => window.location.assign(`/members/web/${member.id}/edit`)}
               >
                 <Pencil size={14} />
                 정보수정
               </button>
-              <button type="button" className="primary" onClick={() => act("회원상태 변경 기능은 준비 중입니다.")}>
-                <RefreshCw size={14} />
-                회원상태 변경
+              <button
+                type="button"
+                className={isSuspended ? "secondary" : "primary"}
+                onClick={openSuspendAction}
+              >
+                {isSuspended ? <ShieldOff size={14} /> : <Ban size={14} />}
+                {isSuspended ? "정지해제" : "회원정지"}
               </button>
             </div>
           </section>
@@ -476,62 +569,204 @@ export default function WebMemberDetailPage() {
               <div>
                 <div className="member-web-detail-code-row">
                   <span>{member.id}</span>
-                  <span className={`badge ${memberStatusBadgeClass(member.status)}`}>{member.status}</span>
+                  <span className={`badge ${displayStatusBadgeClass(displayStatus)}`}>{displayStatus}</span>
                 </div>
                 <h2>{member.name}</h2>
                 <p>
-                  {member.loginId} · {member.phone}
+                  {member.loginId} · {member.phone} · {member.email}
                 </p>
               </div>
             </div>
           </section>
 
-          <div className="member-web-detail-summary">
-            <article className="member-web-detail-kpi">
-              <span>
-                <small>회원명</small>
-                <strong>{member.name}</strong>
-              </span>
-            </article>
-            <article className="member-web-detail-kpi">
-              <span>
-                <small>회원번호</small>
-                <strong>{member.id}</strong>
-              </span>
-            </article>
-            <article className="member-web-detail-kpi">
-              <span>
-                <small>아이디</small>
-                <strong>{member.loginId}</strong>
-              </span>
-            </article>
-            <article className="member-web-detail-kpi">
-              <span>
-                <small>휴대전화</small>
-                <strong>{member.phone}</strong>
-              </span>
-            </article>
-            <article className="member-web-detail-kpi">
-              <span>
-                <small>회원상태</small>
-                <strong>{member.status}</strong>
-              </span>
-            </article>
-            <article className="member-web-detail-kpi">
-              <span>
-                <small>최근 로그인</small>
-                <strong>{member.lastAccessAt}</strong>
-              </span>
-            </article>
-          </div>
-
-          <DetailTabs active={activeTab} onChange={setActiveTab} />
-
-          {activeTab === "basic" && <BasicTab member={member} />}
-          {activeTab === "reservation" && <ReservationTab member={member} />}
-          {activeTab === "history" && <HistoryTab member={member} />}
+          <MemberDetailContent member={member} displayStatus={displayStatus} statusHistory={statusHistory} />
         </main>
       </div>
+
+      {suspendModal === "suspend" && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="회원 이용 정지">
+          <div className="member-web-suspend-modal">
+            <div className="modal-head">
+              <div>
+                <span className="danger">
+                  <Ban size={17} />
+                </span>
+                <h3>회원 이용 정지</h3>
+              </div>
+              <button type="button" onClick={closeSuspendModal} aria-label="닫기">
+                ×
+              </button>
+            </div>
+            <div className="member-web-suspend-body">
+              <p>해당 회원의 서비스 이용을 정지하시겠습니까?</p>
+              <div className="member-web-suspend-target">
+                <div>
+                  <span>이름</span>
+                  <b>{member.name}</b>
+                </div>
+                <div>
+                  <span>회원번호</span>
+                  <b>{member.id}</b>
+                </div>
+                <div>
+                  <span>현재 상태</span>
+                  <b>
+                    <span className={`badge ${displayStatusBadgeClass(displayStatus)}`}>{displayStatus}</span>
+                  </b>
+                </div>
+              </div>
+              <label className={suspendReasonError && !suspendReason ? "invalid" : ""}>
+                <span>
+                  정지 사유 <b>*</b>
+                </span>
+                <select
+                  value={suspendReason}
+                  onChange={(event) => {
+                    setSuspendReason(event.target.value as SuspendReason | "");
+                    setSuspendReasonError(false);
+                  }}
+                >
+                  <option value="">사유 선택</option>
+                  {SUSPEND_REASON_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <small className={suspendReasonError && !suspendReason ? "error" : ""}>
+                  {suspendReasonError && !suspendReason ? "정지 사유를 선택해 주세요." : "정지 사유는 관리자 활동 이력에 기록됩니다."}
+                </small>
+              </label>
+              {suspendReason === "기타" && (
+                <label className={suspendReasonError && !suspendOtherReason.trim() ? "invalid" : ""}>
+                  <span>기타 사유</span>
+                  <textarea
+                    value={suspendOtherReason}
+                    onChange={(event) => {
+                      setSuspendOtherReason(event.target.value);
+                      setSuspendReasonError(false);
+                    }}
+                    placeholder="정지 사유를 입력해 주세요."
+                    rows={3}
+                  />
+                </label>
+              )}
+              <div className="member-web-suspend-period">
+                <span>정지 기간</span>
+                <div className="member-web-suspend-period-options">
+                  <label>
+                    <input
+                      type="radio"
+                      name="suspend-period"
+                      checked={suspendPeriodType === "무기한"}
+                      onChange={() => setSuspendPeriodType("무기한")}
+                    />
+                    무기한
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="suspend-period"
+                      checked={suspendPeriodType === "기간 지정"}
+                      onChange={() => setSuspendPeriodType("기간 지정")}
+                    />
+                    기간 지정
+                  </label>
+                </div>
+              </div>
+              {suspendPeriodType === "기간 지정" && (
+                <div className="member-web-suspend-date-range">
+                  <label>
+                    <span>시작일</span>
+                    <input type="date" value={suspendStartDate} onChange={(event) => setSuspendStartDate(event.target.value)} />
+                  </label>
+                  <label>
+                    <span>종료일</span>
+                    <input type="date" value={suspendEndDate} onChange={(event) => setSuspendEndDate(event.target.value)} />
+                  </label>
+                </div>
+              )}
+              <label>
+                <span>관리자 메모</span>
+                <textarea
+                  value={suspendAdminMemo}
+                  onChange={(event) => setSuspendAdminMemo(event.target.value)}
+                  placeholder="내부 관리용 메모를 입력하세요."
+                  rows={3}
+                />
+              </label>
+            </div>
+            <div className="modal-actions">
+              <button type="button" className="secondary" onClick={closeSuspendModal}>
+                취소
+              </button>
+              <button type="button" className="danger-button" onClick={confirmSuspend}>
+                회원정지
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {suspendModal === "unsuspend" && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="회원 이용 정지 해제">
+          <div className="member-web-suspend-modal">
+            <div className="modal-head">
+              <div>
+                <span className="info">
+                  <ShieldOff size={17} />
+                </span>
+                <h3>회원 이용 정지 해제</h3>
+              </div>
+              <button type="button" onClick={closeSuspendModal} aria-label="닫기">
+                ×
+              </button>
+            </div>
+            <div className="member-web-suspend-body">
+              <div className="member-web-suspend-target">
+                <div>
+                  <span>회원명</span>
+                  <b>{member.name}</b>
+                </div>
+                <div>
+                  <span>회원번호</span>
+                  <b>{member.id}</b>
+                </div>
+                <div>
+                  <span>현재 상태</span>
+                  <b>
+                    <span className={`badge ${displayStatusBadgeClass(displayStatus)}`}>{displayStatus}</span>
+                  </b>
+                </div>
+              </div>
+              <label className={unsuspendReasonError ? "invalid" : ""}>
+                <span>해제 사유 또는 관리자 메모</span>
+                <textarea
+                  value={unsuspendReason}
+                  onChange={(event) => {
+                    setUnsuspendReason(event.target.value);
+                    setUnsuspendReasonError(false);
+                  }}
+                  placeholder="정지 해제 사유를 입력해 주세요."
+                  rows={4}
+                  autoFocus
+                />
+                <small className={unsuspendReasonError ? "error" : ""}>
+                  {unsuspendReasonError ? "해제 사유를 입력해 주세요." : "입력한 내용은 관리자 활동 이력에 기록됩니다."}
+                </small>
+              </label>
+            </div>
+            <div className="modal-actions">
+              <button type="button" className="secondary" onClick={closeSuspendModal}>
+                취소
+              </button>
+              <button type="button" className="primary" onClick={confirmUnsuspend}>
+                정지해제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <div className="toast">{toast}</div>}
     </div>

@@ -47,6 +47,10 @@ export function navigateAdminChild(child: string, act: (message: string) => void
     window.location.assign("/members/web");
     return;
   }
+  if (child === "예약접수현황") {
+    window.location.assign("/reservations");
+    return;
+  }
 
   const stampTourPath = getStampTourChildPath(child);
   if (stampTourPath) {

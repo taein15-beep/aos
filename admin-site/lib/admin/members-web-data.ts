@@ -58,6 +58,42 @@ export type WebMemberChangeHistory = {
   actor: string;
 };
 
+export type WebMemberStatusChangeHistory = {
+  processedAt: string;
+  action: "회원정지" | "정지해제";
+  statusBefore: string;
+  statusAfter: string;
+  reason: string;
+  actor: string;
+};
+
+export const SAMPLE_STATUS_CHANGE_HISTORY: WebMemberStatusChangeHistory[] = [
+  {
+    processedAt: "2026.08.28 17:40",
+    action: "회원정지",
+    statusBefore: "정상",
+    statusAfter: "정지",
+    reason: "운영정책 위반",
+    actor: "관리자",
+  },
+  {
+    processedAt: "2026.08.22 09:15",
+    action: "정지해제",
+    statusBefore: "정지",
+    statusAfter: "정상",
+    reason: "고객 확인 후 해제",
+    actor: "장윤호",
+  },
+  {
+    processedAt: "2026.08.20 14:32",
+    action: "회원정지",
+    statusBefore: "정상",
+    statusAfter: "정지",
+    reason: "반복 취소/노쇼",
+    actor: "장윤호",
+  },
+];
+
 export type WebMemberDetail = WebMember & {
   gender: "남성" | "여성";
   birthDate: string;
@@ -69,6 +105,22 @@ export type WebMemberDetail = WebMember & {
   agencyManager: string;
   agencyPhone: string;
   inflowMemo: string;
+  consent: {
+    phoneVerified: boolean;
+    emailVerified: boolean;
+    termsAgreedAt: string;
+    privacyAgreedAt: string;
+    marketingAgreed: boolean;
+  };
+  usage: {
+    reservationCount: number;
+    completedTripCount: number;
+    cancelCount: number;
+    totalPaidAmount: string;
+    latestReservedAt: string;
+  };
+  adminNote: string;
+  internalNote: string;
   consultations: WebMemberConsultation[];
   adminMemos: WebMemberAdminMemo[];
   reservationSummary: {
@@ -82,6 +134,8 @@ export type WebMemberDetail = WebMember & {
 };
 
 export const MEMBER_STATUS_OPTIONS = ["전체", "정상", "휴면", "탈퇴", "차단"] as const;
+
+export const MEMBER_EDIT_STATUS_OPTIONS = ["정상", "휴면", "탈퇴", "차단"] as const;
 
 export const JOIN_PATH_OPTIONS = [
   "전체",
@@ -217,10 +271,10 @@ export const WEB_MEMBERS: WebMember[] = [
   },
 ];
 
-export function memberStatusBadgeClass(status: MemberStatus) {
+export function memberStatusBadgeClass(status: MemberStatus | "정지") {
   if (status === "정상") return "success";
   if (status === "휴면") return "warn";
-  if (status === "차단") return "danger";
+  if (status === "차단" || status === "정지") return "danger";
   return "gray";
 }
 
@@ -235,6 +289,22 @@ const M000001_DETAIL: Omit<WebMemberDetail, keyof WebMember> = {
   agencyManager: "김담당",
   agencyPhone: "010-0000-0000",
   inflowMemo: "홈페이지 추천코드 입력 가입",
+  consent: {
+    phoneVerified: true,
+    emailVerified: true,
+    termsAgreedAt: "2026-06-12",
+    privacyAgreedAt: "2026-06-12",
+    marketingAgreed: false,
+  },
+  usage: {
+    reservationCount: 3,
+    completedTripCount: 2,
+    cancelCount: 1,
+    totalPaidAmount: "4,850,000원",
+    latestReservedAt: "2026-06-25",
+  },
+  adminNote: "판매점 추천가입 회원. 행복투어 담당자 확인 완료.",
+  internalNote: "VIP 고객 관리 대상",
   consultations: [
     {
       date: "2026-06-28",
@@ -349,6 +419,22 @@ function buildDefaultDetail(member: WebMember): WebMemberDetail {
     agencyManager: isAgencyReferral ? "담당자" : "-",
     agencyPhone: isAgencyReferral ? "010-0000-0000" : "-",
     inflowMemo: isAgencyReferral ? `${member.agency} 추천코드 가입` : "일반 가입",
+    consent: {
+      phoneVerified: true,
+      emailVerified: member.email.includes("@"),
+      termsAgreedAt: member.joinedAt,
+      privacyAgreedAt: member.joinedAt,
+      marketingAgreed: false,
+    },
+    usage: {
+      reservationCount: 0,
+      completedTripCount: 0,
+      cancelCount: 0,
+      totalPaidAmount: "0원",
+      latestReservedAt: "-",
+    },
+    adminNote: "",
+    internalNote: isAgencyReferral ? `${member.agency} 추천 고객` : "",
     consultations: [
       {
         date: member.joinedAt,
@@ -389,7 +475,15 @@ const DETAIL_OVERRIDES: Partial<Record<string, Omit<WebMemberDetail, keyof WebMe
 };
 
 export function getWebMemberById(id: string): WebMember | undefined {
-  return WEB_MEMBERS.find((member) => member.id === id);
+  const direct = WEB_MEMBERS.find((member) => member.id === id);
+  if (direct) return direct;
+
+  const index = Number(id);
+  if (Number.isInteger(index) && index >= 1 && index <= WEB_MEMBERS.length) {
+    return WEB_MEMBERS[index - 1];
+  }
+
+  return undefined;
 }
 
 export function getWebMemberDetail(id: string): WebMemberDetail | undefined {

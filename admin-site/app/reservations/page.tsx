@@ -5,42 +5,44 @@ import Link from "next/link";
 import { QrCode, RotateCcw, Search } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
-  JOIN_PATH_OPTIONS,
-  MEMBER_STATUS_OPTIONS,
-  WEB_MEMBERS,
-  memberStatusBadgeClass,
-  type JoinPath,
-  type MemberStatus,
-} from "@/lib/admin/members-web-data";
+  PAYMENT_STATUS_FILTER_OPTIONS,
+  RESERVE_STATUS_FILTER_OPTIONS,
+  formatReservationPeople,
+  getReservationKpis,
+  getReservationList,
+  type ReservationListItem,
+} from "@/lib/admin/reservations-data";
 
 type SearchFilters = {
   keyword: string;
-  name: string;
-  loginId: string;
-  phone: string;
-  email: string;
-  status: (typeof MEMBER_STATUS_OPTIONS)[number];
-  joinPath: (typeof JOIN_PATH_OPTIONS)[number];
-  joinedFrom: string;
-  joinedTo: string;
+  code: string;
+  bookerName: string;
+  productName: string;
+  reserveStatus: (typeof RESERVE_STATUS_FILTER_OPTIONS)[number];
+  paymentStatus: (typeof PAYMENT_STATUS_FILTER_OPTIONS)[number];
+  reservedFrom: string;
+  reservedTo: string;
+  departureFrom: string;
+  departureTo: string;
 };
 
 const EMPTY_FILTERS: SearchFilters = {
   keyword: "",
-  name: "",
-  loginId: "",
-  phone: "",
-  email: "",
-  status: "전체",
-  joinPath: "전체",
-  joinedFrom: "",
-  joinedTo: "",
+  code: "",
+  bookerName: "",
+  productName: "",
+  reserveStatus: "전체",
+  paymentStatus: "전체",
+  reservedFrom: "",
+  reservedTo: "",
+  departureFrom: "",
+  departureTo: "",
 };
 
-function matchesKeyword(member: (typeof WEB_MEMBERS)[number], keyword: string) {
+function matchesKeyword(reservation: ReservationListItem, keyword: string) {
   if (!keyword) return true;
   const value = keyword.toLowerCase();
-  return [member.id, member.name, member.loginId, member.phone, member.email, member.agency]
+  return [reservation.code, reservation.bookerName, reservation.productName, reservation.phone]
     .join(" ")
     .toLowerCase()
     .includes(value);
@@ -52,9 +54,9 @@ function matchesDateRange(date: string, from: string, to: string) {
   return true;
 }
 
-export default function WebMembersPage() {
+export default function ReservationsPage() {
   const [collapsed, setCollapsed] = useState(false);
-  const [expanded, setExpanded] = useState(["회원관리"]);
+  const [expanded, setExpanded] = useState(["예약관리"]);
   const [toast, setToast] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
@@ -64,6 +66,7 @@ export default function WebMembersPage() {
   const [applied, setApplied] = useState<SearchFilters>(EMPTY_FILTERS);
 
   const pageSize = 8;
+  const allReservations = useMemo(() => getReservationList(), []);
 
   const act = (message: string) => {
     setToast(message);
@@ -74,19 +77,20 @@ export default function WebMembersPage() {
     setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
 
   const filtered = useMemo(() => {
-    return WEB_MEMBERS.filter((member) => {
-      if (!matchesKeyword(member, applied.keyword)) return false;
-      if (applied.name && !member.name.includes(applied.name)) return false;
-      if (applied.loginId && !member.loginId.toLowerCase().includes(applied.loginId.toLowerCase())) return false;
-      if (applied.phone && !member.phone.replaceAll("-", "").includes(applied.phone.replaceAll("-", ""))) return false;
-      if (applied.email && !member.email.toLowerCase().includes(applied.email.toLowerCase())) return false;
-      if (applied.status !== "전체" && member.status !== (applied.status as MemberStatus)) return false;
-      if (applied.joinPath !== "전체" && member.joinPath !== (applied.joinPath as JoinPath)) return false;
-      if (!matchesDateRange(member.joinedAt, applied.joinedFrom, applied.joinedTo)) return false;
+    return allReservations.filter((reservation) => {
+      if (!matchesKeyword(reservation, applied.keyword)) return false;
+      if (applied.code && !reservation.code.toLowerCase().includes(applied.code.toLowerCase())) return false;
+      if (applied.bookerName && !reservation.bookerName.includes(applied.bookerName)) return false;
+      if (applied.productName && !reservation.productName.includes(applied.productName)) return false;
+      if (applied.reserveStatus !== "전체" && reservation.reserveStatus !== applied.reserveStatus) return false;
+      if (applied.paymentStatus !== "전체" && reservation.paymentStatus !== applied.paymentStatus) return false;
+      if (!matchesDateRange(reservation.reservedAt, applied.reservedFrom, applied.reservedTo)) return false;
+      if (!matchesDateRange(reservation.departureAt, applied.departureFrom, applied.departureTo)) return false;
       return true;
     });
-  }, [applied]);
+  }, [allReservations, applied]);
 
+  const kpis = useMemo(() => getReservationKpis(allReservations), [allReservations]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const rows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
@@ -120,7 +124,7 @@ export default function WebMembersPage() {
           {ADMIN_MENU.map((item) => (
             <div className="nav-group" key={item.label}>
               <button
-                className={`nav-item ${item.label === "회원관리" ? "active" : ""}`}
+                className={`nav-item ${item.label === "예약관리" ? "active" : ""}`}
                 onClick={() =>
                   item.label === "대시보드"
                     ? window.location.assign("/")
@@ -140,12 +144,7 @@ export default function WebMembersPage() {
                   {item.children.map((child) => (
                     <button
                       key={child}
-                      className={child === "웹회원관리" ? "current" : ""}
-                      data-planned-path={
-                        item.label === "스탬프투어 관리"
-                          ? `/stamp-tours/${({ "관광지 관리": "attractions", "경품관리": "prizes", "참여자·진행현황": "participants", "인증 이력": "verifications", "완주·경품 관리": "rewards", 통계: "statistics" } as Record<string, string>)[child] || ""}`
-                          : undefined
-                      }
+                      className={child === "예약접수현황" ? "current" : ""}
                       onClick={() => navigateAdminChild(child, act)}
                     >
                       {child}
@@ -168,9 +167,9 @@ export default function WebMembersPage() {
       <div className="workspace">
         <header className="topbar">
           <div className="breadcrumb">
-            <span>회원관리</span>
+            <span>예약관리</span>
             <b>/</b>
-            <strong>웹회원관리</strong>
+            <strong>예약목록</strong>
           </div>
           <div className="top-actions">
             <label className="search">
@@ -198,18 +197,11 @@ export default function WebMembersPage() {
                     <strong>알림</strong>
                     <button onClick={() => setNoticeOpen(false)}>모두 읽음</button>
                   </div>
-                  <button>
-                    <span className="alert-dot info" />
-                    <span>
-                      웹회원 가입 알림이 있습니다.
-                      <small>방금 전</small>
-                    </span>
-                  </button>
-                  <button className="drop-footer">알림 전체보기</button>
+                  <button>예약 확정 요청 2건</button>
+                  <button>결제 대기 1건</button>
                 </div>
               )}
             </div>
-            <div className="divider" />
             <div className="dropdown-wrap">
               <button
                 className="profile"
@@ -237,17 +229,34 @@ export default function WebMembersPage() {
           </div>
         </header>
 
-        <main className="content member-web-content">
+        <main className="content member-web-content reservation-list-content">
           <section className="page-head member-web-page-head">
             <div>
-              <p className="member-web-breadcrumb">회원관리 &gt; 웹회원관리</p>
-              <h1>웹회원관리</h1>
-              <p>홈페이지 가입 회원, 예약 고객, 추천 판매점 연결 고객을 관리합니다.</p>
+              <p className="member-web-breadcrumb">예약관리 &gt; 예약목록</p>
+              <h1>예약목록</h1>
+              <p>전체 예약 현황을 조회하고 예약 상세로 이동할 수 있습니다.</p>
             </div>
           </section>
 
-          <section className="panel member-web-filter" aria-label="웹회원 검색">
-            <div className="member-web-filter-grid">
+          <section className="reservation-kpi-grid">
+            {[
+              ["전체 예약", kpis.total, "total"],
+              ["예약확정", kpis.confirmed, "confirmed"],
+              ["결제대기", kpis.paymentPending, "payment"],
+              ["취소", kpis.cancelled, "cancelled"],
+              ["오늘 출발", kpis.departingToday, "today"],
+            ].map(([label, value, tone]) => (
+              <article key={label as string} className={`member-web-detail-kpi reservation-kpi reservation-kpi--${tone}`}>
+                <span>
+                  <small>{label as string}</small>
+                  <strong>{value as number}건</strong>
+                </span>
+              </article>
+            ))}
+          </section>
+
+          <section className="panel member-web-filter reservation-filter">
+            <div className="reservation-filter-grid">
               <label className="member-web-keyword">
                 <span>통합검색</span>
                 <div>
@@ -256,101 +265,108 @@ export default function WebMembersPage() {
                     value={draft.keyword}
                     onChange={(event) => setDraft((value) => ({ ...value, keyword: event.target.value }))}
                     onKeyDown={(event) => event.key === "Enter" && search()}
-                    placeholder="회원번호, 이름, 아이디, 연락처 검색"
+                    placeholder="예약번호, 예약자명, 상품명 검색"
                   />
                 </div>
               </label>
               <label>
-                <span>이름</span>
+                <span>예약번호</span>
                 <input
-                  value={draft.name}
-                  onChange={(event) => setDraft((value) => ({ ...value, name: event.target.value }))}
+                  value={draft.code}
+                  onChange={(event) => setDraft((value) => ({ ...value, code: event.target.value }))}
                   onKeyDown={(event) => event.key === "Enter" && search()}
-                  placeholder="이름 입력"
+                  placeholder="예약번호 입력"
                 />
               </label>
               <label>
-                <span>아이디</span>
+                <span>예약자명</span>
                 <input
-                  value={draft.loginId}
-                  onChange={(event) => setDraft((value) => ({ ...value, loginId: event.target.value }))}
+                  value={draft.bookerName}
+                  onChange={(event) => setDraft((value) => ({ ...value, bookerName: event.target.value }))}
                   onKeyDown={(event) => event.key === "Enter" && search()}
-                  placeholder="아이디 입력"
+                  placeholder="예약자명 입력"
                 />
               </label>
               <label>
-                <span>휴대전화</span>
+                <span>상품명</span>
                 <input
-                  value={draft.phone}
-                  onChange={(event) => setDraft((value) => ({ ...value, phone: event.target.value }))}
+                  value={draft.productName}
+                  onChange={(event) => setDraft((value) => ({ ...value, productName: event.target.value }))}
                   onKeyDown={(event) => event.key === "Enter" && search()}
-                  placeholder="숫자만 입력"
+                  placeholder="상품명 입력"
                 />
               </label>
               <label>
-                <span>이메일</span>
-                <input
-                  value={draft.email}
-                  onChange={(event) => setDraft((value) => ({ ...value, email: event.target.value }))}
-                  onKeyDown={(event) => event.key === "Enter" && search()}
-                  placeholder="이메일 입력"
-                />
-              </label>
-              <label>
-                <span>회원상태</span>
+                <span>예약상태</span>
                 <select
-                  value={draft.status}
+                  value={draft.reserveStatus}
                   onChange={(event) =>
                     setDraft((value) => ({
                       ...value,
-                      status: event.target.value as SearchFilters["status"],
+                      reserveStatus: event.target.value as SearchFilters["reserveStatus"],
                     }))
                   }
                 >
-                  {MEMBER_STATUS_OPTIONS.map((option) => (
+                  {RESERVE_STATUS_FILTER_OPTIONS.map((option) => (
                     <option key={option}>{option}</option>
                   ))}
                 </select>
               </label>
               <label>
-                <span>가입경로</span>
+                <span>결제상태</span>
                 <select
-                  value={draft.joinPath}
+                  value={draft.paymentStatus}
                   onChange={(event) =>
                     setDraft((value) => ({
                       ...value,
-                      joinPath: event.target.value as SearchFilters["joinPath"],
+                      paymentStatus: event.target.value as SearchFilters["paymentStatus"],
                     }))
                   }
                 >
-                  {JOIN_PATH_OPTIONS.map((option) => (
+                  {PAYMENT_STATUS_FILTER_OPTIONS.map((option) => (
                     <option key={option}>{option}</option>
                   ))}
                 </select>
               </label>
               <label className="member-web-period">
-                <span>가입기간</span>
+                <span>예약일</span>
                 <div>
                   <input
                     type="date"
-                    value={draft.joinedFrom}
-                    onChange={(event) => setDraft((value) => ({ ...value, joinedFrom: event.target.value }))}
+                    value={draft.reservedFrom}
+                    onChange={(event) => setDraft((value) => ({ ...value, reservedFrom: event.target.value }))}
                   />
                   <em>~</em>
                   <input
                     type="date"
-                    value={draft.joinedTo}
-                    onChange={(event) => setDraft((value) => ({ ...value, joinedTo: event.target.value }))}
+                    value={draft.reservedTo}
+                    onChange={(event) => setDraft((value) => ({ ...value, reservedTo: event.target.value }))}
+                  />
+                </div>
+              </label>
+              <label className="member-web-period">
+                <span>출발일</span>
+                <div>
+                  <input
+                    type="date"
+                    value={draft.departureFrom}
+                    onChange={(event) => setDraft((value) => ({ ...value, departureFrom: event.target.value }))}
+                  />
+                  <em>~</em>
+                  <input
+                    type="date"
+                    value={draft.departureTo}
+                    onChange={(event) => setDraft((value) => ({ ...value, departureTo: event.target.value }))}
                   />
                 </div>
               </label>
             </div>
             <div className="member-web-filter-actions">
-              <button className="secondary" onClick={reset}>
+              <button type="button" className="secondary" onClick={reset}>
                 <RotateCcw size={14} />
-                조건초기화
+                초기화
               </button>
-              <button className="primary" onClick={search}>
+              <button type="button" className="primary" onClick={search}>
                 <Search size={15} />
                 검색
               </button>
@@ -361,26 +377,25 @@ export default function WebMembersPage() {
             <div className="member-web-list-head">
               <div>
                 <strong>
-                  회원목록 <b>{filtered.length}</b>명
+                  예약목록 <b>{filtered.length}</b>건
                 </strong>
                 <span>샘플 데이터 기준</span>
               </div>
             </div>
             <div className="member-web-table-wrap">
-              <table className="member-web-table">
+              <table className="member-web-table reservation-list-table">
                 <thead>
                   <tr>
                     {[
-                      "회원번호",
-                      "이름",
-                      "아이디",
-                      "휴대전화",
-                      "이메일",
-                      "회원상태",
-                      "가입경로",
-                      "추천판매점",
-                      "가입일",
-                      "최근접속일",
+                      "예약번호",
+                      "예약일",
+                      "예약자",
+                      "상품명",
+                      "출발일",
+                      "인원",
+                      "예약금액",
+                      "결제상태",
+                      "예약상태",
                       "관리",
                     ].map((title) => (
                       <th key={title}>{title}</th>
@@ -389,26 +404,35 @@ export default function WebMembersPage() {
                 </thead>
                 <tbody>
                   {rows.length ? (
-                    rows.map((member) => (
-                      <tr key={member.id}>
-                        <td className="member-number">{member.id}</td>
-                        <td className="member-name">
-                          <Link href={`/members/web/${member.id}`}>
-                            <b>{member.name}</b>
+                    rows.map((reservation) => (
+                      <tr key={reservation.code}>
+                        <td className="member-number">
+                          <Link href={`/reservations/${reservation.code}`} className="reservation-code-link">
+                            {reservation.code}
                           </Link>
                         </td>
-                        <td>{member.loginId}</td>
-                        <td className="member-phone">{member.phone}</td>
-                        <td className="member-email">{member.email}</td>
-                        <td>
-                          <span className={`badge ${memberStatusBadgeClass(member.status)}`}>{member.status}</span>
+                        <td className="date-cell">{reservation.reservedAt}</td>
+                        <td className="member-name">
+                          {reservation.memberId ? (
+                            <Link href={`/members/web/${reservation.memberId}`}>
+                              <b>{reservation.bookerName}</b>
+                            </Link>
+                          ) : (
+                            <b>{reservation.bookerName}</b>
+                          )}
                         </td>
-                        <td className="member-path">{member.joinPath}</td>
-                        <td>{member.agency}</td>
-                        <td className="date-cell">{member.joinedAt}</td>
-                        <td className="date-cell">{member.lastAccessAt}</td>
+                        <td className="text-left">{reservation.productName}</td>
+                        <td className="date-cell">{reservation.departureAt}</td>
+                        <td>{formatReservationPeople(reservation)}</td>
+                        <td className="amount-cell">{reservation.totalAmount}</td>
                         <td>
-                          <Link href={`/members/web/${member.id}`} className="member-detail-button">
+                          <span className={`badge ${reservation.paymentStatusClass}`}>{reservation.paymentStatus}</span>
+                        </td>
+                        <td>
+                          <span className={`badge ${reservation.reserveStatusClass}`}>{reservation.reserveStatus}</span>
+                        </td>
+                        <td>
+                          <Link href={`/reservations/${reservation.code}`} className="member-detail-button">
                             상세보기
                           </Link>
                         </td>
@@ -416,13 +440,13 @@ export default function WebMembersPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={11}>
+                      <td colSpan={10}>
                         <div className="member-web-empty">
-                          <strong>검색 조건에 맞는 웹회원이 없습니다.</strong>
+                          <strong>검색 조건에 맞는 예약이 없습니다.</strong>
                           <p>조건을 변경하거나 초기화한 뒤 다시 검색해 주세요.</p>
-                          <button className="secondary" onClick={reset}>
+                          <button type="button" className="secondary" onClick={reset}>
                             <RotateCcw size={13} />
-                            조건초기화
+                            초기화
                           </button>
                         </div>
                       </td>
@@ -433,22 +457,27 @@ export default function WebMembersPage() {
             </div>
             <div className="member-web-footer">
               <span>
-                총 {filtered.length}명 중 {rows.length}명 표시
+                총 {filtered.length}건 중 {rows.length}건 표시
               </span>
               <div className="pagination">
-                <button disabled={page === 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
+                <button type="button" disabled={page === 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
                   ‹
                 </button>
                 {Array.from({ length: totalPages }, (_, index) => (
                   <button
                     key={index + 1}
+                    type="button"
                     className={page === index + 1 ? "active" : ""}
                     onClick={() => setPage(index + 1)}
                   >
                     {index + 1}
                   </button>
                 ))}
-                <button disabled={page === totalPages} onClick={() => setPage((value) => Math.min(totalPages, value + 1))}>
+                <button
+                  type="button"
+                  disabled={page === totalPages}
+                  onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+                >
                   ›
                 </button>
               </div>
