@@ -91,7 +91,7 @@ function ProductChannelCell({
               <span className="product-channel-active">공유 중 {affiliateActive}</span>
             )}
             {affiliatePending > 0 && (
-              <span className="product-channel-pending">대기 {affiliatePending}</span>
+              <span className="product-channel-pending">수락대기 {affiliatePending}</span>
             )}
           </>
         )}

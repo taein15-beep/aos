@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  PauseCircle,
-  PlayCircle,
+  ChevronDown,
+  ChevronUp,
   QrCode,
   RotateCcw,
   Save,
@@ -20,19 +20,64 @@ import {
   AFFILIATE_REGION_OPTIONS,
   AFFILIATE_SHARE_FILTER_OPTIONS,
   AFFILIATE_SHARE_GROUP_OPTIONS,
+  CANCEL_FEE_RULE_OPTIONS,
+  EDIT_LOCKED_NOTICE,
+  EDIT_PERMISSION_OPTIONS,
+  GROUP_SETTLEMENT_DEFAULTS,
+  INVENTORY_MODE_OPTIONS,
+  PAYMENT_PARTY_OPTIONS,
+  PRICE_APPLY_MODE_OPTIONS,
+  RESHARE_LOCKED_NOTICE,
+  SALES_CHANNEL_OPTIONS,
+  SELLER_CHANNEL_NOTICE,
+  SELLING_PRICE_PERMISSION_OPTIONS,
+  SETTLEMENT_CYCLE_OPTIONS,
+  SETTLEMENT_METHOD_OPTIONS,
+  SETTLEMENT_SOURCE_OPTIONS,
+  SHARE_ACTION_POLICY,
+  SHARE_CONDITION_AGENCY_PREVIEW_LIMIT,
+  SHARE_CONDITION_DRAFT_HINT,
+  SHARE_REQUEST_MODE_OPTIONS,
+  SHARED_INVENTORY_NOTICE,
+  VAT_INCLUDED_OPTIONS,
   acceptanceLabel,
+  classifyShareApplyTargets,
   cloneAffiliateRows,
+  cloneShareCondition,
   countAffiliateShareStatuses,
+  createShareConditionForm,
+  formFromStoredRow,
   formatAffiliateGroups,
+  formatPriceDisplay,
+  formatShareApplyMessage,
   getProductAffiliateSummary,
   getSampleAffiliateAgencies,
+  getShareConditionFieldErrors,
+  getSharePeriodMessages,
+  inventoryPolicyLabel,
+  inventorySummaryLabel,
+  isPartnershipShareable,
+  isPriceChangeAllowed,
   isSharedStatus,
+  parsePriceInput,
+  partnershipShareBlockReason,
+  partnershipStatusBadgeClass,
+  pricePolicyLabel,
+  requestModeSummaryLabel,
+  sharePeriodSummaryLabel,
   shareStatusBadgeClass,
+  shareStatusForRequestMode,
+  storedConditionFromForm,
+  toUnsharedRow,
+  uniqueAgenciesByName,
   type AffiliateAcceptanceFilter,
   type AffiliateAgencyRow,
   type AffiliateRegionFilter,
   type AffiliateShareFilter,
   type AffiliateShareGroupFilter,
+  type EditPermissionKey,
+  type SalesChannelKey,
+  type ShareConditionForm,
 } from "@/lib/admin/product-affiliate-data";
 import {
   getProductSellerSettingPath,
@@ -80,6 +125,149 @@ function rowsEqual(a: AffiliateAgencyRow[], b: AffiliateAgencyRow[]) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+function FieldLabel({
+  children,
+  required = false,
+}: {
+  children: ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <span>
+      {children}
+      {required ? <b className="required-mark">필수</b> : null}
+    </span>
+  );
+}
+
+type DetailSectionId = "edit" | "sales" | "settlement" | "memo";
+type ShareModalMode = "create" | "edit" | "view" | "reshare";
+type ConfirmDialog = {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+};
+
+const DEFAULT_DETAIL_OPEN: Record<DetailSectionId, boolean> = {
+  edit: true,
+  sales: true,
+  settlement: true,
+  memo: true,
+};
+
+function optionLabel<T extends { value: string; label: string }>(options: readonly T[], value: string) {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
+function ShareManageActions({
+  row,
+  onEdit,
+  onView,
+  onReshare,
+  onCancelRequest,
+  onPause,
+  onResume,
+  onRelease,
+}: {
+  row: AffiliateAgencyRow;
+  onEdit: (id: string) => void;
+  onView: (id: string) => void;
+  onReshare: (id: string) => void;
+  onCancelRequest: (id: string) => void;
+  onPause: (id: string) => void;
+  onResume: (id: string) => void;
+  onRelease: (id: string) => void;
+}) {
+  if (row.shareStatus === "수락대기") {
+    return (
+      <>
+        <button type="button" className="small-btn" onClick={() => onEdit(row.id)}>
+          조건 수정
+        </button>
+        <button type="button" className="small-btn" onClick={() => onCancelRequest(row.id)}>
+          공유 요청 취소
+        </button>
+      </>
+    );
+  }
+  if (row.shareStatus === "공유 중") {
+    return (
+      <>
+        <button type="button" className="small-btn" onClick={() => onEdit(row.id)}>
+          조건 수정
+        </button>
+        <button type="button" className="small-btn" onClick={() => onPause(row.id)}>
+          공유 중지
+        </button>
+      </>
+    );
+  }
+  if (row.shareStatus === "공유 중지") {
+    return (
+      <>
+        <button type="button" className="small-btn" onClick={() => onEdit(row.id)}>
+          조건 수정
+        </button>
+        <button type="button" className="small-btn" onClick={() => onResume(row.id)}>
+          공유 재개
+        </button>
+        <button type="button" className="small-btn" onClick={() => onRelease(row.id)}>
+          공유 해제
+        </button>
+      </>
+    );
+  }
+  if (row.shareStatus === "공유 종료" || row.shareStatus === "공유 거절") {
+    return (
+      <>
+        <button type="button" className="small-btn" onClick={() => onView(row.id)}>
+          상세보기
+        </button>
+        <button type="button" className="small-btn" onClick={() => onReshare(row.id)}>
+          다시 공유
+        </button>
+      </>
+    );
+  }
+  return null;
+}
+
+function DetailSection({
+  id,
+  title,
+  open,
+  onToggle,
+  children,
+}: {
+  id: string;
+  title: string;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  const panelId = `share-detail-${id}`;
+  return (
+    <div className="product-share-condition-detail-block">
+      <button
+        type="button"
+        className="product-share-condition-detail-toggle"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={onToggle}
+      >
+        <strong>{title}</strong>
+        {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      </button>
+      {open ? (
+        <div id={panelId} className="product-share-condition-detail-panel">
+          {children}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function ProductAffiliateNotFound({ onBack }: { onBack: () => void }) {
   return (
     <div className="panel product-affiliate-not-found">
@@ -113,18 +301,79 @@ export default function ProductAffiliateSettingPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [draftSearch, setDraftSearch] = useState<SearchDraft>(EMPTY_SEARCH);
   const [appliedSearch, setAppliedSearch] = useState<SearchDraft>(EMPTY_SEARCH);
-  const [dateModalOpen, setDateModalOpen] = useState(false);
-  const [pendingShareIds, setPendingShareIds] = useState<string[]>([]);
-  const [shareStartDate, setShareStartDate] = useState("2026-06-01");
-  const [shareEndDate, setShareEndDate] = useState("2026-12-31");
+  const [shareConditionModalOpen, setShareConditionModalOpen] = useState(false);
+  const [shareModalMode, setShareModalMode] = useState<ShareModalMode>("create");
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialog | null>(null);
+  const [modalAgencyRows, setModalAgencyRows] = useState<AffiliateAgencyRow[]>([]);
+  const [modalIncludedIds, setModalIncludedIds] = useState<string[]>([]);
+  const [modalAgencyExpanded, setModalAgencyExpanded] = useState(false);
+  const [shareForm, setShareForm] = useState<ShareConditionForm>(() => createShareConditionForm(0));
+  /** 공유조건 임시저장. 이 화면 메모리에만 유지되며 새로고침하면 사라집니다. */
+  const [shareFormDraft, setShareFormDraft] = useState<ShareConditionForm | null>(null);
+  const [detailOpen, setDetailOpen] = useState<Record<DetailSectionId, boolean>>(DEFAULT_DETAIL_OPEN);
+  const toastTimer = useRef<number | null>(null);
 
   const isDirty = useMemo(() => !rowsEqual(draftRows, savedRows), [draftRows, savedRows]);
   const counts = useMemo(() => countAffiliateShareStatuses(draftRows), [draftRows]);
   const sharedTargets = useMemo(() => draftRows.filter((row) => isSharedStatus(row.shareStatus)), [draftRows]);
+  const includedModalAgencies = useMemo(
+    () => modalAgencyRows.filter((row) => modalIncludedIds.includes(row.id)),
+    [modalAgencyRows, modalIncludedIds],
+  );
+  const applicableModalAgencies = useMemo(
+    () => includedModalAgencies.filter((row) => isPartnershipShareable(row.partnershipStatus)),
+    [includedModalAgencies],
+  );
+  const blockedModalCount = includedModalAgencies.length - applicableModalAgencies.length;
+  const visibleModalAgencies =
+    modalAgencyExpanded || includedModalAgencies.length <= SHARE_CONDITION_AGENCY_PREVIEW_LIMIT
+      ? includedModalAgencies
+      : includedModalAgencies.slice(0, SHARE_CONDITION_AGENCY_PREVIEW_LIMIT);
+  const shareApplyPreview = useMemo(
+    () => classifyShareApplyTargets(includedModalAgencies, draftRows),
+    [includedModalAgencies, draftRows],
+  );
+  const sharePeriodMessages = useMemo(
+    () => getSharePeriodMessages(shareForm.startDate, shareForm.endDate, shareForm.noEndDate, product?.period ?? null),
+    [shareForm.startDate, shareForm.endDate, shareForm.noEndDate, product?.period],
+  );
+  const shareFieldErrors = useMemo(() => getShareConditionFieldErrors(shareForm), [shareForm]);
+  const hasShareFieldErrors = Object.keys(shareFieldErrors).length > 0;
+  const autoShareStatus = shareStatusForRequestMode(shareForm.requestMode);
+  const isImmediateShare = shareForm.requestMode === "immediate";
+  const isViewMode = shareModalMode === "view";
+  const isEditMode = shareModalMode === "edit";
+  const primaryShareActionLabel = isEditMode
+    ? "조건 적용"
+    : isImmediateShare
+      ? "공유 시작"
+      : "상품공유 요청";
+  const canSubmitShareRequest = isViewMode
+    ? false
+    : isEditMode
+      ? includedModalAgencies.length > 0 && !hasShareFieldErrors
+      : shareApplyPreview.applicable.length > 0 && !hasShareFieldErrors;
+  const shareModalTitle =
+    shareModalMode === "edit"
+      ? "공유조건 수정"
+      : shareModalMode === "view"
+        ? "공유조건 상세"
+        : shareModalMode === "reshare"
+          ? "다시 공유"
+          : "제휴여행사 상품공유 조건 설정";
+  const shareModalLead =
+    shareModalMode === "edit"
+      ? "기존 공유조건을 불러와 수정합니다. 공유 상태는 유지되며, 이 화면의 임시 데이터에만 반영됩니다."
+      : shareModalMode === "view"
+        ? "저장된 공유조건을 확인합니다. 이 화면에서는 수정할 수 없습니다."
+        : shareModalMode === "reshare"
+          ? "종료·거절된 공유를 다시 요청합니다. 기존 조건을 불러오며 변경한 뒤 요청할 수 있습니다. 공유 해제 또는 종료 이후에도 기존 예약과 정산 관계는 유지됩니다."
+          : "선택한 제휴여행사에 이 상품을 공유합니다. 그룹 가입만으로 상품이 자동 공유되지는 않으며, 아래 조건으로 상품공유 요청이 전송됩니다.";
 
-  const act = (message: string) => {
+  const act = (message: string, duration = 2200) => {
     setToast(message);
-    window.setTimeout(() => setToast(""), 2200);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(""), duration);
   };
 
   const toggleMenu = (label: string) =>
@@ -177,46 +426,153 @@ export default function ProductAffiliateSettingPage() {
     setDraftRows((rows) => updater(rows));
   };
 
-  const openShareDateModal = (ids: string[]) => {
-    setPendingShareIds(ids);
-    setShareStartDate("2026-06-01");
-    setShareEndDate("2026-12-31");
-    setDateModalOpen(true);
+  const closeShareConditionModal = () => {
+    setShareConditionModalOpen(false);
+    setShareModalMode("create");
   };
 
-  const applyShareTargets = () => {
-    if (!shareStartDate || !shareEndDate) {
-      act("공유 시작일과 종료일을 입력해 주세요.");
+  const openShareConditionModal = (ids: string[], mode: ShareModalMode = "create") => {
+    if (ids.length === 0) return;
+    const uniqueRows = uniqueAgenciesByName(draftRows.filter((row) => ids.includes(row.id)));
+    if (uniqueRows.length === 0) return;
+    setShareModalMode(mode);
+    setModalAgencyRows(uniqueRows);
+    setModalIncludedIds(uniqueRows.map((row) => row.id));
+    setModalAgencyExpanded(false);
+    const customerListPrice = parsePriceInput(product?.price ?? "") ?? 0;
+    if (mode === "create") {
+      setShareForm(
+        shareFormDraft
+          ? { ...shareFormDraft, customerListPrice }
+          : createShareConditionForm(customerListPrice),
+      );
+    } else {
+      setShareForm(formFromStoredRow(uniqueRows[0], customerListPrice));
+    }
+    setDetailOpen(DEFAULT_DETAIL_OPEN);
+    setShareConditionModalOpen(true);
+  };
+
+  const askConfirm = (policy: (typeof SHARE_ACTION_POLICY)[keyof typeof SHARE_ACTION_POLICY], onConfirm: () => void) => {
+    setConfirmDialog({
+      title: policy.title,
+      message: policy.message,
+      confirmLabel: policy.confirmLabel,
+      onConfirm: () => {
+        setConfirmDialog(null);
+        onConfirm();
+      },
+    });
+  };
+
+  const excludeModalAgency = (id: string) => {
+    setModalIncludedIds((ids) => ids.filter((item) => item !== id));
+  };
+
+  const updateShareForm = <K extends keyof ShareConditionForm>(key: K, value: ShareConditionForm[K]) => {
+    setShareForm((form) => ({ ...form, [key]: value }));
+  };
+
+  const toggleDetailSection = (id: DetailSectionId) => {
+    setDetailOpen((value) => ({ ...value, [id]: !value[id] }));
+  };
+
+  const toggleEditPermission = (key: EditPermissionKey, allowed: boolean) => {
+    if (key === "sellingPrice") return;
+    setShareForm((form) => ({
+      ...form,
+      editPermissions: { ...form.editPermissions, [key]: allowed },
+    }));
+  };
+
+  const toggleSalesChannel = (key: SalesChannelKey, allowed: boolean) => {
+    setShareForm((form) => ({
+      ...form,
+      salesChannels: { ...form.salesChannels, [key]: allowed },
+    }));
+  };
+
+  const saveShareConditionDraft = () => {
+    setShareFormDraft({
+      ...shareForm,
+      editPermissions: { ...shareForm.editPermissions },
+      salesChannels: { ...shareForm.salesChannels },
+    });
+    act(SHARE_CONDITION_DRAFT_HINT, 3600);
+  };
+
+  const applyShareFromModal = () => {
+    if (isViewMode) {
+      closeShareConditionModal();
       return;
     }
-    if (shareStartDate > shareEndDate) {
-      act("공유 종료일은 시작일 이후여야 합니다.");
+    if (hasShareFieldErrors) {
+      act("필수 항목을 확인해 주세요.");
       return;
     }
+
+    const shareStartDate = shareForm.startDate || null;
+    const shareEndDate = shareForm.noEndDate ? null : shareForm.endDate || null;
+    const shareCondition = storedConditionFromForm(shareForm);
+
+    if (isEditMode) {
+      const processIds = new Set(includedModalAgencies.map((row) => row.id));
+      if (processIds.size === 0) {
+        act("적용할 제휴여행사가 없습니다.");
+        return;
+      }
+      updateRows((rows) =>
+        rows.map((row) =>
+          processIds.has(row.id)
+            ? { ...row, shareStartDate, shareEndDate, shareCondition: cloneShareCondition(shareCondition) }
+            : row,
+        ),
+      );
+      closeShareConditionModal();
+      act("공유조건을 수정했습니다.");
+      return;
+    }
+
+    const { applicable, processable, skippedActive, skippedPending } = classifyShareApplyTargets(
+      includedModalAgencies,
+      draftRows,
+    );
+    const message = formatShareApplyMessage({
+      mode: shareForm.requestMode,
+      applicableCount: applicable.length,
+      appliedCount: processable.length,
+      skippedActiveCount: skippedActive.length,
+      skippedPendingCount: skippedPending.length,
+    });
+
+    if (processable.length === 0) {
+      act(message, 3600);
+      return;
+    }
+
+    const nextStatus = shareStatusForRequestMode(shareForm.requestMode);
+    const processIds = new Set(processable.map((row) => row.id));
+
     updateRows((rows) =>
       rows.map((row) =>
-        pendingShareIds.includes(row.id)
+        processIds.has(row.id)
           ? {
               ...row,
-              shareStatus: "수락대기",
+              shareStatus: nextStatus,
               shareStartDate,
               shareEndDate,
+              shareCondition: cloneShareCondition(shareCondition),
             }
           : row,
       ),
     );
-    setSelectedIds((ids) => ids.filter((id) => !pendingShareIds.includes(id)));
-    setDateModalOpen(false);
-    act(`${pendingShareIds.length}개 제휴여행사를 상품공유 대상으로 추가했습니다.`);
+    setShareFormDraft(null);
+    closeShareConditionModal();
+    act(message, 3600);
   };
 
   const addSelectedToShare = () => {
-    const targets = draftRows.filter((row) => selectedIds.includes(row.id) && row.shareStatus === "미공유");
-    if (targets.length === 0) {
-      act("공유 대상으로 추가할 미공유 여행사를 선택해 주세요.");
-      return;
-    }
-    openShareDateModal(targets.map((row) => row.id));
+    openShareConditionModal(selectedIds);
   };
 
   const removeSelectedFromShare = () => {
@@ -226,41 +582,59 @@ export default function ProductAffiliateSettingPage() {
       return;
     }
     updateRows((rows) =>
-      rows.map((row) =>
-        targets.some((target) => target.id === row.id)
-          ? { ...row, shareStatus: "미공유", shareStartDate: null, shareEndDate: null }
-          : row,
-      ),
+      rows.map((row) => (targets.some((target) => target.id === row.id) ? toUnsharedRow(row) : row)),
     );
     setSelectedIds([]);
     act("선택한 제휴여행사를 공유 대상에서 제외했습니다.");
   };
 
   const pauseShare = (id: string) => {
-    updateRows((rows) =>
-      rows.map((row) => (row.id === id && row.shareStatus === "공유 중" ? { ...row, shareStatus: "공유 중지" } : row)),
-    );
-    act("상품공유를 중지했습니다.");
+    askConfirm(SHARE_ACTION_POLICY.pause, () => {
+      updateRows((rows) =>
+        rows.map((row) => (row.id === id && row.shareStatus === "공유 중" ? { ...row, shareStatus: "공유 중지" } : row)),
+      );
+      act("상품공유를 중지했습니다. 신규예약만 차단되며 기존 예약과 정산은 유지됩니다.");
+    });
   };
 
   const resumeShare = (id: string) => {
-    updateRows((rows) =>
-      rows.map((row) =>
-        row.id === id && row.shareStatus === "공유 중지" ? { ...row, shareStatus: "공유 중" } : row,
-      ),
-    );
-    act("상품공유를 재개했습니다.");
+    askConfirm(SHARE_ACTION_POLICY.resume, () => {
+      updateRows((rows) =>
+        rows.map((row) =>
+          row.id === id && row.shareStatus === "공유 중지" ? { ...row, shareStatus: "공유 중" } : row,
+        ),
+      );
+      act("상품공유를 재개했습니다.");
+    });
   };
 
-  const excludeShare = (id: string) => {
-    updateRows((rows) =>
-      rows.map((row) =>
-        row.id === id
-          ? { ...row, shareStatus: "미공유", shareStartDate: null, shareEndDate: null }
-          : row,
-      ),
-    );
-    act("공유 대상에서 제외했습니다.");
+  const cancelShareRequest = (id: string) => {
+    askConfirm(SHARE_ACTION_POLICY.cancelRequest, () => {
+      let cancelled = false;
+      updateRows((rows) =>
+        rows.map((row) => {
+          if (row.id === id && row.shareStatus === "수락대기") {
+            cancelled = true;
+            return toUnsharedRow(row);
+          }
+          return row;
+        }),
+      );
+      act(
+        cancelled
+          ? "공유 요청을 취소했습니다."
+          : "아직 수락하지 않은 요청만 취소할 수 있습니다.",
+      );
+    });
+  };
+
+  const releaseShare = (id: string) => {
+    askConfirm(SHARE_ACTION_POLICY.release, () => {
+      updateRows((rows) =>
+        rows.map((row) => (row.id === id && row.shareStatus === "공유 중지" ? toUnsharedRow(row) : row)),
+      );
+      act("상품공유를 해제했습니다. 기존 예약과 정산 관계는 유지됩니다.");
+    });
   };
 
   const resetChanges = () => {
@@ -568,15 +942,21 @@ export default function ProductAffiliateSettingPage() {
 
           <section className="panel product-affiliate-toolbar">
             <div className="product-affiliate-toolbar-left">
-              <button type="button" className="primary" onClick={addSelectedToShare}>
+              <button
+                type="button"
+                className="primary"
+                onClick={addSelectedToShare}
+                disabled={selectedIds.length === 0}
+                aria-label={`선택 여행사 공유 대상 추가, 현재 ${selectedIds.length}건 선택`}
+              >
                 <UserPlus size={14} />
                 선택 여행사 공유 대상 추가
               </button>
+              <span className="product-affiliate-selection-count">선택 {selectedIds.length}건</span>
               <button type="button" className="secondary" onClick={removeSelectedFromShare}>
                 <UserMinus size={14} />
                 공유 대상 제외
               </button>
-              <span className="product-affiliate-selection-count">선택 {selectedIds.length}건</span>
               {isDirty && <span className="product-affiliate-dirty">저장 전 변경사항 있음</span>}
             </div>
           </section>
@@ -635,7 +1015,7 @@ export default function ProductAffiliateSettingPage() {
                         <td className="text-left product-affiliate-groups">{formatAffiliateGroups(row.groups)}</td>
                         <td>{row.region}</td>
                         <td>
-                          <span className={`badge ${row.partnershipStatus === "정상" ? "success" : row.partnershipStatus === "협의중" ? "warn" : "gray"}`}>
+                          <span className={`badge ${partnershipStatusBadgeClass(row.partnershipStatus)}`}>
                             {row.partnershipStatus}
                           </span>
                         </td>
@@ -647,37 +1027,21 @@ export default function ProductAffiliateSettingPage() {
                         <td className="date-cell">{row.shareEndDate ?? "-"}</td>
                         <td>
                           <div className="product-affiliate-row-actions">
-                            {row.shareStatus === "미공유" && (
-                              <button type="button" className="small-btn" onClick={() => openShareDateModal([row.id])}>
+                            {row.shareStatus === "미공유" ? (
+                              <button type="button" className="small-btn" onClick={() => openShareConditionModal([row.id])}>
                                 공유 추가
                               </button>
-                            )}
-                            {row.shareStatus === "공유 중" && (
-                              <>
-                                <button type="button" className="small-btn" onClick={() => pauseShare(row.id)} title="공유 중지">
-                                  <PauseCircle size={12} />
-                                  중지
-                                </button>
-                                <button type="button" className="small-btn" onClick={() => excludeShare(row.id)}>
-                                  제외
-                                </button>
-                              </>
-                            )}
-                            {row.shareStatus === "공유 중지" && (
-                              <>
-                                <button type="button" className="small-btn" onClick={() => resumeShare(row.id)} title="공유 재개">
-                                  <PlayCircle size={12} />
-                                  재개
-                                </button>
-                                <button type="button" className="small-btn" onClick={() => excludeShare(row.id)}>
-                                  제외
-                                </button>
-                              </>
-                            )}
-                            {["수락대기", "공유 종료", "공유 거절"].includes(row.shareStatus) && (
-                              <button type="button" className="small-btn" onClick={() => excludeShare(row.id)}>
-                                제외
-                              </button>
+                            ) : (
+                              <ShareManageActions
+                                row={row}
+                                onEdit={(id) => openShareConditionModal([id], "edit")}
+                                onView={(id) => openShareConditionModal([id], "view")}
+                                onReshare={(id) => openShareConditionModal([id], "reshare")}
+                                onCancelRequest={cancelShareRequest}
+                                onPause={pauseShare}
+                                onResume={resumeShare}
+                                onRelease={releaseShare}
+                              />
                             )}
                           </div>
                         </td>
@@ -696,25 +1060,57 @@ export default function ProductAffiliateSettingPage() {
               </strong>
               <span>공유 중·수락대기·중지·종료·거절 상태의 제휴여행사</span>
             </div>
-            <div className="product-affiliate-selected-list">
+            <div className="member-web-detail-table-wrap">
               {sharedTargets.length === 0 ? (
                 <p className="product-affiliate-empty">아직 상품공유 대상으로 지정된 제휴여행사가 없습니다.</p>
               ) : (
-                sharedTargets.map((row) => (
-                  <div key={row.id} className="product-affiliate-selected-item">
-                    <div>
-                      <strong>{row.name}</strong>
-                      <small>{formatAffiliateGroups(row.groups)}</small>
-                    </div>
-                    <span className={`badge ${shareStatusBadgeClass(row.shareStatus)}`}>{row.shareStatus}</span>
-                    <span className="product-affiliate-selected-period">
-                      {row.shareStartDate ?? "-"} ~ {row.shareEndDate ?? "-"}
-                    </span>
-                    <button type="button" className="small-btn" onClick={() => excludeShare(row.id)}>
-                      제외
-                    </button>
-                  </div>
-                ))
+                <table className="member-web-detail-table product-affiliate-selected-table">
+                  <thead>
+                    <tr>
+                      <th>여행사명</th>
+                      <th>소속 상품공유그룹</th>
+                      <th>가격정책</th>
+                      <th>재고정책</th>
+                      <th>공유 상태</th>
+                      <th>수락 상태</th>
+                      <th>공유 시작일</th>
+                      <th>공유 종료일</th>
+                      <th>관리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sharedTargets.map((row) => (
+                      <tr key={row.id}>
+                        <td className="text-left">
+                          <strong>{row.name}</strong>
+                        </td>
+                        <td className="text-left product-affiliate-groups">{formatAffiliateGroups(row.groups)}</td>
+                        <td className="text-left">{pricePolicyLabel(row.shareCondition)}</td>
+                        <td className="text-left">{inventoryPolicyLabel(row.shareCondition)}</td>
+                        <td>
+                          <span className={`badge ${shareStatusBadgeClass(row.shareStatus)}`}>{row.shareStatus}</span>
+                        </td>
+                        <td>{acceptanceLabel(row.shareStatus)}</td>
+                        <td className="date-cell">{row.shareStartDate ?? "-"}</td>
+                        <td className="date-cell">{row.shareEndDate ?? "종료일 없음"}</td>
+                        <td>
+                          <div className="product-affiliate-row-actions">
+                            <ShareManageActions
+                              row={row}
+                              onEdit={(id) => openShareConditionModal([id], "edit")}
+                              onView={(id) => openShareConditionModal([id], "view")}
+                              onReshare={(id) => openShareConditionModal([id], "reshare")}
+                              onCancelRequest={cancelShareRequest}
+                              onPause={pauseShare}
+                              onResume={resumeShare}
+                              onRelease={releaseShare}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           </section>
@@ -742,37 +1138,742 @@ export default function ProductAffiliateSettingPage() {
         </main>
       </div>
 
-      {dateModalOpen && (
-        <div className="modal-backdrop" role="presentation" onClick={() => setDateModalOpen(false)}>
+      {shareConditionModalOpen && (
+        <div className="modal-backdrop" role="presentation" onClick={closeShareConditionModal}>
           <div
-            className="modal product-affiliate-date-modal"
+            className="modal product-share-condition-modal"
             role="dialog"
-            aria-labelledby="affiliate-date-title"
+            aria-modal="true"
+            aria-labelledby="share-condition-title"
+            aria-describedby="share-condition-desc"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="modal-head">
-              <h3 id="affiliate-date-title">상품공유 기간 지정</h3>
-              <button type="button" aria-label="닫기" onClick={() => setDateModalOpen(false)}>
+            <div className="modal-head product-share-condition-head">
+              <h3 id="share-condition-title">{shareModalTitle}</h3>
+              <button type="button" aria-label="닫기" onClick={closeShareConditionModal}>
                 <X size={18} />
               </button>
             </div>
-            <p>선택한 제휴여행사에 상품공유를 요청합니다. 수락 전까지 상태는 수락대기로 표시됩니다.</p>
-            <div className="product-affiliate-date-fields">
-              <label>
-                <span>공유 시작일</span>
-                <input type="date" value={shareStartDate} onChange={(event) => setShareStartDate(event.target.value)} />
-              </label>
-              <label>
-                <span>공유 종료일</span>
-                <input type="date" value={shareEndDate} onChange={(event) => setShareEndDate(event.target.value)} />
-              </label>
+            <div className="product-share-condition-body">
+              <p id="share-condition-desc" className="product-share-condition-lead">
+                {shareModalLead}
+              </p>
+              <fieldset className="product-share-condition-fields" disabled={isViewMode}>
+              <section className="product-share-condition-section" aria-label="선택한 상품 요약">
+                <h4>선택한 상품</h4>
+                <div className="product-share-condition-summary">
+                  <div>
+                    <span>상품명</span>
+                    <strong title={product.name}>{product.name}</strong>
+                  </div>
+                  <div>
+                    <span>상품코드</span>
+                    <strong>{product.code}</strong>
+                  </div>
+                  <div>
+                    <span>상품공급여행사</span>
+                    <strong>{summary.supplierName}</strong>
+                  </div>
+                  <div>
+                    <span>선택한 제휴여행사 수</span>
+                    <strong>{includedModalAgencies.length}곳</strong>
+                  </div>
+                </div>
+              </section>
+              <section className="product-share-condition-section" aria-label="선택한 제휴여행사">
+                <div className="product-share-condition-section-head">
+                  <h4>선택한 제휴여행사 {includedModalAgencies.length}개</h4>
+                  <span>
+                    적용 가능 {applicableModalAgencies.length}곳
+                    {blockedModalCount > 0 ? ` · 적용 불가 ${blockedModalCount}곳` : ""}
+                  </span>
+                </div>
+                {includedModalAgencies.length === 0 ? (
+                  <p className="product-share-condition-empty">
+                    공유 대상 여행사가 없습니다. 상품공유 요청을 진행할 수 없습니다.
+                  </p>
+                ) : (
+                  <>
+                    <div className="member-web-detail-table-wrap">
+                      <table className="member-web-detail-table product-share-condition-agency-table">
+                        <thead>
+                          <tr>
+                            <th>여행사명</th>
+                            <th>소속 상품공유그룹</th>
+                            <th>지역</th>
+                            <th>제휴 상태</th>
+                            <th>적용 여부</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {visibleModalAgencies.map((agency) => {
+                            const blockedReason = partnershipShareBlockReason(agency.partnershipStatus);
+                            const shareable = !blockedReason;
+                            return (
+                              <tr key={agency.id} className={shareable ? undefined : "is-blocked"}>
+                                <td className="text-left">
+                                  <strong>{agency.name}</strong>
+                                </td>
+                                <td className="text-left">
+                                  <div className="product-share-condition-groups">
+                                    <span>{agency.groups[0] ?? "-"}</span>
+                                    {agency.groups.length > 1 && (
+                                      <span className="badge info">외 {agency.groups.length - 1}</span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td>{agency.region}</td>
+                                <td>
+                                  <span className={`badge ${partnershipStatusBadgeClass(agency.partnershipStatus)}`}>
+                                    {agency.partnershipStatus}
+                                  </span>
+                                </td>
+                                <td className="text-left">
+                                  <div className="product-share-condition-apply">
+                                    {shareable ? (
+                                      <span className="badge success">적용</span>
+                                    ) : (
+                                      <>
+                                        <span className="badge gray">적용 불가</span>
+                                        <small>{blockedReason}</small>
+                                      </>
+                                    )}
+                                    {shareModalMode === "create" && (
+                                      <button
+                                        type="button"
+                                        className="small-btn"
+                                        onClick={() => excludeModalAgency(agency.id)}
+                                      >
+                                        선택 해제
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    {includedModalAgencies.length > SHARE_CONDITION_AGENCY_PREVIEW_LIMIT && (
+                      <button
+                        type="button"
+                        className="text-btn product-share-condition-expand"
+                        onClick={() => setModalAgencyExpanded((value) => !value)}
+                      >
+                        {modalAgencyExpanded ? (
+                          <>
+                            <ChevronUp size={14} />
+                            접기
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown size={14} />
+                            나머지 {includedModalAgencies.length - SHARE_CONDITION_AGENCY_PREVIEW_LIMIT}개 펼치기
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </>
+                )}
+              </section>
+              <section className="product-share-condition-section" aria-label="공유 기본설정">
+                <h4>공유 기본설정</h4>
+                <div className="product-share-condition-basic">
+                  <fieldset className="product-share-condition-fieldset">
+                    <legend>
+                      상품공유 요청 방식 <b className="required-mark">필수</b>
+                    </legend>
+                    <div className="product-share-condition-options" role="radiogroup" aria-label="상품공유 요청 방식">
+                      {SHARE_REQUEST_MODE_OPTIONS.map((option) => (
+                        <label
+                          key={option.value}
+                          className={shareForm.requestMode === option.value ? "is-selected" : undefined}
+                        >
+                          <input
+                            type="radio"
+                            name="share-request-mode"
+                            value={option.value}
+                            checked={shareForm.requestMode === option.value}
+                            onChange={() => updateShareForm("requestMode", option.value)}
+                          />
+                          {option.label}
+                        </label>
+                      ))}
+                    </div>
+                    <p className="product-share-condition-auto-status">
+                      자동 상태 <span className={`badge ${shareStatusBadgeClass(autoShareStatus)}`}>{autoShareStatus}</span>
+                    </p>
+                  </fieldset>
+                  <fieldset className="product-share-condition-fieldset">
+                    <legend>
+                      공유기간 <b className="required-mark">필수</b>
+                    </legend>
+                    <div className="product-share-condition-period">
+                      <label className={shareFieldErrors.startDate ? "is-invalid" : undefined}>
+                        <FieldLabel required>공유 시작일</FieldLabel>
+                        <input
+                          type="date"
+                          value={shareForm.startDate}
+                          aria-invalid={Boolean(shareFieldErrors.startDate)}
+                          onChange={(event) => updateShareForm("startDate", event.target.value)}
+                        />
+                        {shareFieldErrors.startDate ? (
+                          <small className="product-share-condition-error">{shareFieldErrors.startDate}</small>
+                        ) : sharePeriodMessages.startWarning ? (
+                          <small className="product-share-condition-warn">{sharePeriodMessages.startWarning}</small>
+                        ) : null}
+                      </label>
+                      <label className={shareFieldErrors.endDate ? "is-invalid" : undefined}>
+                        <FieldLabel required={!shareForm.noEndDate}>공유 종료일</FieldLabel>
+                        <input
+                          type="date"
+                          value={shareForm.endDate}
+                          min={shareForm.startDate || undefined}
+                          disabled={shareForm.noEndDate}
+                          aria-invalid={Boolean(shareFieldErrors.endDate)}
+                          onChange={(event) => updateShareForm("endDate", event.target.value)}
+                        />
+                        {shareFieldErrors.endDate ? (
+                          <small className="product-share-condition-error">{shareFieldErrors.endDate}</small>
+                        ) : sharePeriodMessages.endWarning ? (
+                          <small className="product-share-condition-warn">{sharePeriodMessages.endWarning}</small>
+                        ) : null}
+                      </label>
+                      <label className="product-share-condition-check">
+                        <input
+                          type="checkbox"
+                          checked={shareForm.noEndDate}
+                          onChange={(event) => {
+                            const checked = event.target.checked;
+                            setShareForm((form) => ({
+                              ...form,
+                              noEndDate: checked,
+                              endDate: checked ? "" : form.startDate,
+                            }));
+                          }}
+                        />
+                        종료일 없음
+                      </label>
+                    </div>
+                    {product.period ? (
+                      <p className="product-share-condition-period-meta">
+                        상품 판매기간 {product.period[0]} ~ {product.period[1]}
+                      </p>
+                    ) : (
+                      <p className="product-share-condition-period-meta">상품 판매기간이 지정되지 않은 상품입니다.</p>
+                    )}
+                  </fieldset>
+                  <fieldset className="product-share-condition-fieldset">
+                    <legend>
+                      가격 적용 방식 <b className="required-mark">필수</b>
+                    </legend>
+                    <div className="product-share-condition-options" role="radiogroup" aria-label="가격 적용 방식">
+                      {PRICE_APPLY_MODE_OPTIONS.map((option) => (
+                        <label
+                          key={option.value}
+                          className={shareForm.priceApplyMode === option.value ? "is-selected" : undefined}
+                        >
+                          <input
+                            type="radio"
+                            name="price-apply-mode"
+                            value={option.value}
+                            checked={shareForm.priceApplyMode === option.value}
+                            onChange={() => updateShareForm("priceApplyMode", option.value)}
+                          />
+                          {option.label}
+                        </label>
+                      ))}
+                    </div>
+                    {shareForm.priceApplyMode === "supply" ? (
+                      <div className="product-share-condition-price">
+                        <label>
+                          <FieldLabel>고객 대표 판매가</FieldLabel>
+                          <div className="product-share-condition-amount">
+                            <input
+                              type="text"
+                              value={formatPriceDisplay(shareForm.customerListPrice)}
+                              readOnly
+                              aria-readonly="true"
+                            />
+                            <b>원</b>
+                          </div>
+                        </label>
+                        <label className={shareFieldErrors.affiliateSupplyPrice ? "is-invalid" : undefined}>
+                          <FieldLabel required>제휴여행사 공급가</FieldLabel>
+                          <div className="product-share-condition-amount">
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={formatPriceDisplay(shareForm.affiliateSupplyPrice)}
+                              aria-invalid={Boolean(shareFieldErrors.affiliateSupplyPrice)}
+                              onChange={(event) =>
+                                updateShareForm("affiliateSupplyPrice", parsePriceInput(event.target.value))
+                              }
+                              placeholder="0"
+                            />
+                            <b>원</b>
+                          </div>
+                          {shareFieldErrors.affiliateSupplyPrice ? (
+                            <small className="product-share-condition-error">{shareFieldErrors.affiliateSupplyPrice}</small>
+                          ) : null}
+                        </label>
+                        <label className={shareFieldErrors.recommendedPrice ? "is-invalid" : undefined}>
+                          <FieldLabel required>권장판매가</FieldLabel>
+                          <div className="product-share-condition-amount">
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={formatPriceDisplay(shareForm.recommendedPrice)}
+                              aria-invalid={Boolean(shareFieldErrors.recommendedPrice)}
+                              onChange={(event) =>
+                                updateShareForm("recommendedPrice", parsePriceInput(event.target.value))
+                              }
+                              placeholder="0"
+                            />
+                            <b>원</b>
+                          </div>
+                          {shareFieldErrors.recommendedPrice ? (
+                            <small className="product-share-condition-error">{shareFieldErrors.recommendedPrice}</small>
+                          ) : null}
+                        </label>
+                        <label className={shareFieldErrors.minSellingPrice ? "is-invalid" : undefined}>
+                          <FieldLabel required={shareForm.sellingPricePermission === "min"}>최저판매가</FieldLabel>
+                          <div className="product-share-condition-amount">
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={formatPriceDisplay(shareForm.minSellingPrice)}
+                              aria-invalid={Boolean(shareFieldErrors.minSellingPrice)}
+                              onChange={(event) =>
+                                updateShareForm("minSellingPrice", parsePriceInput(event.target.value))
+                              }
+                              placeholder="0"
+                            />
+                            <b>원</b>
+                          </div>
+                          {shareFieldErrors.minSellingPrice ? (
+                            <small className="product-share-condition-error">{shareFieldErrors.minSellingPrice}</small>
+                          ) : null}
+                        </label>
+                        <div className="product-share-condition-permission">
+                          <FieldLabel required>판매가 권한</FieldLabel>
+                          <div className="product-share-condition-options" role="radiogroup" aria-label="판매가 권한">
+                            {SELLING_PRICE_PERMISSION_OPTIONS.map((option) => (
+                              <label
+                                key={option.value}
+                                className={shareForm.sellingPricePermission === option.value ? "is-selected" : undefined}
+                              >
+                                <input
+                                  type="radio"
+                                  name="selling-price-permission"
+                                  value={option.value}
+                                  checked={shareForm.sellingPricePermission === option.value}
+                                  onChange={() =>
+                                    setShareForm((form) => ({
+                                      ...form,
+                                      sellingPricePermission: option.value,
+                                      editPermissions: {
+                                        ...form.editPermissions,
+                                        sellingPrice: isPriceChangeAllowed(option.value),
+                                      },
+                                    }))
+                                  }
+                                />
+                                {option.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="product-share-condition-note">
+                        {shareForm.priceApplyMode === "commission"
+                          ? "판매수수료율 기준의 상세 입력은 다음 단계에서 구성합니다."
+                          : "고정 판매마진 기준의 상세 입력은 다음 단계에서 구성합니다."}
+                      </p>
+                    )}
+                  </fieldset>
+                  <fieldset className="product-share-condition-fieldset">
+                    <legend>
+                      재고 운영방식 <b className="required-mark">필수</b>
+                    </legend>
+                    <div className="product-share-condition-mode-list" role="radiogroup" aria-label="재고 운영방식">
+                      {INVENTORY_MODE_OPTIONS.map((option) => (
+                        <label
+                          key={option.value}
+                          className={shareForm.inventoryMode === option.value ? "is-selected" : undefined}
+                        >
+                          <input
+                            type="radio"
+                            name="inventory-mode"
+                            value={option.value}
+                            checked={shareForm.inventoryMode === option.value}
+                            onChange={() => updateShareForm("inventoryMode", option.value)}
+                          />
+                          <span>
+                            <strong>{option.label}</strong>
+                            <small>{option.description}</small>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    {shareForm.inventoryMode === "shared" ? (
+                      <p className="product-share-condition-notice" role="note">
+                        <strong>공동재고 안내</strong>
+                        {SHARED_INVENTORY_NOTICE}
+                      </p>
+                    ) : null}
+                  </fieldset>
+                </div>
+              </section>
+              <section className="product-share-condition-section" aria-label="상세설정">
+                <h4>상세설정</h4>
+                <div className="product-share-condition-detail">
+                  <DetailSection
+                    id="edit"
+                    title="제휴여행사 수정 허용범위"
+                    open={detailOpen.edit}
+                    onToggle={() => toggleDetailSection("edit")}
+                  >
+                    <div className="product-share-condition-check-grid">
+                      {EDIT_PERMISSION_OPTIONS.map((option) => {
+                        const autoPrice = option.auto;
+                        const allowed = autoPrice
+                          ? isPriceChangeAllowed(shareForm.sellingPricePermission)
+                          : shareForm.editPermissions[option.key];
+                        return (
+                          <label
+                            key={option.key}
+                            className={`product-share-condition-check-item${autoPrice ? " is-auto" : ""}${allowed ? " is-on" : ""}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={allowed}
+                              disabled={autoPrice}
+                              onChange={(event) => toggleEditPermission(option.key, event.target.checked)}
+                            />
+                            <span>
+                              <strong>{option.label}</strong>
+                              <small>
+                                {autoPrice
+                                  ? `가격정책에 따라 자동 결정 · 현재 ${allowed ? "허용" : "비허용"}`
+                                  : allowed
+                                    ? "허용"
+                                    : "비허용"}
+                              </small>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <p className="product-share-condition-notice" role="note">
+                      {EDIT_LOCKED_NOTICE}
+                    </p>
+                  </DetailSection>
+                  <DetailSection
+                    id="sales"
+                    title="판매 허용범위"
+                    open={detailOpen.sales}
+                    onToggle={() => toggleDetailSection("sales")}
+                  >
+                    <div className="product-share-condition-check-grid">
+                      {SALES_CHANNEL_OPTIONS.map((option) => {
+                        const allowed = shareForm.salesChannels[option.key];
+                        return (
+                          <label
+                            key={option.key}
+                            className={`product-share-condition-check-item${allowed ? " is-on" : ""}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={allowed}
+                              onChange={(event) => toggleSalesChannel(option.key, event.target.checked)}
+                            />
+                            <span>
+                              <strong>{option.label}</strong>
+                              <small>{allowed ? "허용" : "비허용"}</small>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {shareForm.salesChannels.sellers ? (
+                      <p className="product-share-condition-notice" role="note">
+                        {SELLER_CHANNEL_NOTICE}
+                      </p>
+                    ) : null}
+                    <p className="product-share-condition-notice" role="note">
+                      {RESHARE_LOCKED_NOTICE}
+                    </p>
+                  </DetailSection>
+                  <DetailSection
+                    id="settlement"
+                    title="정산 기본조건"
+                    open={detailOpen.settlement}
+                    onToggle={() => toggleDetailSection("settlement")}
+                  >
+                    <div className="product-share-condition-options" role="radiogroup" aria-label="정산 조건 적용 방식">
+                      {SETTLEMENT_SOURCE_OPTIONS.map((option) => (
+                        <label
+                          key={option.value}
+                          className={shareForm.settlementSource === option.value ? "is-selected" : undefined}
+                        >
+                          <input
+                            type="radio"
+                            name="settlement-source"
+                            value={option.value}
+                            checked={shareForm.settlementSource === option.value}
+                            onChange={() => {
+                              if (option.value === "group") {
+                                setShareForm((form) => ({
+                                  ...form,
+                                  settlementSource: "group",
+                                  ...GROUP_SETTLEMENT_DEFAULTS,
+                                }));
+                                return;
+                              }
+                              updateShareForm("settlementSource", "custom");
+                            }}
+                          />
+                          {option.label}
+                        </label>
+                      ))}
+                    </div>
+                    {shareForm.settlementSource === "group" ? (
+                      <dl className="product-share-condition-readonly">
+                        <div>
+                          <dt>정산방식</dt>
+                          <dd>{optionLabel(SETTLEMENT_METHOD_OPTIONS, shareForm.settlementMethod)}</dd>
+                        </div>
+                        <div>
+                          <dt>정산주기</dt>
+                          <dd>{optionLabel(SETTLEMENT_CYCLE_OPTIONS, shareForm.settlementCycle)}</dd>
+                        </div>
+                        <div>
+                          <dt>고객 결제 주체</dt>
+                          <dd>{optionLabel(PAYMENT_PARTY_OPTIONS, shareForm.paymentParty)}</dd>
+                        </div>
+                        <div>
+                          <dt>취소수수료 적용 기준</dt>
+                          <dd>{optionLabel(CANCEL_FEE_RULE_OPTIONS, shareForm.cancelFeeRule)}</dd>
+                        </div>
+                        <div>
+                          <dt>부가세 포함 여부</dt>
+                          <dd>{optionLabel(VAT_INCLUDED_OPTIONS, shareForm.vatIncluded)}</dd>
+                        </div>
+                      </dl>
+                    ) : (
+                      <div className="product-share-condition-settle-grid">
+                        <label>
+                          <FieldLabel required>정산방식</FieldLabel>
+                          <select
+                            value={shareForm.settlementMethod}
+                            onChange={(event) =>
+                              updateShareForm(
+                                "settlementMethod",
+                                event.target.value as ShareConditionForm["settlementMethod"],
+                              )
+                            }
+                          >
+                            {SETTLEMENT_METHOD_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          <FieldLabel required>정산주기</FieldLabel>
+                          <select
+                            value={shareForm.settlementCycle}
+                            onChange={(event) =>
+                              updateShareForm(
+                                "settlementCycle",
+                                event.target.value as ShareConditionForm["settlementCycle"],
+                              )
+                            }
+                          >
+                            {SETTLEMENT_CYCLE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          <FieldLabel required>고객 결제 주체</FieldLabel>
+                          <select
+                            value={shareForm.paymentParty}
+                            onChange={(event) =>
+                              updateShareForm("paymentParty", event.target.value as ShareConditionForm["paymentParty"])
+                            }
+                          >
+                            {PAYMENT_PARTY_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          <FieldLabel required>취소수수료 적용 기준</FieldLabel>
+                          <select
+                            value={shareForm.cancelFeeRule}
+                            onChange={(event) =>
+                              updateShareForm(
+                                "cancelFeeRule",
+                                event.target.value as ShareConditionForm["cancelFeeRule"],
+                              )
+                            }
+                          >
+                            {CANCEL_FEE_RULE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          <FieldLabel required>부가세 포함 여부</FieldLabel>
+                          <select
+                            value={shareForm.vatIncluded}
+                            onChange={(event) =>
+                              updateShareForm("vatIncluded", event.target.value as ShareConditionForm["vatIncluded"])
+                            }
+                          >
+                            {VAT_INCLUDED_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                    )}
+                    <p className="product-share-condition-period-meta">실제 정산 금액 계산은 이 화면에서 처리하지 않습니다.</p>
+                  </DetailSection>
+                  <DetailSection
+                    id="memo"
+                    title="메모"
+                    open={detailOpen.memo}
+                    onToggle={() => toggleDetailSection("memo")}
+                  >
+                    <div className="product-share-condition-memo-grid">
+                      <label>
+                        <FieldLabel>제휴여행사 안내</FieldLabel>
+                        <textarea
+                          rows={4}
+                          value={shareForm.affiliateNotice}
+                          onChange={(event) => updateShareForm("affiliateNotice", event.target.value)}
+                          placeholder="제휴여행사에 전달할 안내를 입력하세요."
+                        />
+                        <small>공개 범위: 상대 제휴여행사에 노출됩니다.</small>
+                      </label>
+                      <label>
+                        <FieldLabel>공급여행사 내부 메모</FieldLabel>
+                        <textarea
+                          rows={4}
+                          value={shareForm.supplierMemo}
+                          onChange={(event) => updateShareForm("supplierMemo", event.target.value)}
+                          placeholder="공급여행사 내부 메모를 입력하세요."
+                        />
+                        <small>공개 범위: 공급여행사 관리자만 확인할 수 있습니다.</small>
+                      </label>
+                    </div>
+                  </DetailSection>
+                </div>
+              </section>
+              </fieldset>
             </div>
+            <div className="product-share-condition-footer">
+              <div className="product-share-condition-footer-summary" aria-live="polite">
+                <span>선택 여행사 {includedModalAgencies.length}개</span>
+                {isEditMode ? (
+                  <span>수정 대상 {includedModalAgencies.length}개</span>
+                ) : isViewMode ? (
+                  <span>조회 전용</span>
+                ) : (
+                  <span>공유 요청 {shareApplyPreview.processable.length}개</span>
+                )}
+                <span>{requestModeSummaryLabel(shareForm.requestMode)}</span>
+                <span>{inventorySummaryLabel(shareForm.inventoryMode)}</span>
+                <span>{sharePeriodSummaryLabel(shareForm)}</span>
+                <span>{optionLabel(PRICE_APPLY_MODE_OPTIONS, shareForm.priceApplyMode)}</span>
+              </div>
+              {shareModalMode === "create" && (
+                <p className="product-share-condition-draft-hint">
+                  임시저장은 이 화면을 유지하는 동안만 보관되며, 새로고침하면 사라집니다.
+                  {shareFormDraft ? " 임시보관된 조건이 있습니다." : ""}
+                </p>
+              )}
+              <div className="modal-actions product-share-condition-actions">
+                {isViewMode ? (
+                  <button type="button" className="primary" onClick={closeShareConditionModal}>
+                    닫기
+                  </button>
+                ) : (
+                  <>
+                    <button type="button" className="secondary" onClick={closeShareConditionModal}>
+                      취소
+                    </button>
+                    {shareModalMode === "create" && (
+                      <button
+                        type="button"
+                        className="secondary"
+                        onClick={saveShareConditionDraft}
+                        aria-label="임시저장, 이 화면 세션에만 보관되며 새로고침 시 사라집니다"
+                      >
+                        임시저장
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="primary"
+                      disabled={!canSubmitShareRequest}
+                      onClick={applyShareFromModal}
+                      aria-label={
+                        canSubmitShareRequest
+                          ? primaryShareActionLabel
+                          : "적용 가능한 제휴여행사와 필수 입력 항목을 확인해 주세요"
+                      }
+                    >
+                      {primaryShareActionLabel}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmDialog && (
+        <div
+          className="modal-backdrop product-share-confirm-backdrop"
+          role="presentation"
+          onClick={() => setConfirmDialog(null)}
+        >
+          <div
+            className="modal product-share-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="share-confirm-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="modal-head">
+              <h3 id="share-confirm-title">{confirmDialog.title}</h3>
+              <button type="button" aria-label="닫기" onClick={() => setConfirmDialog(null)}>
+                <X size={18} />
+              </button>
+            </div>
+            <p>{confirmDialog.message}</p>
             <div className="modal-actions">
-              <button type="button" className="secondary" onClick={() => setDateModalOpen(false)}>
+              <button type="button" className="secondary" onClick={() => setConfirmDialog(null)}>
                 취소
               </button>
-              <button type="button" className="primary" onClick={applyShareTargets}>
-                공유 대상 추가
+              <button type="button" className="primary" onClick={confirmDialog.onConfirm}>
+                {confirmDialog.confirmLabel}
               </button>
             </div>
           </div>
@@ -780,7 +1881,7 @@ export default function ProductAffiliateSettingPage() {
       )}
 
       {toast && (
-        <div className="toast">
+        <div className="toast product-affiliate-toast">
           <span>✓</span>
           {toast}
         </div>

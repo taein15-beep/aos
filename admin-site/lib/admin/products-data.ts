@@ -89,7 +89,7 @@ export function matchesProductSearch(
  * - boram01: 제휴 0 · 판매점 0
  * - paldo-111: 공유 중 3 · 판매점 2
  * - HP0001: 공유 중 3 · 수락대기 2(+공유 중지 포함) · 판매점 6
- * - HP0001C: 미공유 · 판매점 0 (복사 상품, 별도 코드)
+ * - HP0001C: 공유 중 1 · 수락대기 1(+중지·종료·거절) · 판매점 0 (복사 상품, 별도 코드)
  * - share-jeju: 공유받은 상품 · 제휴 버튼 비활성 · 판매점 4
  */
 export const SAMPLE_PRODUCTS: ProductListItem[] = [
