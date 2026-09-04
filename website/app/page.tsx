@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SiteFooter, SiteHeader } from "./components/SiteHeader";
 
 const airports = ["서울 / 인천 (ICN)", "도쿄 / 나리타 (NRT)", "오사카 / 간사이 (KIX)"];
 
@@ -62,19 +63,7 @@ export default function Home() {
   return (
     <main>
       <section className="hero" id="home">
-        <nav className="nav shell" aria-label="주요 메뉴">
-          <a className="brand" href="#home" aria-label="AOS 홈">
-            <span className="brand-mark">aos</span>
-            <span className="brand-caption">All-in-One Travel System</span>
-          </a>
-          <div className="nav-links">
-            <a href="#platform">플랫폼</a>
-            <a href="#air">항공 예약</a>
-            <a href="#technology">기술</a>
-            <a href="#contact">문의</a>
-          </div>
-          <a className="nav-cta" href="#contact">도입 문의 <span>↗</span></a>
-        </nav>
+        <SiteHeader variant="home" />
 
         <div className="orb orb-one" />
         <div className="orb orb-two" />
@@ -303,14 +292,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer>
-        <div className="shell footer-main">
-          <div className="brand footer-brand"><span className="brand-mark">aos</span><span className="brand-caption">All-in-One Travel System</span></div>
-          <p>여행의 모든 흐름을 하나로 연결하는 통합여행플랫폼</p>
-          <a href="#home">맨 위로 <span>↑</span></a>
-        </div>
-        <div className="shell footer-bottom"><span>© 2026 AOS. All rights reserved.</span><span>TAEINWIZ · AVIANEXT</span></div>
-      </footer>
+      <SiteFooter variant="home" />
     </main>
   );
 }
