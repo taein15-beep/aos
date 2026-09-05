@@ -537,6 +537,11 @@ export function SellerApplyForm() {
             <span>APPLICATION</span>
             <h2 id="seller-apply-form-title">가입신청서</h2>
             <p>아래 항목을 한 페이지에서 작성한 뒤 신청해 주세요.</p>
+            {submitBanner ? (
+              <p className="seller-apply-submit-banner" role="alert">
+                {submitBanner}
+              </p>
+            ) : null}
           </header>
 
           <section className="seller-apply-section" aria-labelledby="seller-guide-title">
@@ -603,72 +608,26 @@ export function SellerApplyForm() {
                 </header>
                 <div className="seller-apply-fields">
                   {isBusiness ? (
-                    <label className={errors.businessName ? "is-invalid" : undefined}>
-                      <FieldLabel required htmlFor="businessName">
-                        상호명
-                      </FieldLabel>
-                      <input
-                        id="businessName"
-                        value={form.businessName}
-                        aria-invalid={Boolean(errors.businessName)}
-                        onChange={(event) => {
-                          setForm((current) => updateBusinessName(current, event.target.value));
-                          clearFieldError("businessName");
-                          clearFieldError("sellerName");
-                          setSubmitBanner("");
-                        }}
-                        placeholder="상호명을 입력해 주세요"
-                      />
-                      <FieldError message={errors.businessName} />
-                    </label>
-                  ) : null}
-
-                  <label className={errors.sellerName ? "is-invalid" : undefined}>
-                    <FieldLabel required htmlFor="sellerName">
-                      판매점명
-                    </FieldLabel>
-                    <input
-                      id="sellerName"
-                      value={form.sellerName}
-                      aria-invalid={Boolean(errors.sellerName)}
-                      onChange={(event) => {
-                        if (form.useBusinessNameAsSellerName) {
-                          setForm((current) => ({
-                            ...current,
-                            useBusinessNameAsSellerName: false,
-                            sellerName: event.target.value,
-                          }));
-                        } else {
-                          updateField("sellerName", event.target.value);
-                          return;
-                        }
-                        clearFieldError("sellerName");
-                        setSubmitBanner("");
-                      }}
-                      placeholder="관리자와 판매 화면에 표시될 이름"
-                    />
-                    <FieldError message={errors.sellerName} />
-                  </label>
-
-                  {isBusiness ? (
-                    <label className="full seller-check-inline">
-                      <input
-                        type="checkbox"
-                        checked={form.useBusinessNameAsSellerName}
-                        onChange={(event) => {
-                          setForm((current) =>
-                            setUseBusinessNameAsSellerName(current, event.target.checked),
-                          );
-                          clearFieldError("sellerName");
-                          setSubmitBanner("");
-                        }}
-                      />
-                      <span>상호명을 판매점명으로 사용</span>
-                    </label>
-                  ) : null}
-
-                  {isBusiness ? (
                     <>
+                      <label className={errors.businessName ? "is-invalid" : undefined}>
+                        <FieldLabel required htmlFor="businessName">
+                          상호명
+                        </FieldLabel>
+                        <input
+                          id="businessName"
+                          value={form.businessName}
+                          aria-invalid={Boolean(errors.businessName)}
+                          onChange={(event) => {
+                            setForm((current) => updateBusinessName(current, event.target.value));
+                            clearFieldError("businessName");
+                            clearFieldError("sellerName");
+                            setSubmitBanner("");
+                          }}
+                          placeholder="상호명을 입력해 주세요"
+                        />
+                        <FieldError message={errors.businessName} />
+                      </label>
+
                       <div
                         className={`seller-field-with-action ${errors.businessNumber ? "is-invalid" : ""}`}
                       >
@@ -700,9 +659,39 @@ export function SellerApplyForm() {
                         </div>
                         <FieldError message={errors.businessNumber} />
                         {businessCheckNote ? (
-                          <small className="seller-field-info">{businessCheckNote}</small>
+                          <small className="seller-field-info" role="status">
+                            {businessCheckNote}
+                          </small>
                         ) : null}
                       </div>
+
+                      <label className={errors.sellerName ? "is-invalid" : undefined}>
+                        <FieldLabel required htmlFor="sellerName">
+                          판매점명
+                        </FieldLabel>
+                        <input
+                          id="sellerName"
+                          value={form.sellerName}
+                          aria-invalid={Boolean(errors.sellerName)}
+                          onChange={(event) => {
+                            if (form.useBusinessNameAsSellerName) {
+                              setForm((current) => ({
+                                ...current,
+                                useBusinessNameAsSellerName: false,
+                                sellerName: event.target.value,
+                              }));
+                            } else {
+                              updateField("sellerName", event.target.value);
+                              return;
+                            }
+                            clearFieldError("sellerName");
+                            setSubmitBanner("");
+                          }}
+                          placeholder="관리자와 판매 화면에 표시될 이름"
+                        />
+                        <FieldError message={errors.sellerName} />
+                      </label>
+
                       <label className={errors.representativeName ? "is-invalid" : undefined}>
                         <FieldLabel required htmlFor="representativeName">
                           대표자명
@@ -723,72 +712,157 @@ export function SellerApplyForm() {
                         />
                         <FieldError message={errors.representativeName} />
                       </label>
+
+                      <label className="full seller-check-inline">
+                        <input
+                          type="checkbox"
+                          checked={form.useBusinessNameAsSellerName}
+                          onChange={(event) => {
+                            setForm((current) =>
+                              setUseBusinessNameAsSellerName(current, event.target.checked),
+                            );
+                            clearFieldError("sellerName");
+                            setSubmitBanner("");
+                          }}
+                        />
+                        <span>상호명을 판매점명으로 사용</span>
+                      </label>
+
+                      <label className={errors.address ? "is-invalid" : undefined}>
+                        <FieldLabel required htmlFor="address">
+                          사업장 주소
+                        </FieldLabel>
+                        <input
+                          id="address"
+                          value={form.address}
+                          aria-invalid={Boolean(errors.address)}
+                          onChange={(event) => {
+                            updateField("address", event.target.value);
+                            setAddressSearchNote("");
+                          }}
+                          placeholder="기본 주소"
+                        />
+                        <FieldError message={errors.address} />
+                      </label>
+
+                      <div className="seller-field-with-action">
+                        <FieldLabel htmlFor="addressDetail">상세주소</FieldLabel>
+                        <div className="seller-inline-action">
+                          <input
+                            id="addressDetail"
+                            value={form.addressDetail}
+                            onChange={(event) => updateField("addressDetail", event.target.value)}
+                            placeholder="상세 주소"
+                          />
+                          <button
+                            type="button"
+                            className="button ghost dark compact"
+                            onClick={requestAddressSearch}
+                          >
+                            주소검색
+                          </button>
+                        </div>
+                        {addressSearchNote ? (
+                          <small className="seller-field-info" role="status">
+                            {addressSearchNote}
+                          </small>
+                        ) : null}
+                      </div>
+
+                      <label className={errors.businessPhone ? "is-invalid" : undefined}>
+                        <FieldLabel htmlFor="businessPhone">대표 전화번호</FieldLabel>
+                        <input
+                          id="businessPhone"
+                          value={form.businessPhone}
+                          aria-invalid={Boolean(errors.businessPhone)}
+                          onChange={(event) => updateField("businessPhone", event.target.value)}
+                          placeholder="02-0000-0000"
+                        />
+                        <FieldError message={errors.businessPhone} />
+                      </label>
+
+                      <label className={errors.homepageOrSns ? "is-invalid" : undefined}>
+                        <FieldLabel htmlFor="homepageOrSns">홈페이지 또는 SNS 주소</FieldLabel>
+                        <input
+                          id="homepageOrSns"
+                          value={form.homepageOrSns}
+                          aria-invalid={Boolean(errors.homepageOrSns)}
+                          onChange={(event) => updateField("homepageOrSns", event.target.value)}
+                          placeholder="https://example.com"
+                        />
+                        <FieldError message={errors.homepageOrSns} />
+                      </label>
                     </>
-                  ) : null}
+                  ) : (
+                    <>
+                      <label className={errors.sellerName ? "is-invalid" : undefined}>
+                        <FieldLabel required htmlFor="sellerName">
+                          판매점명
+                        </FieldLabel>
+                        <input
+                          id="sellerName"
+                          value={form.sellerName}
+                          aria-invalid={Boolean(errors.sellerName)}
+                          onChange={(event) => updateField("sellerName", event.target.value)}
+                          placeholder="관리자와 판매 화면에 표시될 이름"
+                        />
+                        <FieldError message={errors.sellerName} />
+                      </label>
 
-                  <div className={`seller-field-with-action ${errors.address ? "is-invalid" : ""}`}>
-                    <FieldLabel required htmlFor="address">
-                      {isBusiness ? "사업장 주소" : "활동 주소"}
-                    </FieldLabel>
-                    <div className="seller-inline-action">
-                      <input
-                        id="address"
-                        value={form.address}
-                        aria-invalid={Boolean(errors.address)}
-                        onChange={(event) => updateField("address", event.target.value)}
-                        placeholder="기본 주소"
-                      />
-                      <button
-                        type="button"
-                        className="button ghost dark compact"
-                        onClick={requestAddressSearch}
-                      >
-                        주소검색
-                      </button>
-                    </div>
-                    <FieldError message={errors.address} />
-                    {addressSearchNote ? (
-                      <small className="seller-field-info">{addressSearchNote}</small>
-                    ) : null}
-                  </div>
+                      <label className={errors.address ? "is-invalid" : undefined}>
+                        <FieldLabel required htmlFor="address">
+                          활동 주소
+                        </FieldLabel>
+                        <input
+                          id="address"
+                          value={form.address}
+                          aria-invalid={Boolean(errors.address)}
+                          onChange={(event) => {
+                            updateField("address", event.target.value);
+                            setAddressSearchNote("");
+                          }}
+                          placeholder="기본 주소"
+                        />
+                        <FieldError message={errors.address} />
+                      </label>
 
-                  <label>
-                    <FieldLabel htmlFor="addressDetail">상세주소</FieldLabel>
-                    <input
-                      id="addressDetail"
-                      value={form.addressDetail}
-                      onChange={(event) => updateField("addressDetail", event.target.value)}
-                      placeholder="상세 주소"
-                    />
-                  </label>
+                      <div className="seller-field-with-action">
+                        <FieldLabel htmlFor="addressDetail">상세주소</FieldLabel>
+                        <div className="seller-inline-action">
+                          <input
+                            id="addressDetail"
+                            value={form.addressDetail}
+                            onChange={(event) => updateField("addressDetail", event.target.value)}
+                            placeholder="상세 주소"
+                          />
+                          <button
+                            type="button"
+                            className="button ghost dark compact"
+                            onClick={requestAddressSearch}
+                          >
+                            주소검색
+                          </button>
+                        </div>
+                        {addressSearchNote ? (
+                          <small className="seller-field-info" role="status">
+                            {addressSearchNote}
+                          </small>
+                        ) : null}
+                      </div>
 
-                  {isBusiness ? (
-                    <label className={errors.businessPhone ? "is-invalid" : undefined}>
-                      <FieldLabel htmlFor="businessPhone">대표 전화번호</FieldLabel>
-                      <input
-                        id="businessPhone"
-                        value={form.businessPhone}
-                        aria-invalid={Boolean(errors.businessPhone)}
-                        onChange={(event) => updateField("businessPhone", event.target.value)}
-                        placeholder="02-0000-0000"
-                      />
-                      <FieldError message={errors.businessPhone} />
-                    </label>
-                  ) : null}
-
-                  <label
-                    className={`full ${errors.homepageOrSns ? "is-invalid" : ""}`}
-                  >
-                    <FieldLabel htmlFor="homepageOrSns">홈페이지 또는 SNS 주소</FieldLabel>
-                    <input
-                      id="homepageOrSns"
-                      value={form.homepageOrSns}
-                      aria-invalid={Boolean(errors.homepageOrSns)}
-                      onChange={(event) => updateField("homepageOrSns", event.target.value)}
-                      placeholder="https://example.com"
-                    />
-                    <FieldError message={errors.homepageOrSns} />
-                  </label>
+                      <label className={errors.homepageOrSns ? "is-invalid" : undefined}>
+                        <FieldLabel htmlFor="homepageOrSns">홈페이지 또는 SNS 주소</FieldLabel>
+                        <input
+                          id="homepageOrSns"
+                          value={form.homepageOrSns}
+                          aria-invalid={Boolean(errors.homepageOrSns)}
+                          onChange={(event) => updateField("homepageOrSns", event.target.value)}
+                          placeholder="https://example.com"
+                        />
+                        <FieldError message={errors.homepageOrSns} />
+                      </label>
+                    </>
+                  )}
                 </div>
               </section>
 
@@ -863,7 +937,7 @@ export function SellerApplyForm() {
 
                   <label className={errors.contactPhone ? "is-invalid" : undefined}>
                     <FieldLabel required htmlFor="contactPhone">
-                      {isIndividual ? "휴대전화번호" : "담당자 휴대전화번호"}
+                      휴대전화번호
                     </FieldLabel>
                     <input
                       id="contactPhone"
@@ -885,7 +959,7 @@ export function SellerApplyForm() {
 
                   <label className={errors.contactEmail ? "is-invalid" : undefined}>
                     <FieldLabel required htmlFor="contactEmail">
-                      {isIndividual ? "이메일" : "담당자 이메일"}
+                      이메일
                     </FieldLabel>
                     <input
                       id="contactEmail"
@@ -901,7 +975,7 @@ export function SellerApplyForm() {
 
                   <label className={`full ${errors.contactEmailConfirm ? "is-invalid" : ""}`}>
                     <FieldLabel required htmlFor="contactEmailConfirm">
-                      {isIndividual ? "이메일 확인" : "담당자 이메일 확인"}
+                      이메일 확인
                     </FieldLabel>
                     <input
                       id="contactEmailConfirm"
@@ -1028,52 +1102,56 @@ export function SellerApplyForm() {
 
               <section className="seller-apply-section" aria-labelledby="seller-docs-title">
                 <header className="seller-apply-section-head">
-                  <h3 id="seller-docs-title">증빙서류</h3>
+                  <h3 id="seller-docs-title">증빙서류 첨부</h3>
                   <p>
                     허용 형식 PDF, JPG, JPEG, PNG · 파일당 최대 {MAX_FILE_SIZE_LABEL} · 기타서류 최대{" "}
                     {MAX_OTHER_FILES}개. 현재는 프로토타입이며 서버에 실제 업로드되지 않습니다.
                   </p>
                 </header>
-                <p className="seller-apply-secure-note" role="note">
-                  선택한 파일은 브라우저 메모리에만 보관되며, 제출 시 sessionStorage에도 파일 내용은
-                  저장되지 않습니다. 신분증과 통장사본은 가입 단계에서 받지 않습니다.
-                </p>
-                <div className="seller-apply-docs-row">
-                  {attachmentSlots.map((slot) => {
-                    if (slot.key === "otherFiles") {
+                <div className="seller-apply-fields">
+                  <p className="seller-apply-secure-note full" role="note">
+                    선택한 파일은 브라우저 메모리에만 보관되며, 제출 시 sessionStorage에도 파일 내용은
+                    저장되지 않습니다. 신분증과 통장사본은 가입 단계에서 받지 않습니다.
+                  </p>
+                  <div
+                    className={`seller-apply-docs-row full ${isBusiness ? "is-business" : "is-individual"}`}
+                  >
+                    {attachmentSlots.map((slot) => {
+                      if (slot.key === "otherFiles") {
+                        return (
+                          <MultipleAttachmentSlot
+                            key={slot.key}
+                            id={slot.key}
+                            label={slot.label}
+                            files={form.otherFiles}
+                            error={filePickErrors.otherFiles || errors.otherFiles}
+                            onSelect={setOtherFiles}
+                            onRemoveAt={(index) =>
+                              setOtherFiles(
+                                form.otherFiles.filter((_, fileIndex) => fileIndex !== index),
+                                null,
+                              )
+                            }
+                          />
+                        );
+                      }
+                      const singleKey = slot.key;
                       return (
-                        <MultipleAttachmentSlot
-                          key={slot.key}
-                          id={slot.key}
+                        <SingleAttachmentSlot
+                          key={singleKey}
+                          id={singleKey}
                           label={slot.label}
-                          files={form.otherFiles}
-                          error={filePickErrors.otherFiles || errors.otherFiles}
-                          onSelect={setOtherFiles}
-                          onRemoveAt={(index) =>
-                            setOtherFiles(
-                              form.otherFiles.filter((_, fileIndex) => fileIndex !== index),
-                              null,
-                            )
+                          required={slot.required}
+                          file={form[singleKey]}
+                          error={filePickErrors[singleKey] || errors[singleKey]}
+                          onSelect={(nextFile, pickError) =>
+                            setSingleAttachment(singleKey, nextFile, pickError)
                           }
+                          onClear={() => setSingleAttachment(singleKey, null, null)}
                         />
                       );
-                    }
-                    const singleKey = slot.key;
-                    return (
-                      <SingleAttachmentSlot
-                        key={singleKey}
-                        id={singleKey}
-                        label={slot.label}
-                        required={slot.required}
-                        file={form[singleKey]}
-                        error={filePickErrors[singleKey] || errors[singleKey]}
-                        onSelect={(nextFile, pickError) =>
-                          setSingleAttachment(singleKey, nextFile, pickError)
-                        }
-                        onClear={() => setSingleAttachment(singleKey, null, null)}
-                      />
-                    );
-                  })}
+                    })}
+                  </div>
                 </div>
               </section>
 
@@ -1141,12 +1219,6 @@ export function SellerApplyForm() {
                 </div>
               </section>
             </>
-          ) : null}
-
-          {submitBanner ? (
-            <p className="seller-apply-submit-banner" role="alert">
-              {submitBanner}
-            </p>
           ) : null}
 
           <div className="seller-apply-actions">
