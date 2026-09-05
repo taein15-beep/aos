@@ -168,30 +168,9 @@ async function main() {
   );
   // clear bad optional by not required - leave and continue with required files still set
 
-  // other files > 3
-  for (let i = 0; i < 4; i++) {
-    await page.setInputFiles("#otherFiles-input", {
-      name: `other-${i}.pdf`,
-      mimeType: "application/pdf",
-      buffer: pdfBuffer,
-    });
-  }
-  await page.waitForTimeout(200);
-  ok(
-    "기타서류 3개 초과",
-    (await page.getByText("최대 3개").count()) > 0,
-  );
-
-  // Clear optional attachments before success path
-  const clearOptional = async () => {
-    const mailClear = page.locator("#mailOrderLicenseFile button", { hasText: "삭제" });
-    if (await mailClear.count()) await mailClear.first().click();
-    while ((await page.locator("#otherFiles button", { hasText: "삭제" }).count()) > 0) {
-      await page.locator("#otherFiles button", { hasText: "삭제" }).first().click();
-      await page.waitForTimeout(100);
-    }
-  };
-  await clearOptional();
+  // clear bad optional
+  const mailClear = page.locator("#mailOrderLicenseFile button", { hasText: "삭제" });
+  if (await mailClear.count()) await mailClear.first().click();
 
   await page.setInputFiles("#businessLicenseFile-input", {
     name: "biz.pdf",

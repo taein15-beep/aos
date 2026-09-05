@@ -13,11 +13,9 @@ import {
   INITIAL_PARTNERSHIP_APPLY_FORM,
   isValidBusinessNumber,
   MAX_FILE_SIZE_LABEL,
-  MAX_OTHER_FILES,
-  OPTIONAL_ATTACHMENT_SLOTS,
+  ATTACHMENT_SLOTS,
   OPTIONAL_TERM_KEYS,
   POLICY_GUIDE_ITEMS,
-  REQUIRED_ATTACHMENT_SLOTS,
   REQUIRED_TERM_KEYS,
   savePrototypeApplyReceipt,
   TERM_ITEMS,
@@ -81,25 +79,17 @@ function AttachmentSlot({
   label,
   required,
   file,
-  files,
-  multiple,
   error,
-  onSelectSingle,
-  onClearSingle,
-  onSelectMultiple,
-  onRemoveMultipleAt,
+  onSelect,
+  onClear,
 }: {
   id: string;
   label: string;
   required?: boolean;
-  file?: File | null;
-  files?: File[];
-  multiple?: boolean;
+  file: File | null;
   error?: string;
-  onSelectSingle?: (file: File | null, pickError: string | null) => void;
-  onClearSingle?: () => void;
-  onSelectMultiple?: (files: File[], pickError: string | null) => void;
-  onRemoveMultipleAt?: (index: number) => void;
+  onSelect: (file: File | null, pickError: string | null) => void;
+  onClear: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -111,49 +101,27 @@ function AttachmentSlot({
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(event.target.files ?? []);
-    if (multiple) {
-      if (selected.length === 0) return;
-      const nextFiles: File[] = [...(files ?? [])];
-      let pickError: string | null = null;
-      for (const item of selected) {
-        if (nextFiles.length >= MAX_OTHER_FILES) {
-          pickError = `기타 증빙서류는 최대 ${MAX_OTHER_FILES}개까지 첨부할 수 있습니다.`;
-          break;
-        }
-        const invalid = validateAttachmentFile(item);
-        if (invalid) {
-          pickError = invalid;
-          break;
-        }
-        nextFiles.push(item);
-      }
-      onSelectMultiple?.(pickError ? (files ?? []) : nextFiles, pickError);
-      return;
-    }
-    const item = selected[0] ?? null;
+    const item = event.target.files?.[0] ?? null;
     if (!item) {
-      onSelectSingle?.(null, null);
+      onSelect(null, null);
       return;
     }
     const invalid = validateAttachmentFile(item);
     if (invalid) {
-      onSelectSingle?.(file ?? null, invalid);
+      onSelect(file, invalid);
       return;
     }
-    onSelectSingle?.(item, null);
+    onSelect(item, null);
   };
 
-  const list = multiple ? files ?? [] : file ? [file] : [];
-
   return (
-    <div className={`partnership-file-slot full ${error ? "is-invalid" : ""}`} id={id}>
+    <div className={`partnership-file-slot ${error ? "is-invalid" : ""}`} id={id}>
       <div className="partnership-file-slot-head">
         <FieldLabel required={required} htmlFor={`${id}-input`}>
           {label}
         </FieldLabel>
         <button type="button" className="button ghost dark compact" onClick={openPicker}>
-          {list.length > 0 ? (multiple ? "추가" : "교체") : "파일 선택"}
+          {file ? "교체" : "파일 선택"}
         </button>
         <input
           ref={inputRef}
@@ -161,36 +129,26 @@ function AttachmentSlot({
           className="partnership-file-input-hidden"
           type="file"
           accept={FILE_ACCEPT}
-          multiple={multiple}
           aria-invalid={Boolean(error)}
           onChange={handleChange}
         />
       </div>
-      {list.length === 0 ? (
+      {!file ? (
         <p className="partnership-file-empty">선택된 파일이 없습니다.</p>
       ) : (
         <ul className="partnership-file-list">
-          {list.map((item, index) => (
-            <li key={`${item.name}-${item.size}-${index}`}>
-              <div className="partnership-file-meta">
-                <strong>{item.name}</strong>
-                <span>
-                  {formatFileSize(item.size)} · {item.type || "파일"}
-                </span>
-                <ImageFilePreview file={item} />
-              </div>
-              <button
-                type="button"
-                className="button ghost dark compact"
-                onClick={() => {
-                  if (multiple) onRemoveMultipleAt?.(index);
-                  else onClearSingle?.();
-                }}
-              >
-                삭제
-              </button>
-            </li>
-          ))}
+          <li>
+            <div className="partnership-file-meta">
+              <strong>{file.name}</strong>
+              <span>
+                {formatFileSize(file.size)} · {file.type || "파일"}
+              </span>
+              <ImageFilePreview file={file} />
+            </div>
+            <button type="button" className="button ghost dark compact" onClick={onClear}>
+              삭제
+            </button>
+          </li>
         </ul>
       )}
       <FieldError message={error} />
@@ -248,22 +206,6 @@ export function PartnershipApplyForm() {
     setErrors((current) => {
       const next = { ...current };
       delete next[key];
-      return next;
-    });
-  };
-
-  const setOtherFiles = (files: File[], pickError: string | null) => {
-    setDirty(true);
-    setForm((current) => ({ ...current, otherFiles: files }));
-    setFilePickErrors((current) => {
-      const next = { ...current };
-      if (pickError) next.otherFiles = pickError;
-      else delete next.otherFiles;
-      return next;
-    });
-    setErrors((current) => {
-      const next = { ...current };
-      delete next.otherFiles;
       return next;
     });
   };
@@ -345,10 +287,6 @@ export function PartnershipApplyForm() {
     // 선택 서류에서 거절된 파일 선택 오류가 남아 제출을 막지 않도록 정리
     const activePickErrors: Partial<Record<string, string>> = { ...filePickErrors };
     if (!form.mailOrderLicenseFile) delete activePickErrors.mailOrderLicenseFile;
-    const otherInvalid = form.otherFiles.map((file) => validateAttachmentFile(file)).find(Boolean);
-    if (form.otherFiles.length <= MAX_OTHER_FILES && !otherInvalid) {
-      delete activePickErrors.otherFiles;
-    }
     if (Object.keys(activePickErrors).length !== Object.keys(filePickErrors).length) {
       setFilePickErrors(activePickErrors);
     }
@@ -695,54 +633,20 @@ export function PartnershipApplyForm() {
                 선택한 파일은 브라우저 메모리에만 보관되며, 제출 시 sessionStorage에도 파일 내용은 저장되지
                 않습니다.
               </p>
-              {REQUIRED_ATTACHMENT_SLOTS.map((slot) => (
-                <AttachmentSlot
-                  key={slot.key}
-                  id={slot.key}
-                  label={slot.label}
-                  required={slot.required}
-                  file={form[slot.key as SingleAttachmentKey]}
-                  error={filePickErrors[slot.key] || errors[slot.key as SingleAttachmentKey]}
-                  onSelectSingle={(nextFile, pickError) =>
-                    setSingleAttachment(slot.key as SingleAttachmentKey, nextFile, pickError)
-                  }
-                  onClearSingle={() => setSingleAttachment(slot.key as SingleAttachmentKey, null, null)}
-                />
-              ))}
-              {OPTIONAL_ATTACHMENT_SLOTS.map((slot) => {
-                if (slot.key === "otherFiles") {
-                  return (
-                    <AttachmentSlot
-                      key={slot.key}
-                      id={slot.key}
-                      label={`${slot.label} (최대 ${MAX_OTHER_FILES}개)`}
-                      multiple
-                      files={form.otherFiles}
-                      error={filePickErrors.otherFiles || errors.otherFiles}
-                      onSelectMultiple={setOtherFiles}
-                      onRemoveMultipleAt={(index) =>
-                        setOtherFiles(
-                          form.otherFiles.filter((_, fileIndex) => fileIndex !== index),
-                          null,
-                        )
-                      }
-                    />
-                  );
-                }
-                return (
+              <div className="partnership-apply-docs-row full">
+                {ATTACHMENT_SLOTS.map((slot) => (
                   <AttachmentSlot
                     key={slot.key}
                     id={slot.key}
                     label={slot.label}
-                    file={form[slot.key as SingleAttachmentKey]}
-                    error={filePickErrors[slot.key] || errors[slot.key as SingleAttachmentKey]}
-                    onSelectSingle={(nextFile, pickError) =>
-                      setSingleAttachment(slot.key as SingleAttachmentKey, nextFile, pickError)
-                    }
-                    onClearSingle={() => setSingleAttachment(slot.key as SingleAttachmentKey, null, null)}
+                    required={slot.required}
+                    file={form[slot.key]}
+                    error={filePickErrors[slot.key] || errors[slot.key]}
+                    onSelect={(nextFile, pickError) => setSingleAttachment(slot.key, nextFile, pickError)}
+                    onClear={() => setSingleAttachment(slot.key, null, null)}
                   />
-                );
-              })}
+                ))}
+              </div>
             </div>
           </section>
 

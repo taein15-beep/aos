@@ -97,12 +97,11 @@ function receiptToViewModel(receipt: PrototypeApplyReceipt): StatusViewModel {
         required: true,
       },
       {
-        name: "관광사업등록증 또는 여행업등록증",
+        name: "관광사업등록증",
         state: summary.requiredDocsAttached ? "첨부 완료" : "미제출",
         required: true,
       },
       { name: "통신판매업 신고증", state: "상세정보 없음", required: false },
-      { name: "기타 증빙서류", state: "상세정보 없음", required: false },
     ],
     history: [
       {

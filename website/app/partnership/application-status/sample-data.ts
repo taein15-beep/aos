@@ -41,9 +41,8 @@ export type SampleApplication = {
 
 const DOC_NAMES = {
   business: "사업자등록증",
-  tourism: "관광사업등록증 또는 여행업등록증",
+  tourism: "관광사업등록증",
   mailOrder: "통신판매업 신고증",
-  other: "기타 증빙서류",
 } as const;
 
 /** 임시 샘플 신청 — 가상 정보만 사용합니다. */
@@ -64,7 +63,6 @@ export const SAMPLE_APPLICATIONS: SampleApplication[] = [
       { name: DOC_NAMES.business, state: "제출", required: true },
       { name: DOC_NAMES.tourism, state: "제출", required: true },
       { name: DOC_NAMES.mailOrder, state: "미제출", required: false },
-      { name: DOC_NAMES.other, state: "미제출", required: false },
     ],
     history: [
       {
@@ -87,12 +85,11 @@ export const SAMPLE_APPLICATIONS: SampleApplication[] = [
     contactEmail: "sample-d@example.com",
     status: "보완요청",
     processMessage: "관광사업등록증 이미지가 흐려 확인이 어렵습니다. 선명한 서류로 다시 첨부해 주세요.",
-    supplementItems: ["관광사업등록증 또는 여행업등록증 — 선명한 이미지로 재첨부"],
+    supplementItems: ["관광사업등록증 — 선명한 이미지로 재첨부"],
     documents: [
       { name: DOC_NAMES.business, state: "확인완료", required: true },
       { name: DOC_NAMES.tourism, state: "보완필요", required: true },
       { name: DOC_NAMES.mailOrder, state: "미제출", required: false },
-      { name: DOC_NAMES.other, state: "미제출", required: false },
     ],
     history: [
       {
@@ -125,7 +122,6 @@ export const SAMPLE_APPLICATIONS: SampleApplication[] = [
       { name: DOC_NAMES.business, state: "확인완료", required: true },
       { name: DOC_NAMES.tourism, state: "확인완료", required: true },
       { name: DOC_NAMES.mailOrder, state: "확인완료", required: false },
-      { name: DOC_NAMES.other, state: "미제출", required: false },
     ],
     history: [
       {
@@ -160,7 +156,6 @@ export const SAMPLE_APPLICATIONS: SampleApplication[] = [
       { name: DOC_NAMES.business, state: "확인완료", required: true },
       { name: DOC_NAMES.tourism, state: "보완필요", required: true },
       { name: DOC_NAMES.mailOrder, state: "미제출", required: false },
-      { name: DOC_NAMES.other, state: "미제출", required: false },
     ],
     history: [
       {

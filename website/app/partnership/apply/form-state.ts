@@ -35,7 +35,6 @@ export type PartnershipApplyForm = {
   businessLicenseFile: File | null;
   tourismLicenseFile: File | null;
   mailOrderLicenseFile: File | null;
-  otherFiles: File[];
   // 약관·동의
   agreeTerms: boolean;
   agreePrivacy: boolean;
@@ -50,27 +49,22 @@ export type SingleAttachmentKey =
   | "mailOrderLicenseFile";
 
 export type AttachmentSlot = {
-  key: SingleAttachmentKey | "otherFiles";
+  key: SingleAttachmentKey;
   label: string;
   required: boolean;
-  multiple?: boolean;
 };
 
-export const REQUIRED_ATTACHMENT_SLOTS: AttachmentSlot[] = [
+/** 증빙서류 3항목 — 한 줄 배치 */
+export const ATTACHMENT_SLOTS: AttachmentSlot[] = [
   { key: "businessLicenseFile", label: "사업자등록증", required: true },
-  { key: "tourismLicenseFile", label: "관광사업등록증 또는 여행업등록증", required: true },
-];
-
-export const OPTIONAL_ATTACHMENT_SLOTS: AttachmentSlot[] = [
+  { key: "tourismLicenseFile", label: "관광사업등록증", required: true },
   { key: "mailOrderLicenseFile", label: "통신판매업 신고증", required: false },
-  { key: "otherFiles", label: "기타 증빙서류", required: false, multiple: true },
 ];
 
 export const FILE_ACCEPT = ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
 export const FILE_ALLOWED_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png"] as const;
 export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 export const MAX_FILE_SIZE_LABEL = "10MB";
-export const MAX_OTHER_FILES = 3;
 
 export type TermItem = {
   key: keyof Pick<
@@ -195,7 +189,6 @@ export const INITIAL_PARTNERSHIP_APPLY_FORM: PartnershipApplyForm = {
   businessLicenseFile: null,
   tourismLicenseFile: null,
   mailOrderLicenseFile: null,
-  otherFiles: [],
   agreeTerms: false,
   agreePrivacy: false,
   agreeBusinessInfo: false,
@@ -257,7 +250,6 @@ export const APPLY_FIELD_ORDER: (keyof PartnershipApplyForm)[] = [
   "businessLicenseFile",
   "tourismLicenseFile",
   "mailOrderLicenseFile",
-  "otherFiles",
   "agreeTerms",
   "agreePrivacy",
   "agreeBusinessInfo",
@@ -314,25 +306,13 @@ export function validateApplyForm(form: PartnershipApplyForm): ApplyFieldErrors 
 
   const tourismLicenseError = validateAttachedFileField(
     form.tourismLicenseFile,
-    "관광사업등록증 또는 여행업등록증을 첨부해 주세요.",
+    "관광사업등록증을 첨부해 주세요.",
   );
   if (tourismLicenseError) errors.tourismLicenseFile = tourismLicenseError;
 
   if (form.mailOrderLicenseFile) {
     const mailOrderError = validateAttachmentFile(form.mailOrderLicenseFile);
     if (mailOrderError) errors.mailOrderLicenseFile = mailOrderError;
-  }
-
-  if (form.otherFiles.length > MAX_OTHER_FILES) {
-    errors.otherFiles = `기타 증빙서류는 최대 ${MAX_OTHER_FILES}개까지 첨부할 수 있습니다.`;
-  } else {
-    for (const file of form.otherFiles) {
-      const otherError = validateAttachmentFile(file);
-      if (otherError) {
-        errors.otherFiles = otherError;
-        break;
-      }
-    }
   }
 
   if (!areRequiredTermsAgreed(form)) {

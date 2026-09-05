@@ -537,6 +537,12 @@ footer { color: #8798aa; background: #051426; }
   gap: 16px 18px;
   align-items: start;
 }
+.partnership-apply-docs-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 18px;
+  align-items: stretch;
+}
 .partnership-apply-trio .partnership-inline-action { grid-template-columns: minmax(0, 1fr) auto; }
 .partnership-field-label label { display: inline-flex; align-items: center; gap: 4px; color: #4d6078; font-size: 12px; font-weight: 700; }
 .partnership-field-label em,
@@ -580,9 +586,11 @@ footer { color: #8798aa; background: #051426; }
   pointer-events: none;
   box-shadow: none !important;
 }
-.partnership-file-slot { position: relative; display: grid; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe; }
+.partnership-file-slot { position: relative; display: grid; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: #fbfcfe; min-width: 0; }
 .partnership-file-slot.is-invalid { border-color: #e57373; box-shadow: 0 0 0 3px rgba(229, 115, 115, .12); }
-.partnership-file-slot-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.partnership-file-slot-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.partnership-file-slot-head .partnership-field-label { min-width: 0; flex: 1 1 auto; }
+.partnership-file-slot-head .button.compact { flex: 0 0 auto; }
 .partnership-file-empty { margin: 0; color: var(--muted); font-size: 13px; }
 .partnership-file-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .partnership-file-list li { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 8px; background: #fff; border: 1px solid #e6edf5; }
@@ -762,6 +770,7 @@ footer { color: #8798aa; background: #051426; }
   .partnership-cta-inner { flex-direction: column; align-items: flex-start; }
   .partnership-complete-meta > div,
   .partnership-complete-summary dl > div { grid-template-columns: 1fr; gap: 4px; }
+  .partnership-apply-docs-row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
@@ -778,6 +787,7 @@ footer { color: #8798aa; background: #051426; }
   .partnership-apply-panel { padding: 20px 16px; }
   .partnership-apply-fields { grid-template-columns: 1fr; }
   .partnership-apply-trio { grid-template-columns: 1fr; }
+  .partnership-apply-docs-row { grid-template-columns: 1fr; }
   .partnership-apply-actions { flex-direction: column-reverse; }
   .partnership-apply-actions .button { width: 100%; min-height: 48px; }
   .partnership-status-lookup-form { grid-template-columns: 1fr; }
