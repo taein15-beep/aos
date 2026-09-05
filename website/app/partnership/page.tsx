@@ -86,7 +86,7 @@ export default function PartnershipPage() {
               제휴여행사 가입신청 <span>→</span>
             </Link>
             <Link className="button ghost" href="/partnership/application-status">
-              신청상태 확인
+              신청현황
             </Link>
             <a className="button ghost" href="#process">
               제휴 절차 확인
@@ -212,7 +212,7 @@ export default function PartnershipPage() {
               제휴여행사 가입신청 <span>→</span>
             </Link>
             <Link className="button ghost" href="/partnership/application-status">
-              신청상태 확인
+              신청현황
             </Link>
           </div>
         </div>

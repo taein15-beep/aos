@@ -13,7 +13,7 @@ const PARTNERSHIP_LINKS = [
   },
   {
     href: "/partnership/application-status",
-    label: "신청상태 확인",
+    label: "신청현황",
     match: (path: string) => path.startsWith("/partnership/application-status"),
   },
 ] as const;
@@ -257,7 +257,7 @@ export function SiteFooter({ variant }: { variant: "home" | "partnership" }) {
         <div className="footer-links">
           <Link href="/partnership">제휴여행사 안내</Link>
           <Link href="/partnership/apply">가입신청</Link>
-          <Link href="/partnership/application-status">신청상태 확인</Link>
+          <Link href="/partnership/application-status">신청현황</Link>
           <a href={topHref}>
             맨 위로 <span>↑</span>
           </a>

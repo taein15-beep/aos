@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import { PartnershipApplicationStatus } from "./PartnershipApplicationStatus";
 
 export const metadata: Metadata = {
-  title: "신청상태 확인 | AOS 통합여행플랫폼",
-  description: "제휴여행사 가입신청 상태를 확인합니다. (프론트엔드 프로토타입·샘플 데이터)",
+  title: "신청현황 확인 | AOS 통합여행플랫폼",
+  description: "제휴여행사 가입신청 현황을 확인합니다. (프론트엔드 프로토타입)",
 };
 
 export default function PartnershipApplicationStatusPage() {
@@ -13,7 +13,7 @@ export default function PartnershipApplicationStatusPage() {
       fallback={
         <main className="partnership-apply-page">
           <div className="shell partnership-apply-shell partnership-status-shell">
-            <p className="partnership-apply-secure-note">신청상태를 불러오는 중…</p>
+            <p className="partnership-apply-secure-note">신청현황을 불러오는 중…</p>
           </div>
         </main>
       }

@@ -2,163 +2,54 @@
  * 제휴여행사 가입신청 폼 임시 상태 (CLIENT SESSION ONLY)
  * - React state로만 유지됩니다. 서버·DB·API에 저장하지 않습니다.
  * - 새로고침·탭 종료 시 초기화됩니다.
- * - password / 첨부파일(File)은 sessionStorage·localStorage에 쓰지 않습니다.
+ * - 첨부파일(File)은 sessionStorage·localStorage에 쓰지 않습니다.
+ * - 단일 페이지 신청 명세 기준입니다. (위저드 단계 없음)
  */
 
-export const APPLY_STEPS = [
-  {
-    id: 1,
-    key: "agency",
-    title: "여행사 정보",
-    description: "사업자·여행사 기본 정보를 입력합니다.",
-  },
-  {
-    id: 2,
-    key: "admin",
-    title: "관리자 정보",
-    description: "가입 후 사용할 관리자 계정 정보를 입력합니다.",
-  },
-  {
-    id: 3,
-    key: "trade",
-    title: "판매·거래정보",
-    description: "취급상품·제휴 목적·판매 현황과 전달사항을 입력합니다.",
-  },
-  {
-    id: 4,
-    key: "docs",
-    title: "서류·약관",
-    description: "필요 서류와 약관 동의를 확인합니다.",
-  },
-  {
-    id: 5,
-    key: "review",
-    title: "신청내용 확인",
-    description: "입력 내용을 확인한 뒤 가입신청을 제출합니다.",
-  },
-] as const;
-
-export type ApplyStepKey = (typeof APPLY_STEPS)[number]["key"];
-
-export const BUSINESS_TYPE_OPTIONS = ["법인사업자", "개인사업자"] as const;
 export const TOURISM_LICENSE_TYPE_OPTIONS = [
   "종합여행업",
   "국내외여행업",
   "국내여행업",
-  "국외여행업",
-  "기타",
 ] as const;
 
-export type BusinessType = (typeof BUSINESS_TYPE_OPTIONS)[number] | "";
 export type TourismLicenseType = (typeof TOURISM_LICENSE_TYPE_OPTIONS)[number] | "";
-export type YesNo = "yes" | "no" | "";
-
-export const PRODUCT_TYPE_OPTIONS = [
-  "국내 당일여행",
-  "국내 숙박여행",
-  "해외 패키지",
-  "항공권",
-  "골프",
-  "크루즈",
-  "테마여행",
-  "기업·단체",
-  "인센티브",
-  "입장권·액티비티",
-  "기타",
-] as const;
-
-export const PARTNERSHIP_PURPOSE_OPTIONS = [
-  "다른 여행사의 상품을 판매하고 싶음",
-  "자사 상품을 다른 여행사에 공급하고 싶음",
-  "상품공급과 판매를 모두 희망",
-  "공동재고를 이용하고 싶음",
-  "판매점 유통망을 확대하고 싶음",
-  "기타",
-] as const;
-
-export const PASSWORD_MIN_LENGTH = 8;
-export const LONG_TEXT_LIMITS = {
-  companyIntro: 1000,
-  flagshipProducts: 500,
-  applyReason: 500,
-  expectedCollaboration: 500,
-  messageToAdmin: 500,
-} as const;
 
 export type PartnershipApplyForm = {
-  // 1. 여행사 정보
+  // 여행사 정보
   agencyName: string;
   businessNumber: string;
-  businessType: BusinessType;
   ceoName: string;
   tourismLicenseNumber: string;
   tourismLicenseType: TourismLicenseType;
   address: string;
   addressDetail: string;
   phone: string;
-  email: string;
-  corporateRegistrationNumber: string;
-  openDate: string;
   homepage: string;
-  // 2. 관리자 정보 (password는 메모리만)
+  // 담당자 정보 (department 라벨은 화면에서 「부서 또는 직책」으로 표시)
   adminName: string;
   department: string;
-  position: string;
   adminPhone: string;
   adminEmail: string;
-  useEmailAsLoginId: boolean;
-  adminLoginId: string;
-  adminPassword: string;
-  adminPasswordConfirm: string;
-  // 3. 판매·거래정보
-  productTypes: string[];
-  partnershipPurposes: string[];
-  monthlyReservationCount: string;
-  monthlySalesAmount: string;
-  mainSalesRegions: string;
-  mainCustomerSegments: string;
-  sellsOnline: YesNo;
-  hasOfflineStore: YesNo;
-  hasSellers: YesNo;
-  sellerCount: string;
-  mainSalesChannels: string;
-  currentErpSystem: string;
-  companyIntro: string;
-  flagshipProducts: string;
-  applyReason: string;
-  expectedCollaboration: string;
-  messageToAdmin: string;
-  // 4. 서류·약관 (File은 메모리만 — 서버 업로드 없음)
+  adminEmailConfirm: string;
+  // 증빙서류 (File은 메모리만 — 서버 업로드 없음)
   businessLicenseFile: File | null;
   tourismLicenseFile: File | null;
   mailOrderLicenseFile: File | null;
-  companyIntroFile: File | null;
-  productIntroFile: File | null;
-  insuranceFile: File | null;
   otherFiles: File[];
-  // 필수 동의
+  // 약관·동의
   agreeTerms: boolean;
   agreePrivacy: boolean;
   agreeBusinessInfo: boolean;
-  agreeProductInfo: boolean;
-  agreeCustomerInfo: boolean;
-  agreeReshare: boolean;
-  agreeReservationPreserve: boolean;
-  // 선택 동의
+  agreePartnershipPolicy: boolean;
   agreeEmailGuide: boolean;
-  agreeMarketing: boolean;
-  agreeSms: boolean;
-  /** 최종 확인: 입력 정보가 사실과 다름이 없음 */
+  /** 최종 확인: 입력 정보와 제출서류가 사실과 다름이 없음 */
   confirmAccuracy: boolean;
 };
 
 export type SingleAttachmentKey =
   | "businessLicenseFile"
   | "tourismLicenseFile"
-  | "mailOrderLicenseFile"
-  | "companyIntroFile"
-  | "productIntroFile"
-  | "insuranceFile";
+  | "mailOrderLicenseFile";
 
 export type AttachmentSlot = {
   key: SingleAttachmentKey | "otherFiles";
@@ -174,10 +65,7 @@ export const REQUIRED_ATTACHMENT_SLOTS: AttachmentSlot[] = [
 
 export const OPTIONAL_ATTACHMENT_SLOTS: AttachmentSlot[] = [
   { key: "mailOrderLicenseFile", label: "통신판매업 신고증", required: false },
-  { key: "companyIntroFile", label: "회사소개서", required: false },
-  { key: "productIntroFile", label: "상품소개서", required: false },
-  { key: "insuranceFile", label: "보험 관련 서류", required: false },
-  { key: "otherFiles", label: "기타 서류", required: false, multiple: true },
+  { key: "otherFiles", label: "기타 증빙서류", required: false, multiple: true },
 ];
 
 export const FILE_ACCEPT = ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
@@ -192,13 +80,8 @@ export type TermItem = {
     | "agreeTerms"
     | "agreePrivacy"
     | "agreeBusinessInfo"
-    | "agreeProductInfo"
-    | "agreeCustomerInfo"
-    | "agreeReshare"
-    | "agreeReservationPreserve"
+    | "agreePartnershipPolicy"
     | "agreeEmailGuide"
-    | "agreeMarketing"
-    | "agreeSms"
   >;
   title: string;
   required: boolean;
@@ -216,66 +99,31 @@ export const TERM_ITEMS: TermItem[] = [
   },
   {
     key: "agreePrivacy",
-    title: "개인정보 수집 및 이용",
+    title: "개인정보 수집·이용 동의",
     required: true,
     summary:
       "[임시 안내문] 가입신청·심사·제휴 운영을 위해 사업자·담당자 연락처 등 개인정보를 수집·이용할 수 있습니다. 수집 항목·보유기간·파기 절차는 정식 고지문으로 대체됩니다.",
   },
   {
     key: "agreeBusinessInfo",
-    title: "사업자정보 확인",
+    title: "사업자 정보 및 제출서류 확인 동의",
     required: true,
     summary:
-      "[임시 안내문] 제출하신 사업자·여행업 등록 정보가 사실과 다를 경우 심사가 보류되거나 거절될 수 있습니다. 변경 사항은 관리자에게 알려 주세요.",
+      "[임시 안내문] 제출하신 사업자·여행업 등록 정보와 첨부 서류가 사실과 다를 경우 심사가 보류되거나 거절될 수 있습니다. 변경 사항은 관리자에게 알려 주세요.",
   },
   {
-    key: "agreeProductInfo",
-    title: "상품정보 이용정책",
+    key: "agreePartnershipPolicy",
+    title: "제휴여행사 운영정책 동의",
     required: true,
     summary:
-      "[임시 안내문] 공유·판매되는 상품정보의 정확성 유지를 위한 임시 안내입니다. 원본 상품정보는 공급여행사·플랫폼 정책에 따라 관리됩니다.",
-  },
-  {
-    key: "agreeCustomerInfo",
-    title: "고객정보 보호정책",
-    required: true,
-    summary:
-      "[임시 안내문] 예약·고객정보는 업무 목적 외 이용·외부 유출을 금지하며, 관련 법령과 플랫폼 정책을 따릅니다. 세부 조항은 추후 확정됩니다.",
-  },
-  {
-    key: "agreeReshare",
-    title: "상품 재공유 제한정책",
-    required: true,
-    summary:
-      "[임시 안내문] 공유받은 상품을 다른 독립 여행사에 임의로 재공유할 수 없습니다. 위반 시 제휴 이용이 제한될 수 있습니다.",
-  },
-  {
-    key: "agreeReservationPreserve",
-    title: "기존 예약·정산 보존정책",
-    required: true,
-    summary:
-      "[임시 안내문] 거래중지·탈퇴 후에도 이미 발생한 예약과 정산 관계는 관련 정책에 따라 유지·처리됩니다. 세부 기준은 추후 안내됩니다.",
+      "[임시 안내문] 가입 승인 후 관리자가 상품공유그룹을 별도로 지정합니다. 가입 승인만으로 상품은 자동 공유되지 않습니다. 상품공급여행사가 상품별로 공유 대상을 지정하며, 상대 여행사의 별도 수락 단계는 없습니다. 판매여행사는 공유 상품을 자사 카테고리에 지정하고 노출을 설정해야 판매할 수 있습니다. 공유받은 상품은 다른 여행사에 재공유할 수 없습니다. 원본 상품정보는 판매여행사가 직접 변경할 수 없으며, 기존 예약과 정산 관계는 상품공유 중지 후에도 유지됩니다.",
   },
   {
     key: "agreeEmailGuide",
-    title: "제휴 및 상품 안내 이메일 수신",
+    title: "제휴 및 상품 안내 수신 동의",
     required: false,
     summary:
-      "[임시 안내문] 제휴 운영·상품 안내 이메일을 받아보시겠습니까? 원하지 않으면 선택하지 않으셔도 됩니다.",
-  },
-  {
-    key: "agreeMarketing",
-    title: "마케팅 정보 수신",
-    required: false,
-    summary:
-      "[임시 안내문] 이벤트·프로모션 등 마케팅 정보를 받아보시겠습니까? 선택 사항이며 언제든지 철회할 수 있습니다.",
-  },
-  {
-    key: "agreeSms",
-    title: "알림톡·문자 수신",
-    required: false,
-    summary:
-      "[임시 안내문] 알림톡·문자로 안내를 받아보시겠습니까? 선택 사항이며 원하지 않으면 체크하지 않으셔도 됩니다.",
+      "[임시 안내문] 제휴 운영·상품 안내를 받아보시겠습니까? 원하지 않으면 선택하지 않으셔도 됩니다.",
   },
 ];
 
@@ -283,14 +131,13 @@ export const REQUIRED_TERM_KEYS = TERM_ITEMS.filter((item) => item.required).map
 export const OPTIONAL_TERM_KEYS = TERM_ITEMS.filter((item) => !item.required).map((item) => item.key);
 
 export const POLICY_GUIDE_ITEMS = [
-  "가입승인만으로 상품이 자동 공유되지 않음",
-  "상품공유그룹은 승인 후 관리자가 별도로 지정",
-  "상품공급여행사가 상품별 공유 대상을 지정",
-  "별도 수락 절차 없이 상품이 공유됨",
-  "판매여행사가 카테고리와 노출을 설정해야 판매 가능",
-  "공유상품의 원본정보는 임의 수정 불가",
-  "다른 독립 여행사에 상품 재공유 불가",
-  "거래중지·탈퇴 후에도 기존 예약과 정산관계 유지",
+  "신청 시 상품공유그룹을 선택하지 않습니다.",
+  "가입 승인 후 관리자가 상품공유그룹을 별도로 지정합니다.",
+  "가입 승인만으로 상품이 자동 공유되지 않습니다.",
+  "상품공급여행사가 상품별로 공유 대상을 지정합니다.",
+  "상품공유에 상대 여행사의 별도 수락 단계는 없습니다.",
+  "판매여행사는 공유 상품을 자사 카테고리에 지정하고 노출해야 판매할 수 있습니다.",
+  "공유받은 상품은 다른 여행사에 재공유할 수 없습니다.",
 ] as const;
 
 export function formatFileSize(bytes: number) {
@@ -326,65 +173,36 @@ export function areRequiredTermsAgreed(form: PartnershipApplyForm) {
   return REQUIRED_TERM_KEYS.every((key) => form[key]);
 }
 
+export function areRequiredDocsAttached(form: PartnershipApplyForm) {
+  return Boolean(form.businessLicenseFile && form.tourismLicenseFile);
+}
+
 export type ApplyFieldErrors = Partial<Record<keyof PartnershipApplyForm, string>>;
 
 export const INITIAL_PARTNERSHIP_APPLY_FORM: PartnershipApplyForm = {
   agencyName: "",
   businessNumber: "",
-  businessType: "",
   ceoName: "",
   tourismLicenseNumber: "",
   tourismLicenseType: "",
   address: "",
   addressDetail: "",
   phone: "",
-  email: "",
-  corporateRegistrationNumber: "",
-  openDate: "",
   homepage: "",
   adminName: "",
   department: "",
-  position: "",
   adminPhone: "",
   adminEmail: "",
-  useEmailAsLoginId: false,
-  adminLoginId: "",
-  adminPassword: "",
-  adminPasswordConfirm: "",
-  productTypes: [],
-  partnershipPurposes: [],
-  monthlyReservationCount: "",
-  monthlySalesAmount: "",
-  mainSalesRegions: "",
-  mainCustomerSegments: "",
-  sellsOnline: "",
-  hasOfflineStore: "",
-  hasSellers: "",
-  sellerCount: "",
-  mainSalesChannels: "",
-  currentErpSystem: "",
-  companyIntro: "",
-  flagshipProducts: "",
-  applyReason: "",
-  expectedCollaboration: "",
-  messageToAdmin: "",
+  adminEmailConfirm: "",
   businessLicenseFile: null,
   tourismLicenseFile: null,
   mailOrderLicenseFile: null,
-  companyIntroFile: null,
-  productIntroFile: null,
-  insuranceFile: null,
   otherFiles: [],
   agreeTerms: false,
   agreePrivacy: false,
   agreeBusinessInfo: false,
-  agreeProductInfo: false,
-  agreeCustomerInfo: false,
-  agreeReshare: false,
-  agreeReservationPreserve: false,
+  agreePartnershipPolicy: false,
   agreeEmailGuide: false,
-  agreeMarketing: false,
-  agreeSms: false,
   confirmAccuracy: false,
 };
 
@@ -417,238 +235,150 @@ export function isValidHomepageUrl(value: string) {
   try {
     const url = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
     if (url.protocol !== "http:" && url.protocol !== "https:") return false;
-    // 호스트에 점이 있어야 함 (예: example.com). 단일 라벨은 거부.
     return url.hostname.includes(".") && !url.hostname.startsWith(".") && !url.hostname.endsWith(".");
   } catch {
     return false;
   }
 }
 
-export function getPasswordMismatchMessage(password: string, confirm: string) {
-  if (!confirm) return "";
-  if (password !== confirm) return "비밀번호와 확인 값이 일치하지 않습니다.";
-  return "";
+/** 화면 포커스·스크롤용 필드 표시 순서 */
+export const APPLY_FIELD_ORDER: (keyof PartnershipApplyForm)[] = [
+  "agencyName",
+  "businessNumber",
+  "ceoName",
+  "tourismLicenseNumber",
+  "tourismLicenseType",
+  "address",
+  "addressDetail",
+  "phone",
+  "homepage",
+  "adminName",
+  "department",
+  "adminPhone",
+  "adminEmail",
+  "adminEmailConfirm",
+  "businessLicenseFile",
+  "tourismLicenseFile",
+  "mailOrderLicenseFile",
+  "otherFiles",
+  "agreeTerms",
+  "agreePrivacy",
+  "agreeBusinessInfo",
+  "agreePartnershipPolicy",
+  "agreeEmailGuide",
+  "confirmAccuracy",
+];
+
+function validateAttachedFileField(
+  file: File | null,
+  emptyMessage: string,
+): string | undefined {
+  if (!file) return emptyMessage;
+  return validateAttachmentFile(file) ?? undefined;
 }
 
-export function validateAgencyStep(form: PartnershipApplyForm): ApplyFieldErrors {
+/** 단일 페이지 전체 검증. 필드별 오류 메시지를 반환합니다. */
+export function validateApplyForm(form: PartnershipApplyForm): ApplyFieldErrors {
   const errors: ApplyFieldErrors = {};
+
   if (!form.agencyName.trim()) errors.agencyName = "여행사명을 입력해 주세요.";
   if (!form.businessNumber.trim()) errors.businessNumber = "사업자등록번호를 입력해 주세요.";
   else if (!isValidBusinessNumber(form.businessNumber)) {
     errors.businessNumber = "사업자등록번호 형식이 올바르지 않습니다. (예: 000-00-00000)";
   }
-  if (!form.businessType) errors.businessType = "사업자 구분을 선택해 주세요.";
   if (!form.ceoName.trim()) errors.ceoName = "대표자명을 입력해 주세요.";
   if (!form.tourismLicenseNumber.trim()) errors.tourismLicenseNumber = "여행업 등록번호를 입력해 주세요.";
   if (!form.tourismLicenseType) errors.tourismLicenseType = "여행업 종류를 선택해 주세요.";
   if (!form.address.trim()) errors.address = "사업장 주소를 입력해 주세요.";
-  if (!form.addressDetail.trim()) errors.addressDetail = "상세주소를 입력해 주세요.";
+  // addressDetail: 선택 — 필수 검증 없음
   if (!form.phone.trim()) errors.phone = "대표 전화번호를 입력해 주세요.";
   else if (!isValidPhone(form.phone)) errors.phone = "전화번호 형식이 올바르지 않습니다.";
-  if (!form.email.trim()) errors.email = "대표 이메일을 입력해 주세요.";
-  else if (!isValidEmail(form.email)) errors.email = "이메일 형식이 올바르지 않습니다.";
   if (form.homepage.trim() && !isValidHomepageUrl(form.homepage)) {
     errors.homepage = "홈페이지 주소 형식이 올바르지 않습니다. (예: https://example.com)";
   }
-  return errors;
-}
 
-export function validateAdminStep(form: PartnershipApplyForm): ApplyFieldErrors {
-  const errors: ApplyFieldErrors = {};
-  if (!form.adminName.trim()) errors.adminName = "관리자 이름을 입력해 주세요.";
-  if (!form.department.trim()) errors.department = "부서를 입력해 주세요.";
-  if (!form.position.trim()) errors.position = "직책을 입력해 주세요.";
+  if (!form.adminName.trim()) errors.adminName = "담당자명을 입력해 주세요.";
+  if (!form.department.trim()) errors.department = "부서 또는 직책을 입력해 주세요.";
   if (!form.adminPhone.trim()) errors.adminPhone = "휴대전화번호를 입력해 주세요.";
   else if (!isValidPhone(form.adminPhone)) errors.adminPhone = "휴대전화번호 형식이 올바르지 않습니다.";
   if (!form.adminEmail.trim()) errors.adminEmail = "이메일을 입력해 주세요.";
   else if (!isValidEmail(form.adminEmail)) errors.adminEmail = "이메일 형식이 올바르지 않습니다.";
-  if (!form.adminLoginId.trim()) errors.adminLoginId = "로그인 아이디를 입력해 주세요.";
-  if (!form.adminPassword) errors.adminPassword = "비밀번호를 입력해 주세요.";
-  else if (form.adminPassword.length < PASSWORD_MIN_LENGTH) {
-    errors.adminPassword = `비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`;
+  if (!form.adminEmailConfirm.trim()) errors.adminEmailConfirm = "이메일 확인을 입력해 주세요.";
+  else if (!isValidEmail(form.adminEmailConfirm)) {
+    errors.adminEmailConfirm = "이메일 확인 형식이 올바르지 않습니다.";
+  } else if (form.adminEmail.trim() !== form.adminEmailConfirm.trim()) {
+    errors.adminEmailConfirm = "이메일과 이메일 확인이 일치하지 않습니다.";
   }
-  if (!form.adminPasswordConfirm) errors.adminPasswordConfirm = "비밀번호 확인을 입력해 주세요.";
-  else if (form.adminPassword !== form.adminPasswordConfirm) {
-    errors.adminPasswordConfirm = "비밀번호와 확인 값이 일치하지 않습니다.";
-  }
-  return errors;
-}
 
-export function validateTradeStep(form: PartnershipApplyForm): ApplyFieldErrors {
-  const errors: ApplyFieldErrors = {};
-  if (form.productTypes.length === 0) errors.productTypes = "취급상품을 하나 이상 선택해 주세요.";
-  if (form.partnershipPurposes.length === 0) {
-    errors.partnershipPurposes = "제휴 목적을 하나 이상 선택해 주세요.";
+  const businessLicenseError = validateAttachedFileField(
+    form.businessLicenseFile,
+    "사업자등록증을 첨부해 주세요.",
+  );
+  if (businessLicenseError) errors.businessLicenseFile = businessLicenseError;
+
+  const tourismLicenseError = validateAttachedFileField(
+    form.tourismLicenseFile,
+    "관광사업등록증 또는 여행업등록증을 첨부해 주세요.",
+  );
+  if (tourismLicenseError) errors.tourismLicenseFile = tourismLicenseError;
+
+  if (form.mailOrderLicenseFile) {
+    const mailOrderError = validateAttachmentFile(form.mailOrderLicenseFile);
+    if (mailOrderError) errors.mailOrderLicenseFile = mailOrderError;
   }
-  if (!form.hasSellers) errors.hasSellers = "판매점 보유 여부를 선택해 주세요.";
-  if (form.hasSellers === "yes") {
-    if (!form.sellerCount.trim()) errors.sellerCount = "보유 판매점 수를 입력해 주세요.";
-    else if (!/^\d+$/.test(form.sellerCount.trim()) || Number(form.sellerCount) < 1) {
-      errors.sellerCount = "판매점 수는 1 이상의 숫자로 입력해 주세요.";
+
+  if (form.otherFiles.length > MAX_OTHER_FILES) {
+    errors.otherFiles = `기타 증빙서류는 최대 ${MAX_OTHER_FILES}개까지 첨부할 수 있습니다.`;
+  } else {
+    for (const file of form.otherFiles) {
+      const otherError = validateAttachmentFile(file);
+      if (otherError) {
+        errors.otherFiles = otherError;
+        break;
+      }
     }
   }
-  if (form.companyIntro.length > LONG_TEXT_LIMITS.companyIntro) {
-    errors.companyIntro = `회사 소개는 ${LONG_TEXT_LIMITS.companyIntro}자 이내로 입력해 주세요.`;
-  }
-  if (form.flagshipProducts.length > LONG_TEXT_LIMITS.flagshipProducts) {
-    errors.flagshipProducts = `주력 상품은 ${LONG_TEXT_LIMITS.flagshipProducts}자 이내로 입력해 주세요.`;
-  }
-  if (form.applyReason.length > LONG_TEXT_LIMITS.applyReason) {
-    errors.applyReason = `제휴 신청 사유는 ${LONG_TEXT_LIMITS.applyReason}자 이내로 입력해 주세요.`;
-  }
-  if (form.expectedCollaboration.length > LONG_TEXT_LIMITS.expectedCollaboration) {
-    errors.expectedCollaboration = `예상 협업 방식은 ${LONG_TEXT_LIMITS.expectedCollaboration}자 이내로 입력해 주세요.`;
-  }
-  if (form.messageToAdmin.length > LONG_TEXT_LIMITS.messageToAdmin) {
-    errors.messageToAdmin = `관리자 전달사항은 ${LONG_TEXT_LIMITS.messageToAdmin}자 이내로 입력해 주세요.`;
-  }
-  return errors;
-}
 
-export function validateDocsStep(form: PartnershipApplyForm): ApplyFieldErrors {
-  const errors: ApplyFieldErrors = {};
-  if (!form.businessLicenseFile) errors.businessLicenseFile = "사업자등록증을 첨부해 주세요.";
-  if (!form.tourismLicenseFile) {
-    errors.tourismLicenseFile = "관광사업등록증 또는 여행업등록증을 첨부해 주세요.";
-  }
   if (!areRequiredTermsAgreed(form)) {
     errors.agreeTerms = "필수 약관에 모두 동의해 주세요.";
   }
-  return errors;
-}
 
-export function validateReviewStep(form: PartnershipApplyForm): ApplyFieldErrors {
-  const errors: ApplyFieldErrors = {};
   if (!form.confirmAccuracy) {
-    errors.confirmAccuracy = "입력한 정보가 사실과 다름이 없음을 확인해 주세요.";
+    errors.confirmAccuracy =
+      "입력한 정보와 제출서류가 사실과 다름없음을 확인해 주세요.";
   }
+
   return errors;
-}
-
-export function validateStep(stepKey: ApplyStepKey, form: PartnershipApplyForm): ApplyFieldErrors {
-  if (stepKey === "agency") return validateAgencyStep(form);
-  if (stepKey === "admin") return validateAdminStep(form);
-  if (stepKey === "trade") return validateTradeStep(form);
-  if (stepKey === "docs") return validateDocsStep(form);
-  if (stepKey === "review") return validateReviewStep(form);
-  return {};
-}
-
-/** 제출 전 전체 단계 검증. 첫 오류 단계와 항목을 반환합니다. */
-export function validateAllApplySteps(
-  form: PartnershipApplyForm,
-): { stepKey: ApplyStepKey; stepTitle: string; errors: ApplyFieldErrors } | null {
-  for (const step of APPLY_STEPS) {
-    const errors = validateStep(step.key, form);
-    if (Object.keys(errors).length > 0) {
-      return { stepKey: step.key, stepTitle: step.title, errors };
-    }
-  }
-  return null;
-}
-
-export function toggleMultiSelectValue(values: string[], option: string) {
-  return values.includes(option) ? values.filter((value) => value !== option) : [...values, option];
 }
 
 export function firstErrorFieldId(errors: ApplyFieldErrors): string | null {
-  const order: (keyof PartnershipApplyForm)[] = [
-    "agencyName",
-    "businessNumber",
-    "businessType",
-    "ceoName",
-    "tourismLicenseNumber",
-    "tourismLicenseType",
-    "address",
-    "addressDetail",
-    "phone",
-    "email",
-    "homepage",
-    "adminName",
-    "department",
-    "position",
-    "adminPhone",
-    "adminEmail",
-    "adminLoginId",
-    "adminPassword",
-    "adminPasswordConfirm",
-    "productTypes",
-    "partnershipPurposes",
-    "hasSellers",
-    "sellerCount",
-    "companyIntro",
-    "flagshipProducts",
-    "applyReason",
-    "expectedCollaboration",
-    "messageToAdmin",
-    "businessLicenseFile",
-    "tourismLicenseFile",
-    "agreeTerms",
-    "confirmAccuracy",
-  ];
-  for (const key of order) {
+  for (const key of APPLY_FIELD_ORDER) {
     if (errors[key]) return key;
   }
   return null;
 }
 
-/** 민감 필드를 제외한 요약용 스냅샷 */
-export function getApplyFormReviewSafe(form: PartnershipApplyForm) {
+/** 같은 페이지 하단 요약용 — 민감·첨부 원본은 포함하지 않음 */
+export type ApplyFormSummary = {
+  agencyName: string;
+  businessNumber: string;
+  ceoName: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  requiredDocsAttached: boolean;
+  requiredTermsAgreed: boolean;
+};
+
+export function getApplyFormSummary(form: PartnershipApplyForm): ApplyFormSummary {
   return {
-    agencyName: form.agencyName,
-    businessNumber: form.businessNumber,
-    businessType: form.businessType,
-    ceoName: form.ceoName,
-    tourismLicenseNumber: form.tourismLicenseNumber,
-    tourismLicenseType: form.tourismLicenseType,
-    address: form.address,
-    addressDetail: form.addressDetail,
-    phone: form.phone,
-    email: form.email,
-    corporateRegistrationNumber: form.corporateRegistrationNumber,
-    openDate: form.openDate,
-    homepage: form.homepage,
-    adminName: form.adminName,
-    department: form.department,
-    position: form.position,
-    adminPhone: form.adminPhone,
-    adminEmail: form.adminEmail,
-    adminLoginId: form.adminLoginId,
-    adminPasswordSet: Boolean(form.adminPassword),
-    productTypes: form.productTypes,
-    partnershipPurposes: form.partnershipPurposes,
-    monthlyReservationCount: form.monthlyReservationCount,
-    monthlySalesAmount: form.monthlySalesAmount,
-    mainSalesRegions: form.mainSalesRegions,
-    mainCustomerSegments: form.mainCustomerSegments,
-    sellsOnline: form.sellsOnline,
-    hasOfflineStore: form.hasOfflineStore,
-    hasSellers: form.hasSellers,
-    sellerCount: form.sellerCount,
-    mainSalesChannels: form.mainSalesChannels,
-    currentErpSystem: form.currentErpSystem,
-    companyIntro: form.companyIntro,
-    flagshipProducts: form.flagshipProducts,
-    applyReason: form.applyReason,
-    expectedCollaboration: form.expectedCollaboration,
-    messageToAdmin: form.messageToAdmin,
-    businessLicenseFileName: form.businessLicenseFile?.name ?? "",
-    tourismLicenseFileName: form.tourismLicenseFile?.name ?? "",
-    mailOrderLicenseFileName: form.mailOrderLicenseFile?.name ?? "",
-    companyIntroFileName: form.companyIntroFile?.name ?? "",
-    productIntroFileName: form.productIntroFile?.name ?? "",
-    insuranceFileName: form.insuranceFile?.name ?? "",
-    otherFileNames: form.otherFiles.map((file) => file.name),
-    agreeTerms: form.agreeTerms,
-    agreePrivacy: form.agreePrivacy,
-    agreeBusinessInfo: form.agreeBusinessInfo,
-    agreeProductInfo: form.agreeProductInfo,
-    agreeCustomerInfo: form.agreeCustomerInfo,
-    agreeReshare: form.agreeReshare,
-    agreeReservationPreserve: form.agreeReservationPreserve,
-    agreeEmailGuide: form.agreeEmailGuide,
-    agreeMarketing: form.agreeMarketing,
-    agreeSms: form.agreeSms,
+    agencyName: form.agencyName.trim(),
+    businessNumber: form.businessNumber.trim(),
+    ceoName: form.ceoName.trim(),
+    contactName: form.adminName.trim(),
+    contactPhone: form.adminPhone.trim(),
+    contactEmail: form.adminEmail.trim(),
+    requiredDocsAttached: areRequiredDocsAttached(form),
     requiredTermsAgreed: areRequiredTermsAgreed(form),
   };
 }
@@ -676,20 +406,12 @@ export function maskEmail(value: string) {
   return `${visible}${"*".repeat(Math.max(local.length - visible.length, 1))}@${domain}`;
 }
 
-export function yesNoLabel(value: YesNo) {
-  if (value === "yes") return "예";
-  if (value === "no") return "아니오";
-  return "—";
-}
-
-export type ApplyFormReviewSafe = ReturnType<typeof getApplyFormReviewSafe>;
-
 /**
  * FRONTEND PROTOTYPE ONLY
  * 실제 관리자 시스템·DB·API에 신청 레코드를 만들지 않습니다.
  * 브라우저 sessionStorage에만 임시로 보관되며, 탭을 닫으면 사라질 수 있습니다.
  */
-export const PROTOTYPE_APPLY_RECEIPT_STORAGE_KEY = "aos.partnership.apply.prototype.receipt.v1";
+export const PROTOTYPE_APPLY_RECEIPT_STORAGE_KEY = "aos.partnership.apply.prototype.receipt.v2";
 
 export type PrototypeApplyReceipt = {
   /** 프로토타입 표시 — 영구 저장·실서비스 연동 아님 */
@@ -699,7 +421,7 @@ export type PrototypeApplyReceipt = {
   status: "승인대기";
   agencyName: string;
   contactEmail: string;
-  review: ApplyFormReviewSafe;
+  summary: ApplyFormSummary;
 };
 
 export function createPrototypeApplyReceipt(form: PartnershipApplyForm): PrototypeApplyReceipt {
@@ -708,14 +430,15 @@ export function createPrototypeApplyReceipt(form: PartnershipApplyForm): Prototy
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
   const rand = String(Math.floor(Math.random() * 9000) + 1000);
+  const summary = getApplyFormSummary(form);
   return {
     prototype: true,
     applicationNumber: `AOS-P-${y}${m}${d}-${rand}`,
     submittedAt: now.toISOString(),
     status: "승인대기",
-    agencyName: form.agencyName.trim(),
-    contactEmail: form.adminEmail.trim() || form.email.trim(),
-    review: getApplyFormReviewSafe(form),
+    agencyName: summary.agencyName,
+    contactEmail: summary.contactEmail,
+    summary,
   };
 }
 
@@ -730,7 +453,7 @@ export function loadPrototypeApplyReceipt(): PrototypeApplyReceipt | null {
     const raw = window.sessionStorage.getItem(PROTOTYPE_APPLY_RECEIPT_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PrototypeApplyReceipt;
-    if (!parsed?.prototype || !parsed.applicationNumber) return null;
+    if (!parsed?.prototype || !parsed.applicationNumber || !parsed.summary) return null;
     return parsed;
   } catch {
     return null;

@@ -1,47 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  APPLY_STEPS,
-  areRequiredTermsAgreed,
-  BUSINESS_TYPE_OPTIONS,
+  APPLY_FIELD_ORDER,
   createPrototypeApplyReceipt,
   FILE_ACCEPT,
   firstErrorFieldId,
   formatBusinessNumberInput,
   formatFileSize,
-  getApplyFormReviewSafe,
-  getPasswordMismatchMessage,
+  getApplyFormSummary,
   INITIAL_PARTNERSHIP_APPLY_FORM,
-  LONG_TEXT_LIMITS,
-  maskBusinessNumber,
-  maskEmail,
-  maskPhone,
+  isValidBusinessNumber,
   MAX_FILE_SIZE_LABEL,
   MAX_OTHER_FILES,
   OPTIONAL_ATTACHMENT_SLOTS,
-  PARTNERSHIP_PURPOSE_OPTIONS,
-  PASSWORD_MIN_LENGTH,
+  OPTIONAL_TERM_KEYS,
   POLICY_GUIDE_ITEMS,
-  PRODUCT_TYPE_OPTIONS,
   REQUIRED_ATTACHMENT_SLOTS,
   REQUIRED_TERM_KEYS,
   savePrototypeApplyReceipt,
   TERM_ITEMS,
   TOURISM_LICENSE_TYPE_OPTIONS,
-  toggleMultiSelectValue,
-  validateAllApplySteps,
+  validateApplyForm,
   validateAttachmentFile,
-  validateStep,
-  yesNoLabel,
   type ApplyFieldErrors,
-  type ApplyStepKey,
   type PartnershipApplyForm,
   type SingleAttachmentKey,
   type TermItem,
-  type YesNo,
 } from "./form-state";
 
 function FieldLabel({
@@ -72,22 +59,21 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-function TextValue({ value }: { value: string | boolean }) {
-  if (typeof value === "boolean") return <>{value ? "예" : "아니오"}</>;
-  return <>{value.trim() ? value : "—"}</>;
+function SummaryValue({ value }: { value: string }) {
+  return <>{value.trim() ? value : "미입력"}</>;
 }
 
 function ImageFilePreview({ file }: { file: File }) {
-  const [url, setUrl] = useState<string | null>(null);
-  useEffect(() => {
-    if (!file.type.startsWith("image/")) {
-      setUrl(null);
-      return;
-    }
-    const next = URL.createObjectURL(file);
-    setUrl(next);
-    return () => URL.revokeObjectURL(next);
+  const url = useMemo(() => {
+    if (!file.type.startsWith("image/")) return null;
+    return URL.createObjectURL(file);
   }, [file]);
+
+  useEffect(() => {
+    if (!url) return;
+    return () => URL.revokeObjectURL(url);
+  }, [url]);
+
   if (!url) return null;
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -137,7 +123,7 @@ function AttachmentSlot({
       let pickError: string | null = null;
       for (const item of selected) {
         if (nextFiles.length >= MAX_OTHER_FILES) {
-          pickError = `기타 서류는 최대 ${MAX_OTHER_FILES}개까지 첨부할 수 있습니다.`;
+          pickError = `기타 증빙서류는 최대 ${MAX_OTHER_FILES}개까지 첨부할 수 있습니다.`;
           break;
         }
         const invalid = validateAttachmentFile(item);
@@ -219,163 +205,173 @@ function AttachmentSlot({
 
 export function PartnershipApplyForm() {
   const router = useRouter();
-  const [stepIndex, setStepIndex] = useState(0);
   const [form, setForm] = useState<PartnershipApplyForm>(INITIAL_PARTNERSHIP_APPLY_FORM);
   const [dirty, setDirty] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [errors, setErrors] = useState<ApplyFieldErrors>({});
   const [businessCheckNote, setBusinessCheckNote] = useState("");
-  const [emailVerifyNote, setEmailVerifyNote] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [addressSearchNote, setAddressSearchNote] = useState("");
   const [filePickErrors, setFilePickErrors] = useState<Partial<Record<string, string>>>({});
   const [openTerm, setOpenTerm] = useState<TermItem | null>(null);
-  const [draftNote, setDraftNote] = useState("");
   const [submitBanner, setSubmitBanner] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const step = APPLY_STEPS[stepIndex];
-  const progress = Math.round(((stepIndex + 1) / APPLY_STEPS.length) * 100);
-  const isFirst = stepIndex === 0;
-  const isLast = stepIndex === APPLY_STEPS.length - 1;
-  const review = useMemo(() => getApplyFormReviewSafe(form), [form]);
-  const passwordMismatchHint = getPasswordMismatchMessage(form.adminPassword, form.adminPasswordConfirm);
-  const requiredTermsAgreed = areRequiredTermsAgreed(form);
+  const summary = useMemo(() => getApplyFormSummary(form), [form]);
 
-  const updateField = useCallback(<K extends keyof PartnershipApplyForm>(key: K, value: PartnershipApplyForm[K]) => {
-    setForm((current) => {
-      const next = { ...current, [key]: value };
-      if (key === "adminEmail" && current.useEmailAsLoginId && typeof value === "string") {
-        next.adminLoginId = value;
-      }
-      if (key === "useEmailAsLoginId" && value === true) {
-        next.adminLoginId = current.adminEmail;
-      }
-      if (key === "hasSellers" && value === "no") {
-        next.sellerCount = "";
-      }
-      return next;
-    });
+  const allTermKeys = useMemo(
+    () => [...REQUIRED_TERM_KEYS, ...OPTIONAL_TERM_KEYS] as const,
+    [],
+  );
+
+  const allTermsChecked = allTermKeys.every((key) => form[key]);
+
+  const updateField = <K extends keyof PartnershipApplyForm>(key: K, value: PartnershipApplyForm[K]) => {
     setDirty(true);
+    setForm((current) => ({ ...current, [key]: value }));
     setErrors((current) => {
-      const clearsAgree =
-        REQUIRED_TERM_KEYS.includes(key as (typeof REQUIRED_TERM_KEYS)[number]) || key === "agreeTerms";
-      if (!current[key] && !(key === "hasSellers" && current.sellerCount) && !clearsAgree) return current;
+      if (!current[key] && key !== "agreeTerms") return current;
       const next = { ...current };
       delete next[key];
-      if (key === "hasSellers") delete next.sellerCount;
-      if (clearsAgree) delete next.agreeTerms;
+      if (
+        REQUIRED_TERM_KEYS.includes(key as (typeof REQUIRED_TERM_KEYS)[number]) ||
+        key === "agreeTerms"
+      ) {
+        delete next.agreeTerms;
+      }
       return next;
     });
-  }, []);
+    setSubmitBanner("");
+  };
 
   const setSingleAttachment = (key: SingleAttachmentKey, file: File | null, pickError: string | null) => {
+    setDirty(true);
+    setForm((current) => ({ ...current, [key]: file }));
     setFilePickErrors((current) => {
       const next = { ...current };
       if (pickError) next[key] = pickError;
       else delete next[key];
       return next;
     });
-    if (pickError) return;
-    updateField(key, file);
+    setErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
   };
 
   const setOtherFiles = (files: File[], pickError: string | null) => {
+    setDirty(true);
+    setForm((current) => ({ ...current, otherFiles: files }));
     setFilePickErrors((current) => {
       const next = { ...current };
       if (pickError) next.otherFiles = pickError;
       else delete next.otherFiles;
       return next;
     });
-    if (pickError) return;
-    updateField("otherFiles", files);
-  };
-
-  const setRequiredTermsAll = (checked: boolean) => {
-    setForm((current) => {
+    setErrors((current) => {
       const next = { ...current };
-      for (const key of REQUIRED_TERM_KEYS) next[key] = checked;
+      delete next.otherFiles;
       return next;
     });
-    setDirty(true);
-    if (checked) {
-      setErrors((current) => {
-        if (!current.agreeTerms) return current;
-        const next = { ...current };
-        delete next.agreeTerms;
-        return next;
-      });
-    }
   };
 
-  useEffect(() => {
-    if (!dirty) return;
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [dirty]);
-
-  const focusFirstError = (nextErrors: ApplyFieldErrors) => {
-    const fieldId = firstErrorFieldId(nextErrors);
-    if (!fieldId) return;
-    window.requestAnimationFrame(() => {
-      const target = document.getElementById(fieldId);
-      target?.focus();
-      target?.scrollIntoView({ behavior: "smooth", block: "center" });
+  const setAgreeAll = (checked: boolean) => {
+    setDirty(true);
+    setForm((current) => {
+      const next = { ...current };
+      for (const key of allTermKeys) next[key] = checked;
+      return next;
+    });
+    setErrors((current) => {
+      const next = { ...current };
+      delete next.agreeTerms;
+      return next;
     });
   };
 
-  const goNext = () => {
-    if (isLast) return;
-    const stepErrors = validateStep(step.key, form);
-    if (Object.keys(stepErrors).length > 0) {
-      setErrors(stepErrors);
-      focusFirstError(stepErrors);
+  const focusFirstError = (nextErrors: ApplyFieldErrors) => {
+    const id = firstErrorFieldId(nextErrors);
+    if (!id) return;
+    const el = document.getElementById(id);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const focusTarget =
+      el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement
+        ? el
+        : el?.querySelector<HTMLElement>("input, select, textarea, button");
+    focusTarget?.focus?.();
+  };
+
+  const requestCancel = () => {
+    if (!dirty) {
+      router.push("/partnership");
       return;
     }
-    setErrors({});
-    setSubmitBanner("");
-    setStepIndex((value) => Math.min(value + 1, APPLY_STEPS.length - 1));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setCancelOpen(true);
   };
 
-  const goPrev = () => {
-    if (isFirst) return;
-    setErrors({});
-    setSubmitBanner("");
-    setStepIndex((value) => Math.max(value - 1, 0));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const confirmCancel = () => {
+    setCancelOpen(false);
+    setDirty(false);
+    router.push("/partnership");
   };
 
-  const goToStep = (stepKey: ApplyStepKey) => {
-    const index = APPLY_STEPS.findIndex((item) => item.key === stepKey);
-    if (index < 0) return;
-    setErrors({});
-    setSubmitBanner("");
-    setStepIndex(index);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const requestBusinessNumberCheck = () => {
+    if (!form.businessNumber.trim()) {
+      setBusinessCheckNote("");
+      setErrors((current) => ({
+        ...current,
+        businessNumber: "사업자등록번호를 입력해 주세요.",
+      }));
+      document.getElementById("businessNumber")?.focus();
+      return;
+    }
+    if (!isValidBusinessNumber(form.businessNumber)) {
+      setBusinessCheckNote("");
+      setErrors((current) => ({
+        ...current,
+        businessNumber: "사업자등록번호 형식이 올바르지 않습니다. (예: 000-00-00000)",
+      }));
+      document.getElementById("businessNumber")?.focus();
+      return;
+    }
+    setErrors((current) => {
+      const next = { ...current };
+      delete next.businessNumber;
+      return next;
+    });
+    setBusinessCheckNote("실제 중복확인은 관리자 시스템 연동 후 제공됩니다.");
   };
 
-  const handleTempSave = () => {
-    // 실제 저장 API 없음 — 서버에 저장된 것처럼 표현하지 않음
-    setDraftNote(
-      "현재 화면에서만 작성내용이 유지됩니다. 새로고침하면 초기화될 수 있습니다. 서버에는 저장되지 않습니다.",
-    );
+  const requestAddressSearch = () => {
+    setAddressSearchNote("실제 주소검색은 우편번호 API 연동 후 제공됩니다.");
   };
 
   const handleSubmitPrototype = () => {
-    if (submitting) return;
-    const failed = validateAllApplySteps(form);
-    if (failed) {
-      setErrors(failed.errors);
-      setSubmitBanner(`「${failed.stepTitle}」단계에 보완이 필요합니다. 해당 단계로 이동합니다.`);
-      const index = APPLY_STEPS.findIndex((item) => item.key === failed.stepKey);
-      if (index >= 0) setStepIndex(index);
-      focusFirstError(failed.errors);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    const nextErrors = validateApplyForm(form);
+
+    // 선택 서류에서 거절된 파일 선택 오류가 남아 제출을 막지 않도록 정리
+    const activePickErrors: Partial<Record<string, string>> = { ...filePickErrors };
+    if (!form.mailOrderLicenseFile) delete activePickErrors.mailOrderLicenseFile;
+    const otherInvalid = form.otherFiles.map((file) => validateAttachmentFile(file)).find(Boolean);
+    if (form.otherFiles.length <= MAX_OTHER_FILES && !otherInvalid) {
+      delete activePickErrors.otherFiles;
+    }
+    if (Object.keys(activePickErrors).length !== Object.keys(filePickErrors).length) {
+      setFilePickErrors(activePickErrors);
+    }
+
+    const pickKeys = Object.keys(activePickErrors);
+    if (Object.keys(nextErrors).length > 0 || pickKeys.length > 0) {
+      setErrors(nextErrors);
+      setSubmitBanner("입력·동의·서류 항목을 확인해 주세요.");
+      const merged: ApplyFieldErrors = { ...nextErrors };
+      for (const key of pickKeys) {
+        const message = activePickErrors[key];
+        if (message && APPLY_FIELD_ORDER.includes(key as keyof PartnershipApplyForm)) {
+          merged[key as keyof PartnershipApplyForm] = message;
+        }
+      }
+      focusFirstError(Object.keys(merged).length > 0 ? merged : nextErrors);
       return;
     }
 
@@ -386,20 +382,6 @@ export function PartnershipApplyForm() {
     savePrototypeApplyReceipt(receipt);
     setDirty(false);
     router.push("/partnership/apply/complete");
-  };
-
-  const confirmCancel = () => {
-    setCancelOpen(false);
-    setDirty(false);
-    router.push("/partnership");
-  };
-
-  const requestBusinessNumberCheck = () => {
-    setBusinessCheckNote("실제 중복확인은 관리자 시스템 연동 후 제공됩니다.");
-  };
-
-  const requestEmailVerify = () => {
-    setEmailVerifyNote("실제 인증번호 발송은 시스템 연동 후 제공됩니다. 지금은 발송되지 않습니다.");
   };
 
   return (
@@ -417,52 +399,19 @@ export function PartnershipApplyForm() {
           <span className="section-kicker">PARTNERSHIP APPLY</span>
           <h1>제휴여행사 가입신청</h1>
           <p>
-            여행사 및 담당자 정보를 입력하면 관리자가 신청내용을 검토합니다.
-            <br />
-            가입승인 후 제휴관계가 활성화되며 상품공유그룹은 관리자가 별도로 지정합니다.
+            AOS 제휴여행사 가입을 신청해 주세요. 관리자가 제출정보와 증빙서류를 검토한 후 승인 결과를 담당자
+            이메일로 안내합니다.
           </p>
           <p className="partnership-apply-temp-note" role="note">
-            작성 내용은 이 화면을 유지하는 동안만 임시 보관되며, 새로고침하면 초기화됩니다.
-            서버에는 아직 저장되지 않습니다.
+            프론트엔드 프로토타입입니다. API·DB 저장, 실제 파일 업로드, 이메일 발송은 아직 연결되지 않습니다.
           </p>
         </header>
 
-        <div className="partnership-apply-progress" aria-label={`진행률 ${progress}%`}>
-          <div className="partnership-apply-progress-meta">
-            <strong>
-              {stepIndex + 1} / {APPLY_STEPS.length} 단계
-            </strong>
-            <span>{progress}%</span>
-          </div>
-          <div className="partnership-apply-progress-bar" aria-hidden="true">
-            <i style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-
-        <ol className="partnership-apply-steps" aria-label="신청 단계">
-          {APPLY_STEPS.map((item, index) => {
-            const status = index < stepIndex ? "done" : index === stepIndex ? "current" : "todo";
-            return (
-              <li key={item.key} className={status} aria-current={status === "current" ? "step" : undefined}>
-                <span>{index < stepIndex ? "✓" : item.id}</span>
-                <b>{item.title}</b>
-              </li>
-            );
-          })}
-        </ol>
-
-        <p className="partnership-apply-mobile-step" aria-live="polite">
-          <strong>
-            {step.id}단계 · {step.title}
-          </strong>
-          <span>{step.description}</span>
-        </p>
-
-        <section className="partnership-apply-panel" aria-labelledby="apply-step-title">
+        <section className="partnership-apply-panel" aria-labelledby="apply-form-title">
           <header className="partnership-apply-panel-head">
-            <span>STEP {String(step.id).padStart(2, "0")}</span>
-            <h2 id="apply-step-title">{step.title}</h2>
-            <p>{step.description}</p>
+            <span>APPLICATION</span>
+            <h2 id="apply-form-title">가입신청서</h2>
+            <p>아래 항목을 한 페이지에서 작성한 뒤 신청해 주세요.</p>
             {submitBanner ? (
               <p className="partnership-apply-submit-banner" role="alert">
                 {submitBanner}
@@ -470,7 +419,27 @@ export function PartnershipApplyForm() {
             ) : null}
           </header>
 
-          {step.key === "agency" && (
+          {/* 1. 제휴 안내 */}
+          <section className="partnership-apply-section" aria-labelledby="guide-title">
+            <header className="partnership-apply-section-head">
+              <h3 id="guide-title">제휴 안내</h3>
+              <p>가입 및 상품공유 운영 기준입니다.</p>
+            </header>
+            <div className="partnership-apply-policy-box">
+              <ul>
+                {POLICY_GUIDE_ITEMS.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          {/* 2. 여행사 정보 */}
+          <section className="partnership-apply-section" aria-labelledby="agency-title">
+            <header className="partnership-apply-section-head">
+              <h3 id="agency-title">여행사 정보</h3>
+              <p>사업자·여행업 등록 정보를 입력해 주세요.</p>
+            </header>
             <div className="partnership-apply-fields">
               <label className={errors.agencyName ? "is-invalid" : undefined}>
                 <FieldLabel required htmlFor="agencyName">
@@ -514,90 +483,62 @@ export function PartnershipApplyForm() {
                 ) : null}
               </div>
 
-              <fieldset
-                id="businessType"
-                className={`full partnership-apply-check-group ${errors.businessType ? "is-invalid" : ""}`}
-              >
-                <legend>
-                  사업자 구분 <em aria-label="필수">*</em>
-                </legend>
-                <div className="partnership-radio-row">
-                  {BUSINESS_TYPE_OPTIONS.map((option) => (
-                    <label key={option} className="check">
-                      <input
-                        type="radio"
-                        name="businessType"
-                        checked={form.businessType === option}
-                        onChange={() => updateField("businessType", option)}
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-                <FieldError message={errors.businessType} />
-              </fieldset>
+              <div className="full partnership-apply-trio">
+                <label className={errors.ceoName ? "is-invalid" : undefined}>
+                  <FieldLabel required htmlFor="ceoName">
+                    대표자명
+                  </FieldLabel>
+                  <input
+                    id="ceoName"
+                    value={form.ceoName}
+                    aria-invalid={Boolean(errors.ceoName)}
+                    onChange={(event) => updateField("ceoName", event.target.value)}
+                    placeholder="대표자 이름"
+                  />
+                  <FieldError message={errors.ceoName} />
+                </label>
 
-              <label className={errors.ceoName ? "is-invalid" : undefined}>
-                <FieldLabel required htmlFor="ceoName">
-                  대표자명
-                </FieldLabel>
-                <input
-                  id="ceoName"
-                  value={form.ceoName}
-                  aria-invalid={Boolean(errors.ceoName)}
-                  onChange={(event) => updateField("ceoName", event.target.value)}
-                  placeholder="대표자 이름"
-                />
-                <FieldError message={errors.ceoName} />
-              </label>
+                <label className={errors.tourismLicenseNumber ? "is-invalid" : undefined}>
+                  <FieldLabel required htmlFor="tourismLicenseNumber">
+                    여행업 등록번호
+                  </FieldLabel>
+                  <input
+                    id="tourismLicenseNumber"
+                    value={form.tourismLicenseNumber}
+                    aria-invalid={Boolean(errors.tourismLicenseNumber)}
+                    onChange={(event) => updateField("tourismLicenseNumber", event.target.value)}
+                    placeholder="제0000-00호"
+                  />
+                  <FieldError message={errors.tourismLicenseNumber} />
+                </label>
 
-              <label>
-                <FieldLabel htmlFor="corporateRegistrationNumber">법인등록번호</FieldLabel>
-                <input
-                  id="corporateRegistrationNumber"
-                  value={form.corporateRegistrationNumber}
-                  onChange={(event) => updateField("corporateRegistrationNumber", event.target.value)}
-                  placeholder="법인인 경우 입력"
-                />
-              </label>
+                <label className={errors.tourismLicenseType ? "is-invalid" : undefined}>
+                  <FieldLabel required htmlFor="tourismLicenseType">
+                    여행업 종류
+                  </FieldLabel>
+                  <select
+                    id="tourismLicenseType"
+                    value={form.tourismLicenseType}
+                    aria-invalid={Boolean(errors.tourismLicenseType)}
+                    onChange={(event) =>
+                      updateField(
+                        "tourismLicenseType",
+                        event.target.value as PartnershipApplyForm["tourismLicenseType"],
+                      )
+                    }
+                  >
+                    <option value="">선택해 주세요</option>
+                    {TOURISM_LICENSE_TYPE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <FieldError message={errors.tourismLicenseType} />
+                </label>
+              </div>
 
-              <label className={errors.tourismLicenseNumber ? "is-invalid" : undefined}>
-                <FieldLabel required htmlFor="tourismLicenseNumber">
-                  여행업 등록번호
-                </FieldLabel>
-                <input
-                  id="tourismLicenseNumber"
-                  value={form.tourismLicenseNumber}
-                  aria-invalid={Boolean(errors.tourismLicenseNumber)}
-                  onChange={(event) => updateField("tourismLicenseNumber", event.target.value)}
-                  placeholder="제0000-00호"
-                />
-                <FieldError message={errors.tourismLicenseNumber} />
-              </label>
-
-              <label className={errors.tourismLicenseType ? "is-invalid" : undefined}>
-                <FieldLabel required htmlFor="tourismLicenseType">
-                  여행업 종류
-                </FieldLabel>
-                <select
-                  id="tourismLicenseType"
-                  value={form.tourismLicenseType}
-                  aria-invalid={Boolean(errors.tourismLicenseType)}
-                  onChange={(event) =>
-                    updateField("tourismLicenseType", event.target.value as PartnershipApplyForm["tourismLicenseType"])
-                  }
-                >
-                  <option value="">선택해 주세요</option>
-                  {TOURISM_LICENSE_TYPE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <FieldError message={errors.tourismLicenseType} />
-              </label>
-
-              <label className={`full ${errors.address ? "is-invalid" : ""}`}>
+              <label className={errors.address ? "is-invalid" : undefined}>
                 <FieldLabel required htmlFor="address">
                   사업장 주소
                 </FieldLabel>
@@ -605,25 +546,36 @@ export function PartnershipApplyForm() {
                   id="address"
                   value={form.address}
                   aria-invalid={Boolean(errors.address)}
-                  onChange={(event) => updateField("address", event.target.value)}
+                  onChange={(event) => {
+                    updateField("address", event.target.value);
+                    setAddressSearchNote("");
+                  }}
                   placeholder="기본 주소"
                 />
                 <FieldError message={errors.address} />
               </label>
 
-              <label className={`full ${errors.addressDetail ? "is-invalid" : ""}`}>
-                <FieldLabel required htmlFor="addressDetail">
-                  상세주소
-                </FieldLabel>
-                <input
-                  id="addressDetail"
-                  value={form.addressDetail}
-                  aria-invalid={Boolean(errors.addressDetail)}
-                  onChange={(event) => updateField("addressDetail", event.target.value)}
-                  placeholder="상세 주소"
-                />
+              <div className={`partnership-field-with-action ${errors.addressDetail ? "is-invalid" : ""}`}>
+                <FieldLabel htmlFor="addressDetail">상세주소</FieldLabel>
+                <div className="partnership-inline-action">
+                  <input
+                    id="addressDetail"
+                    value={form.addressDetail}
+                    aria-invalid={Boolean(errors.addressDetail)}
+                    onChange={(event) => updateField("addressDetail", event.target.value)}
+                    placeholder="상세 주소"
+                  />
+                  <button type="button" className="button ghost dark compact" onClick={requestAddressSearch}>
+                    주소검색
+                  </button>
+                </div>
                 <FieldError message={errors.addressDetail} />
-              </label>
+                {addressSearchNote ? (
+                  <small className="partnership-field-info" role="status">
+                    {addressSearchNote}
+                  </small>
+                ) : null}
+              </div>
 
               <label className={errors.phone ? "is-invalid" : undefined}>
                 <FieldLabel required htmlFor="phone">
@@ -639,33 +591,8 @@ export function PartnershipApplyForm() {
                 <FieldError message={errors.phone} />
               </label>
 
-              <label className={errors.email ? "is-invalid" : undefined}>
-                <FieldLabel required htmlFor="email">
-                  대표 이메일
-                </FieldLabel>
-                <input
-                  id="email"
-                  type="email"
-                  value={form.email}
-                  aria-invalid={Boolean(errors.email)}
-                  onChange={(event) => updateField("email", event.target.value)}
-                  placeholder="agency@example.com"
-                />
-                <FieldError message={errors.email} />
-              </label>
-
-              <label>
-                <FieldLabel htmlFor="openDate">개업일</FieldLabel>
-                <input
-                  id="openDate"
-                  type="date"
-                  value={form.openDate}
-                  onChange={(event) => updateField("openDate", event.target.value)}
-                />
-              </label>
-
-              <label className={`full ${errors.homepage ? "is-invalid" : ""}`}>
-                <FieldLabel htmlFor="homepage">홈페이지 주소</FieldLabel>
+              <label className={errors.homepage ? "is-invalid" : undefined}>
+                <FieldLabel htmlFor="homepage">홈페이지 URL</FieldLabel>
                 <input
                   id="homepage"
                   value={form.homepage}
@@ -676,54 +603,41 @@ export function PartnershipApplyForm() {
                 <FieldError message={errors.homepage} />
               </label>
             </div>
-          )}
+          </section>
 
-          {step.key === "admin" && (
+          {/* 3. 담당자 정보 */}
+          <section className="partnership-apply-section" aria-labelledby="contact-title">
+            <header className="partnership-apply-section-head">
+              <h3 id="contact-title">담당자 정보</h3>
+              <p>심사 결과 안내를 받을 담당자 연락처입니다.</p>
+            </header>
             <div className="partnership-apply-fields">
-              <p className="partnership-apply-secure-note full">
-                가입이 승인되기 전까지 관리자 계정은 활성화되지 않습니다. 승인 완료 후 로그인할 수 있습니다.
-              </p>
-
               <label className={errors.adminName ? "is-invalid" : undefined}>
                 <FieldLabel required htmlFor="adminName">
-                  관리자 이름
+                  담당자명
                 </FieldLabel>
                 <input
                   id="adminName"
                   value={form.adminName}
                   aria-invalid={Boolean(errors.adminName)}
                   onChange={(event) => updateField("adminName", event.target.value)}
-                  placeholder="담당 관리자 이름"
+                  placeholder="담당자 이름"
                 />
                 <FieldError message={errors.adminName} />
               </label>
 
               <label className={errors.department ? "is-invalid" : undefined}>
                 <FieldLabel required htmlFor="department">
-                  부서
+                  부서 또는 직책
                 </FieldLabel>
                 <input
                   id="department"
                   value={form.department}
                   aria-invalid={Boolean(errors.department)}
                   onChange={(event) => updateField("department", event.target.value)}
-                  placeholder="예: 영업팀"
+                  placeholder="예: 영업팀 / 과장"
                 />
                 <FieldError message={errors.department} />
-              </label>
-
-              <label className={errors.position ? "is-invalid" : undefined}>
-                <FieldLabel required htmlFor="position">
-                  직책
-                </FieldLabel>
-                <input
-                  id="position"
-                  value={form.position}
-                  aria-invalid={Boolean(errors.position)}
-                  onChange={(event) => updateField("position", event.target.value)}
-                  placeholder="예: 팀장"
-                />
-                <FieldError message={errors.position} />
               </label>
 
               <label className={errors.adminPhone ? "is-invalid" : undefined}>
@@ -740,374 +654,60 @@ export function PartnershipApplyForm() {
                 <FieldError message={errors.adminPhone} />
               </label>
 
-              <div className={`partnership-field-with-action full ${errors.adminEmail ? "is-invalid" : ""}`}>
+              <label className={errors.adminEmail ? "is-invalid" : undefined}>
                 <FieldLabel required htmlFor="adminEmail">
                   이메일
                 </FieldLabel>
-                <div className="partnership-inline-action">
-                  <input
-                    id="adminEmail"
-                    type="email"
-                    value={form.adminEmail}
-                    aria-invalid={Boolean(errors.adminEmail)}
-                    onChange={(event) => {
-                      updateField("adminEmail", event.target.value);
-                      setEmailVerifyNote("");
-                    }}
-                    placeholder="admin@example.com"
-                  />
-                  <button type="button" className="button ghost dark compact" onClick={requestEmailVerify}>
-                    이메일 인증
-                  </button>
-                </div>
+                <input
+                  id="adminEmail"
+                  type="email"
+                  value={form.adminEmail}
+                  aria-invalid={Boolean(errors.adminEmail)}
+                  onChange={(event) => updateField("adminEmail", event.target.value)}
+                  placeholder="contact@example.com"
+                  autoComplete="email"
+                />
                 <FieldError message={errors.adminEmail} />
-                {emailVerifyNote ? (
-                  <small className="partnership-field-info" role="status">
-                    {emailVerifyNote}
-                  </small>
-                ) : null}
-              </div>
-
-              <label className="full check partnership-apply-login-option">
-                <input
-                  type="checkbox"
-                  checked={form.useEmailAsLoginId}
-                  onChange={(event) => updateField("useEmailAsLoginId", event.target.checked)}
-                />
-                <span>이메일을 로그인 아이디로 사용합니다.</span>
               </label>
 
-              <label className={`full ${errors.adminLoginId ? "is-invalid" : ""}`}>
-                <FieldLabel required htmlFor="adminLoginId">
-                  로그인 아이디
+              <label className={`full ${errors.adminEmailConfirm ? "is-invalid" : ""}`}>
+                <FieldLabel required htmlFor="adminEmailConfirm">
+                  이메일 확인
                 </FieldLabel>
                 <input
-                  id="adminLoginId"
-                  value={form.adminLoginId}
-                  aria-invalid={Boolean(errors.adminLoginId)}
-                  onChange={(event) => updateField("adminLoginId", event.target.value)}
-                  placeholder="영문·숫자 조합"
-                  autoComplete="username"
-                  readOnly={form.useEmailAsLoginId}
+                  id="adminEmailConfirm"
+                  type="email"
+                  value={form.adminEmailConfirm}
+                  aria-invalid={Boolean(errors.adminEmailConfirm)}
+                  onChange={(event) => updateField("adminEmailConfirm", event.target.value)}
+                  placeholder="이메일을 다시 입력해 주세요"
+                  autoComplete="email"
                 />
-                <FieldError message={errors.adminLoginId} />
+                <FieldError message={errors.adminEmailConfirm} />
               </label>
-
-              <div className={`partnership-field-with-action ${errors.adminPassword ? "is-invalid" : ""}`}>
-                <FieldLabel required htmlFor="adminPassword">
-                  비밀번호
-                </FieldLabel>
-                <div className="partnership-inline-action">
-                  <input
-                    id="adminPassword"
-                    type={showPassword ? "text" : "password"}
-                    value={form.adminPassword}
-                    aria-invalid={Boolean(errors.adminPassword)}
-                    onChange={(event) => updateField("adminPassword", event.target.value)}
-                    placeholder={`${PASSWORD_MIN_LENGTH}자 이상`}
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    className="button ghost dark compact"
-                    onClick={() => setShowPassword((value) => !value)}
-                    aria-pressed={showPassword}
-                  >
-                    {showPassword ? "숨기기" : "보기"}
-                  </button>
-                </div>
-                <FieldError message={errors.adminPassword} />
-              </div>
-
-              <div className={`partnership-field-with-action ${errors.adminPasswordConfirm ? "is-invalid" : ""}`}>
-                <FieldLabel required htmlFor="adminPasswordConfirm">
-                  비밀번호 확인
-                </FieldLabel>
-                <div className="partnership-inline-action">
-                  <input
-                    id="adminPasswordConfirm"
-                    type={showPasswordConfirm ? "text" : "password"}
-                    value={form.adminPasswordConfirm}
-                    aria-invalid={Boolean(errors.adminPasswordConfirm)}
-                    onChange={(event) => updateField("adminPasswordConfirm", event.target.value)}
-                    placeholder="비밀번호 재입력"
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    className="button ghost dark compact"
-                    onClick={() => setShowPasswordConfirm((value) => !value)}
-                    aria-pressed={showPasswordConfirm}
-                  >
-                    {showPasswordConfirm ? "숨기기" : "보기"}
-                  </button>
-                </div>
-                <FieldError message={errors.adminPasswordConfirm} />
-                {!errors.adminPasswordConfirm && passwordMismatchHint ? (
-                  <small className="partnership-field-error" role="status">
-                    {passwordMismatchHint}
-                  </small>
-                ) : null}
-              </div>
-
-              <p className="partnership-apply-secure-note full">
-                비밀번호는 이 화면 메모리에만 유지되며 브라우저 저장소에 보관하지 않습니다.
-              </p>
             </div>
-          )}
+          </section>
 
-          {step.key === "trade" && (
-            <div className="partnership-apply-fields">
-              <fieldset
-                id="productTypes"
-                className={`full partnership-apply-check-group ${errors.productTypes ? "is-invalid" : ""}`}
-              >
-                <legend>
-                  취급상품 <em aria-label="필수">*</em>
-                </legend>
-                <div className="partnership-chip-grid">
-                  {PRODUCT_TYPE_OPTIONS.map((option) => (
-                    <label key={option} className="check">
-                      <input
-                        type="checkbox"
-                        checked={form.productTypes.includes(option)}
-                        onChange={() => updateField("productTypes", toggleMultiSelectValue(form.productTypes, option))}
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-                <FieldError message={errors.productTypes} />
-              </fieldset>
-
-              <fieldset
-                id="partnershipPurposes"
-                className={`full partnership-apply-check-group ${errors.partnershipPurposes ? "is-invalid" : ""}`}
-              >
-                <legend>
-                  제휴 목적 <em aria-label="필수">*</em>
-                </legend>
-                <div className="partnership-chip-grid">
-                  {PARTNERSHIP_PURPOSE_OPTIONS.map((option) => (
-                    <label key={option} className="check">
-                      <input
-                        type="checkbox"
-                        checked={form.partnershipPurposes.includes(option)}
-                        onChange={() =>
-                          updateField("partnershipPurposes", toggleMultiSelectValue(form.partnershipPurposes, option))
-                        }
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-                <FieldError message={errors.partnershipPurposes} />
-                <small>상품공유그룹은 이 단계에서 선택하지 않습니다. 승인 후 관리자가 지정합니다.</small>
-              </fieldset>
-
-              <h3 className="partnership-apply-subhead full">판매 현황</h3>
-
-              <label>
-                <FieldLabel htmlFor="monthlyReservationCount">월평균 예약 건수</FieldLabel>
-                <input
-                  id="monthlyReservationCount"
-                  value={form.monthlyReservationCount}
-                  onChange={(event) => updateField("monthlyReservationCount", event.target.value)}
-                  placeholder="예: 50건"
-                />
-              </label>
-              <label>
-                <FieldLabel htmlFor="monthlySalesAmount">월평균 판매금액</FieldLabel>
-                <input
-                  id="monthlySalesAmount"
-                  value={form.monthlySalesAmount}
-                  onChange={(event) => updateField("monthlySalesAmount", event.target.value)}
-                  placeholder="예: 5,000만원"
-                />
-              </label>
-              <label>
-                <FieldLabel htmlFor="mainSalesRegions">주요 판매지역</FieldLabel>
-                <input
-                  id="mainSalesRegions"
-                  value={form.mainSalesRegions}
-                  onChange={(event) => updateField("mainSalesRegions", event.target.value)}
-                  placeholder="예: 수도권, 부산"
-                />
-              </label>
-              <label>
-                <FieldLabel htmlFor="mainCustomerSegments">주요 고객층</FieldLabel>
-                <input
-                  id="mainCustomerSegments"
-                  value={form.mainCustomerSegments}
-                  onChange={(event) => updateField("mainCustomerSegments", event.target.value)}
-                  placeholder="예: 가족, 시니어, 기업"
-                />
-              </label>
-
-              <fieldset className="partnership-apply-check-group">
-                <legend>온라인 판매 여부</legend>
-                <div className="partnership-radio-row">
-                  {(
-                    [
-                      ["yes", "예"],
-                      ["no", "아니오"],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <label key={value} className="check">
-                      <input
-                        type="radio"
-                        name="sellsOnline"
-                        checked={form.sellsOnline === value}
-                        onChange={() => updateField("sellsOnline", value)}
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset className="partnership-apply-check-group">
-                <legend>오프라인 매장 여부</legend>
-                <div className="partnership-radio-row">
-                  {(
-                    [
-                      ["yes", "예"],
-                      ["no", "아니오"],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <label key={value} className="check">
-                      <input
-                        type="radio"
-                        name="hasOfflineStore"
-                        checked={form.hasOfflineStore === value}
-                        onChange={() => updateField("hasOfflineStore", value)}
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset
-                id="hasSellers"
-                className={`partnership-apply-check-group ${errors.hasSellers ? "is-invalid" : ""}`}
-              >
-                <legend>
-                  판매점 보유 여부 <em aria-label="필수">*</em>
-                </legend>
-                <div className="partnership-radio-row">
-                  {(
-                    [
-                      ["yes", "있음"],
-                      ["no", "없음"],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <label key={value} className="check">
-                      <input
-                        type="radio"
-                        name="hasSellers"
-                        checked={form.hasSellers === value}
-                        onChange={() => updateField("hasSellers", value as YesNo)}
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-                <FieldError message={errors.hasSellers} />
-              </fieldset>
-
-              <label className={errors.sellerCount ? "is-invalid" : undefined}>
-                <FieldLabel required={form.hasSellers === "yes"} htmlFor="sellerCount">
-                  보유 판매점 수
-                </FieldLabel>
-                <input
-                  id="sellerCount"
-                  value={form.sellerCount}
-                  disabled={form.hasSellers !== "yes"}
-                  aria-invalid={Boolean(errors.sellerCount)}
-                  onChange={(event) => updateField("sellerCount", event.target.value.replace(/[^\d]/g, ""))}
-                  placeholder={form.hasSellers === "yes" ? "예: 12" : "판매점 없음"}
-                  inputMode="numeric"
-                />
-                <FieldError message={errors.sellerCount} />
-              </label>
-
-              <p className="partnership-apply-secure-note full">
-                판매점이 있어도 가입승인 시 판매점 계정이 자동 생성되지 않습니다. 판매점은 승인 후 관리자에서 별도로
-                등록합니다.
+          {/* 4. 증빙서류 */}
+          <section className="partnership-apply-section" aria-labelledby="docs-title">
+            <header className="partnership-apply-section-head">
+              <h3 id="docs-title">증빙서류 첨부</h3>
+              <p>
+                허용 형식 PDF, JPG, JPEG, PNG · 파일당 최대 {MAX_FILE_SIZE_LABEL}. 현재는 프로토타입이며 서버에
+                실제 업로드되지 않습니다.
               </p>
-
-              <label className="full">
-                <FieldLabel htmlFor="mainSalesChannels">주요 판매채널</FieldLabel>
-                <input
-                  id="mainSalesChannels"
-                  value={form.mainSalesChannels}
-                  onChange={(event) => updateField("mainSalesChannels", event.target.value)}
-                  placeholder="예: 자사몰, 네이버, 오프라인 매장"
-                />
-              </label>
-              <label className="full">
-                <FieldLabel htmlFor="currentErpSystem">현재 사용 중인 ERP 또는 예약시스템</FieldLabel>
-                <input
-                  id="currentErpSystem"
-                  value={form.currentErpSystem}
-                  onChange={(event) => updateField("currentErpSystem", event.target.value)}
-                  placeholder="예: 자사 시스템, OO ERP"
-                />
-              </label>
-
-              <h3 className="partnership-apply-subhead full">회사 소개 및 전달사항</h3>
-
-              {(
-                [
-                  ["companyIntro", "회사 소개", LONG_TEXT_LIMITS.companyIntro],
-                  ["flagshipProducts", "주력 상품", LONG_TEXT_LIMITS.flagshipProducts],
-                  ["applyReason", "제휴 신청 사유", LONG_TEXT_LIMITS.applyReason],
-                  ["expectedCollaboration", "예상 협업 방식", LONG_TEXT_LIMITS.expectedCollaboration],
-                  ["messageToAdmin", "관리자 전달사항", LONG_TEXT_LIMITS.messageToAdmin],
-                ] as const
-              ).map(([key, label, limit]) => (
-                <label key={key} className={`full ${errors[key] ? "is-invalid" : ""}`}>
-                  <FieldLabel htmlFor={key}>{label}</FieldLabel>
-                  <textarea
-                    id={key}
-                    rows={4}
-                    value={form[key]}
-                    maxLength={limit}
-                    aria-invalid={Boolean(errors[key])}
-                    onChange={(event) => updateField(key, event.target.value)}
-                    placeholder={`${label}을(를) 입력해 주세요`}
-                  />
-                  <div className="partnership-char-count">
-                    <FieldError message={errors[key]} />
-                    <span>
-                      {form[key].length} / {limit}
-                    </span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          )}
-
-          {step.key === "docs" && (
+            </header>
             <div className="partnership-apply-fields">
               <p className="partnership-apply-secure-note full" role="note">
-                허용 형식: PDF, JPG, JPEG, PNG · 파일당 최대 {MAX_FILE_SIZE_LABEL} · 필수 서류 각 1개 · 선택 서류
-                항목당 1개 · 기타 서류 최대 {MAX_OTHER_FILES}개
-                <br />
-                선택한 파일은 이 화면에만 임시로 유지되며 서버로 업로드되지 않습니다.
+                선택한 파일은 브라우저 메모리에만 보관되며, 제출 시 sessionStorage에도 파일 내용은 저장되지
+                않습니다.
               </p>
-              <p className="partnership-apply-warn-note full" role="note">
-                주민등록번호, 계좌 비밀번호 등 신청에 불필요한 개인정보가 포함된 서류는 첨부하지 마세요.
-              </p>
-
-              <h3 className="partnership-apply-subhead full">필수서류</h3>
               {REQUIRED_ATTACHMENT_SLOTS.map((slot) => (
                 <AttachmentSlot
                   key={slot.key}
                   id={slot.key}
                   label={slot.label}
-                  required
+                  required={slot.required}
                   file={form[slot.key as SingleAttachmentKey]}
                   error={filePickErrors[slot.key] || errors[slot.key as SingleAttachmentKey]}
                   onSelectSingle={(nextFile, pickError) =>
@@ -1116,64 +716,64 @@ export function PartnershipApplyForm() {
                   onClearSingle={() => setSingleAttachment(slot.key as SingleAttachmentKey, null, null)}
                 />
               ))}
-
-              <h3 className="partnership-apply-subhead full">선택서류</h3>
               {OPTIONAL_ATTACHMENT_SLOTS.map((slot) => {
                 if (slot.key === "otherFiles") {
                   return (
                     <AttachmentSlot
                       key={slot.key}
                       id={slot.key}
-                      label={slot.label}
+                      label={`${slot.label} (최대 ${MAX_OTHER_FILES}개)`}
                       multiple
                       files={form.otherFiles}
-                      error={filePickErrors.otherFiles}
+                      error={filePickErrors.otherFiles || errors.otherFiles}
                       onSelectMultiple={setOtherFiles}
                       onRemoveMultipleAt={(index) =>
                         setOtherFiles(
-                          form.otherFiles.filter((_, i) => i !== index),
+                          form.otherFiles.filter((_, fileIndex) => fileIndex !== index),
                           null,
                         )
                       }
                     />
                   );
                 }
-                const singleKey = slot.key;
                 return (
                   <AttachmentSlot
-                    key={singleKey}
-                    id={singleKey}
+                    key={slot.key}
+                    id={slot.key}
                     label={slot.label}
-                    file={form[singleKey]}
-                    error={filePickErrors[singleKey]}
-                    onSelectSingle={(nextFile, pickError) => setSingleAttachment(singleKey, nextFile, pickError)}
-                    onClearSingle={() => setSingleAttachment(singleKey, null, null)}
+                    file={form[slot.key as SingleAttachmentKey]}
+                    error={filePickErrors[slot.key] || errors[slot.key as SingleAttachmentKey]}
+                    onSelectSingle={(nextFile, pickError) =>
+                      setSingleAttachment(slot.key as SingleAttachmentKey, nextFile, pickError)
+                    }
+                    onClearSingle={() => setSingleAttachment(slot.key as SingleAttachmentKey, null, null)}
                   />
                 );
               })}
+            </div>
+          </section>
 
-              <h3 className="partnership-apply-subhead full">주요 정책 안내</h3>
-              <ul className="partnership-policy-guide full">
-                {POLICY_GUIDE_ITEMS.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-
-              <h3 className="partnership-apply-subhead full">약관 동의</h3>
+          {/* 5. 약관 */}
+          <section className="partnership-apply-section" aria-labelledby="terms-title">
+            <header className="partnership-apply-section-head">
+              <h3 id="terms-title">약관 및 정책 동의</h3>
+              <p>필수 항목에 동의한 뒤 신청할 수 있습니다.</p>
+            </header>
+            <div className="partnership-apply-fields">
               <fieldset
                 className={`full partnership-apply-check-group ${errors.agreeTerms ? "is-invalid" : ""}`}
                 id="agreeTerms"
               >
                 <legend>
-                  필수 동의 <em aria-label="필수">*</em>
+                  약관 동의 <em aria-label="필수">*</em>
                 </legend>
                 <label className="check partnership-agree-all">
                   <input
                     type="checkbox"
-                    checked={requiredTermsAgreed}
-                    onChange={(event) => setRequiredTermsAll(event.target.checked)}
+                    checked={allTermsChecked}
+                    onChange={(event) => setAgreeAll(event.target.checked)}
                   />
-                  <span>필수약관 전체동의</span>
+                  <span>전체 동의</span>
                 </label>
                 {TERM_ITEMS.filter((item) => item.required).map((item) => (
                   <div key={item.key} className="partnership-term-row">
@@ -1183,18 +783,15 @@ export function PartnershipApplyForm() {
                         checked={form[item.key]}
                         onChange={(event) => updateField(item.key, event.target.checked)}
                       />
-                      <span>{item.title}</span>
+                      <span>
+                        (필수) {item.title}
+                      </span>
                     </label>
                     <button type="button" className="partnership-term-view" onClick={() => setOpenTerm(item)}>
-                      내용보기
+                      보기
                     </button>
                   </div>
                 ))}
-                <FieldError message={errors.agreeTerms} />
-              </fieldset>
-
-              <fieldset className="full partnership-apply-check-group">
-                <legend>선택 동의</legend>
                 {TERM_ITEMS.filter((item) => !item.required).map((item) => (
                   <div key={item.key} className="partnership-term-row">
                     <label className="check">
@@ -1203,411 +800,142 @@ export function PartnershipApplyForm() {
                         checked={form[item.key]}
                         onChange={(event) => updateField(item.key, event.target.checked)}
                       />
-                      <span>{item.title}</span>
+                      <span>(선택) {item.title}</span>
                     </label>
                     <button type="button" className="partnership-term-view" onClick={() => setOpenTerm(item)}>
-                      내용보기
+                      보기
                     </button>
                   </div>
                 ))}
+                <FieldError message={errors.agreeTerms} />
               </fieldset>
             </div>
-          )}
+          </section>
 
-          {step.key === "review" && (
-            <div className="partnership-apply-review">
-              <p className="partnership-apply-secure-note">
-                비밀번호는 표시하지 않으며, 사업자·연락처는 일부 마스킹됩니다. 첨부파일은 파일명만 표시합니다.
-              </p>
-              <p className="partnership-apply-temp-note" role="note">
-                이번 제출은 프론트엔드 프로토타입입니다. 실제 관리자 시스템에 신청이 생성되지 않으며, 이메일·알림톡도
-                발송되지 않습니다.
-              </p>
+          {/* 6. 신청내용 확인 */}
+          <section className="partnership-apply-section" aria-labelledby="summary-title">
+            <header className="partnership-apply-section-head">
+              <h3 id="summary-title">신청내용 확인</h3>
+              <p>입력한 내용이 아래에 바로 반영됩니다.</p>
+            </header>
+            <dl className="partnership-apply-summary">
+              <div>
+                <dt>여행사명</dt>
+                <dd>
+                  <SummaryValue value={summary.agencyName} />
+                </dd>
+              </div>
+              <div>
+                <dt>사업자등록번호</dt>
+                <dd>
+                  <SummaryValue value={summary.businessNumber} />
+                </dd>
+              </div>
+              <div>
+                <dt>대표자명</dt>
+                <dd>
+                  <SummaryValue value={summary.ceoName} />
+                </dd>
+              </div>
+              <div>
+                <dt>담당자명</dt>
+                <dd>
+                  <SummaryValue value={summary.contactName} />
+                </dd>
+              </div>
+              <div>
+                <dt>담당자 휴대전화</dt>
+                <dd>
+                  <SummaryValue value={summary.contactPhone} />
+                </dd>
+              </div>
+              <div>
+                <dt>담당자 이메일</dt>
+                <dd>
+                  <SummaryValue value={summary.contactEmail} />
+                </dd>
+              </div>
+              <div>
+                <dt>필수서류</dt>
+                <dd>{summary.requiredDocsAttached ? "첨부 완료" : "첨부 필요"}</dd>
+              </div>
+              <div>
+                <dt>필수약관</dt>
+                <dd>{summary.requiredTermsAgreed ? "동의 완료" : "동의 필요"}</dd>
+              </div>
+            </dl>
 
-              <section className="partnership-review-block">
-                <header>
-                  <h3>여행사 정보</h3>
-                  <button type="button" className="button ghost dark compact" onClick={() => goToStep("agency")}>
-                    수정
-                  </button>
-                </header>
-                <dl>
-                  <div>
-                    <dt>여행사명</dt>
-                    <dd>
-                      <TextValue value={review.agencyName} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>사업자등록번호 / 구분</dt>
-                    <dd>
-                      {maskBusinessNumber(review.businessNumber)} / {review.businessType || "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>대표자명</dt>
-                    <dd>
-                      <TextValue value={review.ceoName} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>여행업 등록 / 종류</dt>
-                    <dd>
-                      {review.tourismLicenseNumber || "—"} / {review.tourismLicenseType || "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>주소</dt>
-                    <dd>
-                      <TextValue value={`${review.address} ${review.addressDetail}`.trim()} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>대표 전화 / 이메일</dt>
-                    <dd>
-                      {maskPhone(review.phone)} / {maskEmail(review.email)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>홈페이지</dt>
-                    <dd>
-                      <TextValue value={review.homepage} />
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section className="partnership-review-block">
-                <header>
-                  <h3>대표 관리자 정보</h3>
-                  <button type="button" className="button ghost dark compact" onClick={() => goToStep("admin")}>
-                    수정
-                  </button>
-                </header>
-                <dl>
-                  <div>
-                    <dt>이름 / 부서·직책</dt>
-                    <dd>
-                      {review.adminName || "—"} · {review.department || "—"} / {review.position || "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>휴대전화 / 이메일</dt>
-                    <dd>
-                      {maskPhone(review.adminPhone)} / {maskEmail(review.adminEmail)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>로그인 아이디</dt>
-                    <dd>
-                      <TextValue value={review.adminLoginId} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>비밀번호</dt>
-                    <dd>{review.adminPasswordSet ? "입력됨 (표시하지 않음)" : "—"}</dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section className="partnership-review-block">
-                <header>
-                  <h3>취급상품</h3>
-                  <button type="button" className="button ghost dark compact" onClick={() => goToStep("trade")}>
-                    수정
-                  </button>
-                </header>
-                <dl>
-                  <div>
-                    <dt>선택 항목</dt>
-                    <dd>
-                      <TextValue value={review.productTypes.join(", ")} />
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section className="partnership-review-block">
-                <header>
-                  <h3>제휴 목적</h3>
-                  <button type="button" className="button ghost dark compact" onClick={() => goToStep("trade")}>
-                    수정
-                  </button>
-                </header>
-                <dl>
-                  <div>
-                    <dt>선택 항목</dt>
-                    <dd>
-                      <TextValue value={review.partnershipPurposes.join(", ")} />
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section className="partnership-review-block">
-                <header>
-                  <h3>판매 현황</h3>
-                  <button type="button" className="button ghost dark compact" onClick={() => goToStep("trade")}>
-                    수정
-                  </button>
-                </header>
-                <dl>
-                  <div>
-                    <dt>월평균 예약 / 판매금액</dt>
-                    <dd>
-                      {review.monthlyReservationCount || "—"} / {review.monthlySalesAmount || "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>주요 판매지역 / 고객층</dt>
-                    <dd>
-                      {review.mainSalesRegions || "—"} / {review.mainCustomerSegments || "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>온라인 / 오프라인 매장</dt>
-                    <dd>
-                      {yesNoLabel(review.sellsOnline as YesNo)} / {yesNoLabel(review.hasOfflineStore as YesNo)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>판매점</dt>
-                    <dd>
-                      {review.hasSellers === "yes"
-                        ? `보유 · ${review.sellerCount || "—"}곳`
-                        : review.hasSellers === "no"
-                          ? "없음"
-                          : "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>주요 판매채널</dt>
-                    <dd>
-                      <TextValue value={review.mainSalesChannels} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>사용 중 ERP·예약시스템</dt>
-                    <dd>
-                      <TextValue value={review.currentErpSystem} />
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section className="partnership-review-block">
-                <header>
-                  <h3>회사 소개</h3>
-                  <button type="button" className="button ghost dark compact" onClick={() => goToStep("trade")}>
-                    수정
-                  </button>
-                </header>
-                <dl>
-                  <div>
-                    <dt>회사 소개</dt>
-                    <dd>
-                      <TextValue value={review.companyIntro} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>주력 상품</dt>
-                    <dd>
-                      <TextValue value={review.flagshipProducts} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>제휴 신청 사유</dt>
-                    <dd>
-                      <TextValue value={review.applyReason} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>예상 협업 방식</dt>
-                    <dd>
-                      <TextValue value={review.expectedCollaboration} />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>관리자 전달사항</dt>
-                    <dd>
-                      <TextValue value={review.messageToAdmin} />
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section className="partnership-review-block">
-                <header>
-                  <h3>제출서류 목록</h3>
-                  <button type="button" className="button ghost dark compact" onClick={() => goToStep("docs")}>
-                    수정
-                  </button>
-                </header>
-                <dl>
-                  <div>
-                    <dt>필수</dt>
-                    <dd>
-                      사업자등록증: {review.businessLicenseFileName || "미첨부"}
-                      <br />
-                      관광사업등록증/여행업등록증: {review.tourismLicenseFileName || "미첨부"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>선택</dt>
-                    <dd>
-                      {!review.mailOrderLicenseFileName &&
-                      !review.companyIntroFileName &&
-                      !review.productIntroFileName &&
-                      !review.insuranceFileName &&
-                      review.otherFileNames.length === 0 ? (
-                        "없음"
-                      ) : (
-                        <>
-                          {review.mailOrderLicenseFileName ? (
-                            <>
-                              통신판매업 신고증: {review.mailOrderLicenseFileName}
-                              <br />
-                            </>
-                          ) : null}
-                          {review.companyIntroFileName ? (
-                            <>
-                              회사소개서: {review.companyIntroFileName}
-                              <br />
-                            </>
-                          ) : null}
-                          {review.productIntroFileName ? (
-                            <>
-                              상품소개서: {review.productIntroFileName}
-                              <br />
-                            </>
-                          ) : null}
-                          {review.insuranceFileName ? (
-                            <>
-                              보험 관련 서류: {review.insuranceFileName}
-                              <br />
-                            </>
-                          ) : null}
-                          {review.otherFileNames.length > 0 ? <>기타: {review.otherFileNames.join(", ")}</> : null}
-                        </>
-                      )}
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <section className="partnership-review-block">
-                <header>
-                  <h3>약관 동의내역</h3>
-                  <button type="button" className="button ghost dark compact" onClick={() => goToStep("docs")}>
-                    수정
-                  </button>
-                </header>
-                <dl>
-                  <div>
-                    <dt>필수 동의</dt>
-                    <dd>
-                      {TERM_ITEMS.filter((item) => item.required)
-                        .map((item) => `${item.title}: ${review[item.key] ? "동의" : "미동의"}`)
-                        .join(" · ")}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>선택 동의</dt>
-                    <dd>
-                      {[
-                        review.agreeEmailGuide ? "제휴·상품 안내 이메일" : null,
-                        review.agreeMarketing ? "마케팅 정보" : null,
-                        review.agreeSms ? "알림톡·문자" : null,
-                      ]
-                        .filter(Boolean)
-                        .join(", ") || "없음"}
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-
-              <fieldset
-                className={`partnership-apply-check-group ${errors.confirmAccuracy ? "is-invalid" : ""}`}
-                id="confirmAccuracy"
-              >
-                <legend>
-                  최종 확인 <em aria-label="필수">*</em>
-                </legend>
-                <label className="check">
-                  <input
-                    type="checkbox"
-                    checked={form.confirmAccuracy}
-                    onChange={(event) => updateField("confirmAccuracy", event.target.checked)}
-                  />
-                  <span>입력한 정보가 사실과 다름이 없음을 확인합니다.</span>
-                </label>
-                <FieldError message={errors.confirmAccuracy} />
-              </fieldset>
-
-              {draftNote ? (
-                <p className="partnership-apply-draft-note" role="status">
-                  {draftNote}
-                </p>
-              ) : null}
-            </div>
-          )}
+            <fieldset
+              className={`partnership-apply-check-group ${errors.confirmAccuracy ? "is-invalid" : ""}`}
+              id="confirmAccuracy"
+            >
+              <legend>
+                사실확인 <em aria-label="필수">*</em>
+              </legend>
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={form.confirmAccuracy}
+                  onChange={(event) => updateField("confirmAccuracy", event.target.checked)}
+                />
+                <span>입력한 정보와 제출서류가 사실과 다름없음을 확인합니다.</span>
+              </label>
+              <FieldError message={errors.confirmAccuracy} />
+            </fieldset>
+          </section>
 
           <div className="partnership-apply-actions">
-            <button type="button" className="button ghost dark" onClick={() => setCancelOpen(true)}>
-              신청 취소
+            <button type="button" className="button ghost dark" onClick={requestCancel}>
+              취소
             </button>
-            <div className="partnership-apply-nav">
-              <button type="button" className="button ghost dark" onClick={goPrev} disabled={isFirst}>
-                이전
-              </button>
-              {isLast ? (
-                <>
-                  <button type="button" className="button ghost dark" onClick={handleTempSave}>
-                    임시저장
-                  </button>
-                  <button
-                    type="button"
-                    className="button primary"
-                    onClick={handleSubmitPrototype}
-                    disabled={submitting}
-                  >
-                    가입신청 제출
-                  </button>
-                </>
-              ) : (
-                <button type="button" className="button primary" onClick={goNext}>
-                  다음 <span>→</span>
-                </button>
-              )}
-            </div>
+            <button
+              type="button"
+              className="button primary"
+              onClick={handleSubmitPrototype}
+              disabled={submitting}
+            >
+              가입 신청하기
+            </button>
           </div>
         </section>
       </div>
 
-      {cancelOpen && (
+      {cancelOpen ? (
         <div className="partnership-apply-dialog" role="dialog" aria-modal="true" aria-labelledby="cancel-title">
-          <button type="button" className="partnership-apply-dialog-backdrop" onClick={() => setCancelOpen(false)} aria-label="닫기" />
+          <button
+            type="button"
+            className="partnership-apply-dialog-backdrop"
+            onClick={() => setCancelOpen(false)}
+            aria-label="닫기"
+          />
           <div className="partnership-apply-dialog-panel">
             <h3 id="cancel-title">신청을 취소할까요?</h3>
-            <p>작성 중인 내용은 저장되지 않으며 제휴안내 페이지로 이동합니다.</p>
+            <p>입력 중인 내용은 저장되지 않습니다. 제휴여행사 안내 페이지로 이동합니다.</p>
             <div>
               <button type="button" className="button ghost dark" onClick={() => setCancelOpen(false)}>
                 계속 작성
               </button>
               <button type="button" className="button primary" onClick={confirmCancel}>
-                신청 취소
+                취소하고 나가기
               </button>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {openTerm && (
+      {openTerm ? (
         <div className="partnership-apply-dialog" role="dialog" aria-modal="true" aria-labelledby="term-title">
-          <button type="button" className="partnership-apply-dialog-backdrop" onClick={() => setOpenTerm(null)} aria-label="닫기" />
+          <button
+            type="button"
+            className="partnership-apply-dialog-backdrop"
+            onClick={() => setOpenTerm(null)}
+            aria-label="닫기"
+          />
           <div className="partnership-apply-dialog-panel partnership-term-dialog">
             <h3 id="term-title">{openTerm.title}</h3>
-            <p className="partnership-term-badge">{openTerm.required ? "필수 동의 · 임시 안내문" : "선택 동의 · 임시 안내문"}</p>
+            <p className="partnership-term-badge">
+              {openTerm.required ? "필수 동의 · 임시 안내문" : "선택 동의 · 임시 안내문"}
+            </p>
             <p>{openTerm.summary}</p>
             <div>
               <button type="button" className="button primary" onClick={() => setOpenTerm(null)}>
@@ -1616,7 +944,7 @@ export function PartnershipApplyForm() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </main>
   );
 }
