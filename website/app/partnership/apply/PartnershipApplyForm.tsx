@@ -10,7 +10,6 @@ import {
   firstErrorFieldId,
   formatBusinessNumberInput,
   formatFileSize,
-  getApplyFormSummary,
   INITIAL_PARTNERSHIP_APPLY_FORM,
   isValidBusinessNumber,
   MAX_FILE_SIZE_LABEL,
@@ -57,10 +56,6 @@ function FieldError({ message }: { message?: string }) {
       {message}
     </small>
   );
-}
-
-function SummaryValue({ value }: { value: string }) {
-  return <>{value.trim() ? value : "미입력"}</>;
 }
 
 function ImageFilePreview({ file }: { file: File }) {
@@ -215,8 +210,6 @@ export function PartnershipApplyForm() {
   const [openTerm, setOpenTerm] = useState<TermItem | null>(null);
   const [submitBanner, setSubmitBanner] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const summary = useMemo(() => getApplyFormSummary(form), [form]);
 
   const allTermKeys = useMemo(
     () => [...REQUIRED_TERM_KEYS, ...OPTIONAL_TERM_KEYS] as const,
@@ -810,78 +803,6 @@ export function PartnershipApplyForm() {
                 <FieldError message={errors.agreeTerms} />
               </fieldset>
             </div>
-          </section>
-
-          {/* 6. 신청내용 확인 */}
-          <section className="partnership-apply-section" aria-labelledby="summary-title">
-            <header className="partnership-apply-section-head">
-              <h3 id="summary-title">신청내용 확인</h3>
-              <p>입력한 내용이 아래에 바로 반영됩니다.</p>
-            </header>
-            <dl className="partnership-apply-summary">
-              <div>
-                <dt>여행사명</dt>
-                <dd>
-                  <SummaryValue value={summary.agencyName} />
-                </dd>
-              </div>
-              <div>
-                <dt>사업자등록번호</dt>
-                <dd>
-                  <SummaryValue value={summary.businessNumber} />
-                </dd>
-              </div>
-              <div>
-                <dt>대표자명</dt>
-                <dd>
-                  <SummaryValue value={summary.ceoName} />
-                </dd>
-              </div>
-              <div>
-                <dt>담당자명</dt>
-                <dd>
-                  <SummaryValue value={summary.contactName} />
-                </dd>
-              </div>
-              <div>
-                <dt>담당자 휴대전화</dt>
-                <dd>
-                  <SummaryValue value={summary.contactPhone} />
-                </dd>
-              </div>
-              <div>
-                <dt>담당자 이메일</dt>
-                <dd>
-                  <SummaryValue value={summary.contactEmail} />
-                </dd>
-              </div>
-              <div>
-                <dt>필수서류</dt>
-                <dd>{summary.requiredDocsAttached ? "첨부 완료" : "첨부 필요"}</dd>
-              </div>
-              <div>
-                <dt>필수약관</dt>
-                <dd>{summary.requiredTermsAgreed ? "동의 완료" : "동의 필요"}</dd>
-              </div>
-            </dl>
-
-            <fieldset
-              className={`partnership-apply-check-group ${errors.confirmAccuracy ? "is-invalid" : ""}`}
-              id="confirmAccuracy"
-            >
-              <legend>
-                사실확인 <em aria-label="필수">*</em>
-              </legend>
-              <label className="check">
-                <input
-                  type="checkbox"
-                  checked={form.confirmAccuracy}
-                  onChange={(event) => updateField("confirmAccuracy", event.target.checked)}
-                />
-                <span>입력한 정보와 제출서류가 사실과 다름없음을 확인합니다.</span>
-              </label>
-              <FieldError message={errors.confirmAccuracy} />
-            </fieldset>
           </section>
 
           <div className="partnership-apply-actions">

@@ -122,7 +122,7 @@ async function main() {
   await submit.click();
   await page.waitForTimeout(300);
   ok(
-    "필수서류/약관/사실확인 오류",
+    "필수서류/약관 오류",
     (await page.locator(".partnership-field-error").count()) > 0,
   );
 
@@ -208,10 +208,9 @@ async function main() {
   await submit.click();
   await page.waitForTimeout(300);
   const beforeAgreeUrl = page.url();
-  ok("약관/사실확인 미동의 시 미이동", beforeAgreeUrl.includes("/partnership/apply"));
+  ok("약관 미동의 시 미이동", beforeAgreeUrl.includes("/partnership/apply"));
 
   await page.locator(".partnership-agree-all input").check();
-  await page.locator("#confirmAccuracy input").check();
   await submit.click();
   await page.waitForURL("**/partnership/apply/complete", { timeout: 15000 });
   ok("제출 후 완료 페이지", page.url().includes("/partnership/apply/complete"));

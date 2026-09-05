@@ -42,8 +42,6 @@ export type PartnershipApplyForm = {
   agreeBusinessInfo: boolean;
   agreePartnershipPolicy: boolean;
   agreeEmailGuide: boolean;
-  /** 최종 확인: 입력 정보와 제출서류가 사실과 다름이 없음 */
-  confirmAccuracy: boolean;
 };
 
 export type SingleAttachmentKey =
@@ -203,7 +201,6 @@ export const INITIAL_PARTNERSHIP_APPLY_FORM: PartnershipApplyForm = {
   agreeBusinessInfo: false,
   agreePartnershipPolicy: false,
   agreeEmailGuide: false,
-  confirmAccuracy: false,
 };
 
 export function isValidEmail(value: string) {
@@ -266,7 +263,6 @@ export const APPLY_FIELD_ORDER: (keyof PartnershipApplyForm)[] = [
   "agreeBusinessInfo",
   "agreePartnershipPolicy",
   "agreeEmailGuide",
-  "confirmAccuracy",
 ];
 
 function validateAttachedFileField(
@@ -341,11 +337,6 @@ export function validateApplyForm(form: PartnershipApplyForm): ApplyFieldErrors 
 
   if (!areRequiredTermsAgreed(form)) {
     errors.agreeTerms = "필수 약관에 모두 동의해 주세요.";
-  }
-
-  if (!form.confirmAccuracy) {
-    errors.confirmAccuracy =
-      "입력한 정보와 제출서류가 사실과 다름없음을 확인해 주세요.";
   }
 
   return errors;
