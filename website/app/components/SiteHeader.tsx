@@ -18,41 +18,65 @@ const PARTNERSHIP_LINKS = [
   },
 ] as const;
 
+const SELLER_LINKS = [
+  { href: "/seller", label: "판매점 안내", match: (path: string) => path === "/seller" },
+  {
+    href: "/seller/apply",
+    label: "판매점 가입신청",
+    match: (path: string) => path.startsWith("/seller/apply"),
+  },
+  {
+    href: "/seller/application-status",
+    label: "신청현황",
+    match: (path: string) => path.startsWith("/seller/application-status"),
+  },
+] as const;
+
 type SiteHeaderProps = {
-  variant: "home" | "partnership";
+  variant: "home" | "partnership" | "seller";
 };
 
 export function SiteHeader({ variant }: SiteHeaderProps) {
   const pathname = usePathname() || "/";
   const [partnerOpen, setPartnerOpen] = useState(false);
+  const [sellerOpen, setSellerOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const partnerWrapRef = useRef<HTMLDivElement | null>(null);
+  const sellerWrapRef = useRef<HTMLDivElement | null>(null);
   const partnerButtonRef = useRef<HTMLButtonElement | null>(null);
-  const menuId = useId();
+  const sellerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const partnerMenuId = useId();
+  const sellerMenuId = useId();
   const mobileId = useId();
 
   const partnershipActive = pathname.startsWith("/partnership");
+  const sellerActive = pathname.startsWith("/seller");
 
-  useEffect(() => {
+  const [menuPath, setMenuPath] = useState(pathname);
+  if (pathname !== menuPath) {
+    setMenuPath(pathname);
     setPartnerOpen(false);
+    setSellerOpen(false);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
-    if (!partnerOpen && !mobileOpen) return;
+    if (!partnerOpen && !sellerOpen && !mobileOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setPartnerOpen(false);
+        setSellerOpen(false);
         setMobileOpen(false);
-        partnerButtonRef.current?.focus();
+        if (partnerOpen) partnerButtonRef.current?.focus();
+        else if (sellerOpen) sellerButtonRef.current?.focus();
       }
     };
 
     const onPointerDown = (event: MouseEvent) => {
-      if (!partnerWrapRef.current?.contains(event.target as Node)) {
-        setPartnerOpen(false);
-      }
+      const target = event.target as Node;
+      if (!partnerWrapRef.current?.contains(target)) setPartnerOpen(false);
+      if (!sellerWrapRef.current?.contains(target)) setSellerOpen(false);
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -61,7 +85,7 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("mousedown", onPointerDown);
     };
-  }, [partnerOpen, mobileOpen]);
+  }, [partnerOpen, sellerOpen, mobileOpen]);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -76,6 +100,10 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
       <a className="nav-cta" href="#contact">
         도입 문의 <span>↗</span>
       </a>
+    ) : variant === "seller" ? (
+      <Link className="nav-cta" href="/seller/apply">
+        판매점 가입 <span>↗</span>
+      </Link>
     ) : (
       <Link className="nav-cta" href="/partnership/apply">
         가입신청 <span>↗</span>
@@ -89,14 +117,23 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
         type="button"
         className={`nav-dropdown-trigger ${partnershipActive ? "is-active" : ""}`}
         aria-expanded={partnerOpen}
-        aria-controls={menuId}
+        aria-controls={partnerMenuId}
         aria-haspopup="true"
-        onClick={() => setPartnerOpen((value) => !value)}
+        onClick={() => {
+          setPartnerOpen((value) => !value);
+          setSellerOpen(false);
+        }}
       >
         제휴안내
         <span aria-hidden="true">{partnerOpen ? "▴" : "▾"}</span>
       </button>
-      <ul id={menuId} className="nav-submenu" hidden={!partnerOpen} role="menu" aria-label="제휴안내">
+      <ul
+        id={partnerMenuId}
+        className="nav-submenu"
+        hidden={!partnerOpen}
+        role="menu"
+        aria-label="제휴안내"
+      >
         {PARTNERSHIP_LINKS.map((item) => {
           const current = item.match(pathname);
           return (
@@ -116,6 +153,43 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
     </div>
   );
 
+  const sellerMenu = (
+    <div className={`nav-dropdown ${sellerOpen ? "is-open" : ""}`} ref={sellerWrapRef}>
+      <button
+        ref={sellerButtonRef}
+        type="button"
+        className={`nav-dropdown-trigger ${sellerActive ? "is-active" : ""}`}
+        aria-expanded={sellerOpen}
+        aria-controls={sellerMenuId}
+        aria-haspopup="true"
+        onClick={() => {
+          setSellerOpen((value) => !value);
+          setPartnerOpen(false);
+        }}
+      >
+        판매점
+        <span aria-hidden="true">{sellerOpen ? "▴" : "▾"}</span>
+      </button>
+      <ul id={sellerMenuId} className="nav-submenu" hidden={!sellerOpen} role="menu" aria-label="판매점">
+        {SELLER_LINKS.map((item) => {
+          const current = item.match(pathname);
+          return (
+            <li key={item.href} role="none">
+              <Link
+                role="menuitem"
+                href={item.href}
+                aria-current={current ? "page" : undefined}
+                onClick={() => setSellerOpen(false)}
+              >
+                {item.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+
   const desktopLinks =
     variant === "home" ? (
       <>
@@ -123,6 +197,7 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
         <a href="#air">항공 예약</a>
         <a href="#technology">기술</a>
         {partnershipMenu}
+        {sellerMenu}
         <a href="#contact">문의</a>
       </>
     ) : (
@@ -130,6 +205,7 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
         <Link href="/">홈</Link>
         <Link href="/#platform">플랫폼</Link>
         {partnershipMenu}
+        {sellerMenu}
         <Link href="/#contact">문의</Link>
       </>
     );
@@ -148,6 +224,17 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
         </a>
         <p className="nav-mobile-group-label">제휴안내</p>
         {PARTNERSHIP_LINKS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={item.match(pathname) ? "page" : undefined}
+            onClick={() => setMobileOpen(false)}
+          >
+            {item.label}
+          </Link>
+        ))}
+        <p className="nav-mobile-group-label">판매점</p>
+        {SELLER_LINKS.map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -180,10 +267,36 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
             {item.label}
           </Link>
         ))}
+        <p className="nav-mobile-group-label">판매점</p>
+        {SELLER_LINKS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={item.match(pathname) ? "page" : undefined}
+            onClick={() => setMobileOpen(false)}
+          >
+            {item.label}
+          </Link>
+        ))}
         <Link href="/#contact" onClick={() => setMobileOpen(false)}>
           문의
         </Link>
       </>
+    );
+
+  const mobileCta =
+    variant === "home" ? (
+      <a className="button primary" href="#contact" onClick={() => setMobileOpen(false)}>
+        도입 문의
+      </a>
+    ) : variant === "seller" ? (
+      <Link className="button primary" href="/seller/apply" onClick={() => setMobileOpen(false)}>
+        판매점 가입신청
+      </Link>
+    ) : (
+      <Link className="button primary" href="/partnership/apply" onClick={() => setMobileOpen(false)}>
+        가입신청
+      </Link>
     );
 
   const inner = (
@@ -212,15 +325,7 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
       <div id={mobileId} className={`nav-mobile-panel ${mobileOpen ? "is-open" : ""}`} hidden={!mobileOpen}>
         <nav className="nav-mobile-links" aria-label="모바일 메뉴">
           {mobileLinks}
-          {variant === "home" ? (
-            <a className="button primary" href="#contact" onClick={() => setMobileOpen(false)}>
-              도입 문의
-            </a>
-          ) : (
-            <Link className="button primary" href="/partnership/apply" onClick={() => setMobileOpen(false)}>
-              가입신청
-            </Link>
-          )}
+          {mobileCta}
         </nav>
       </div>
     </>
@@ -234,17 +339,37 @@ export function SiteHeader({ variant }: SiteHeaderProps) {
     );
   }
 
+  const headerClass = variant === "seller" ? "seller-header site-nav" : "partnership-header site-nav";
+  const innerClass =
+    variant === "seller" ? "shell seller-header-inner" : "shell partnership-header-inner";
+
   return (
-    <header className="partnership-header site-nav">
-      <div className="shell partnership-header-inner" role="navigation" aria-label="주요 메뉴">
+    <header className={headerClass}>
+      <div className={innerClass} role="navigation" aria-label="주요 메뉴">
         {inner}
       </div>
     </header>
   );
 }
 
-export function SiteFooter({ variant }: { variant: "home" | "partnership" }) {
+export function SiteFooter({ variant }: { variant: "home" | "partnership" | "seller" }) {
   const topHref = variant === "home" ? "#home" : "/";
+
+  const links =
+    variant === "seller" ? (
+      <>
+        <Link href="/seller">판매점 안내</Link>
+        <Link href="/seller/apply">판매점 가입신청</Link>
+        <Link href="/seller/application-status">신청현황</Link>
+      </>
+    ) : (
+      <>
+        <Link href="/partnership">제휴여행사 안내</Link>
+        <Link href="/partnership/apply">가입신청</Link>
+        <Link href="/partnership/application-status">신청현황</Link>
+        {variant === "home" ? <Link href="/seller">판매점 안내</Link> : null}
+      </>
+    );
 
   return (
     <footer>
@@ -255,9 +380,7 @@ export function SiteFooter({ variant }: { variant: "home" | "partnership" }) {
         </div>
         <p>여행의 모든 흐름을 하나로 연결하는 통합여행플랫폼</p>
         <div className="footer-links">
-          <Link href="/partnership">제휴여행사 안내</Link>
-          <Link href="/partnership/apply">가입신청</Link>
-          <Link href="/partnership/application-status">신청현황</Link>
+          {links}
           <a href={topHref}>
             맨 위로 <span>↑</span>
           </a>
