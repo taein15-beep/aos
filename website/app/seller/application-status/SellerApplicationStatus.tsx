@@ -364,28 +364,32 @@ function ApplicationDetail({ view }: { view: StatusViewModel }) {
         <StatusGuide view={view} />
       </div>
 
-      <section className="seller-status-section" aria-labelledby="seller-status-docs-title">
-        <h2 id="seller-status-docs-title">증빙서류</h2>
-        {isIndividual ? (
-          <p className="seller-status-guide-note">개인 판매점은 가입 단계에서 필수 첨부서류가 없습니다.</p>
-        ) : null}
-        <ul className="seller-doc-status-list">
-          {view.documents.map((doc) => (
-            <li key={doc.name}>
-              <div>
-                <span>
-                  {doc.name}
-                  {doc.required ? " (필수)" : " (선택)"}
-                </span>
-                {doc.fileName ? (
-                  <small className="seller-complete-break">{doc.fileName}</small>
-                ) : null}
-              </div>
-              <em data-state={doc.state}>{doc.state}</em>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {view.documents.length > 0 ? (
+        <section className="seller-status-section" aria-labelledby="seller-status-docs-title">
+          <h2 id="seller-status-docs-title">증빙서류</h2>
+          {isIndividual ? (
+            <p className="seller-status-guide-note">
+              개인 판매점은 가입 단계에서 필수 첨부서류가 없습니다.
+            </p>
+          ) : null}
+          <ul className="seller-doc-status-list">
+            {view.documents.map((doc) => (
+              <li key={doc.name}>
+                <div>
+                  <span>
+                    {doc.name}
+                    {doc.required ? " (필수)" : " (선택)"}
+                  </span>
+                  {doc.fileName ? (
+                    <small className="seller-complete-break">{doc.fileName}</small>
+                  ) : null}
+                </div>
+                <em data-state={doc.state}>{doc.state}</em>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section className="seller-status-section" aria-labelledby="seller-status-history-title">
         <h2 id="seller-status-history-title">처리 이력</h2>

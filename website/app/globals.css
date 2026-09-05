@@ -695,7 +695,6 @@ footer { color: #8798aa; background: #051426; }
   border-radius: 50%;
   background: #1875ff;
 }
-.seller-apply-referral-notes { margin-bottom: 16px; }
 .seller-type-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .seller-type-choice.is-invalid .seller-type-option { border-color: #e57373; }
 .seller-type-option {
@@ -724,6 +723,31 @@ footer { color: #8798aa; background: #051426; }
 .seller-apply-fields > .seller-field-with-action { display: grid; gap: 8px; align-content: start; }
 .seller-apply-fields > .full { grid-column: 1 / -1; }
 .seller-apply-secure-note.full { margin: 0; }
+.seller-apply-trio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 18px;
+  align-items: start;
+}
+.seller-apply-trio > label,
+.seller-apply-trio > .seller-field-with-action { display: grid; gap: 8px; align-content: start; }
+.seller-apply-trio .seller-inline-action { grid-template-columns: minmax(0, 1fr) auto; }
+.seller-apply-address-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 16px 12px;
+  align-items: start;
+}
+.seller-apply-address-row > label,
+.seller-apply-address-row > .seller-address-search {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.seller-apply-address-row .seller-address-search .button {
+  min-height: 44px;
+  white-space: nowrap;
+}
 .seller-field-label label { display: inline-flex; align-items: center; gap: 4px; color: #4d6078; font-size: 12px; font-weight: 700; }
 .seller-field-label em,
 .seller-apply-check-group legend em { color: #e11d48; font-style: normal; margin-left: 2px; }
@@ -765,7 +789,7 @@ footer { color: #8798aa; background: #051426; }
   align-items: stretch;
 }
 .seller-apply-docs-row.is-individual {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 .seller-file-input-hidden,
 .seller-apply-fields input.seller-file-input-hidden {
@@ -1370,6 +1394,7 @@ footer { color: #8798aa; background: #051426; }
   .partnership-complete-summary dl > div { grid-template-columns: 1fr; gap: 4px; }
   .partnership-apply-docs-row { grid-template-columns: 1fr; }
   .seller-apply-docs-row { grid-template-columns: 1fr; }
+  .seller-apply-address-row { grid-template-columns: 1fr; }
   .seller-complete-meta > div,
   .seller-complete-summary dl > div { grid-template-columns: 1fr; gap: 4px; }
   .seller-status-lookup-form { grid-template-columns: 1fr; }
@@ -1411,6 +1436,8 @@ footer { color: #8798aa; background: #051426; }
   .seller-apply-page { padding: 24px 0 56px; }
   .seller-apply-panel { padding: 20px 16px; }
   .seller-apply-fields { grid-template-columns: 1fr; }
+  .seller-apply-trio { grid-template-columns: 1fr; }
+  .seller-apply-address-row { grid-template-columns: 1fr; }
   .seller-apply-docs-row { grid-template-columns: 1fr; }
   .seller-type-choice { grid-template-columns: 1fr; }
   .seller-inline-action { grid-template-columns: 1fr; }

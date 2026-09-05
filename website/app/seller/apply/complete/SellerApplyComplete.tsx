@@ -7,7 +7,6 @@ import {
   loadPrototypeSellerApplyReceipt,
   type PrototypeSellerApplyReceipt,
   type SellerApplyFormSummary,
-  type SellerDocumentMeta,
   type SellerType,
 } from "../form-state";
 
@@ -111,18 +110,6 @@ const AFTER_APPROVAL_NOTES = [
   "예약·결제만으로 수수료가 확정되지 않으며, 정상 행사완료 후 수수료가 확정됩니다.",
 ] as const;
 
-function documentAttached(doc: SellerDocumentMeta) {
-  if (doc.fileNames && doc.fileNames.length > 0) return true;
-  return Boolean(doc.fileName);
-}
-
-function documentStatusLabel(doc: SellerDocumentMeta) {
-  if (documentAttached(doc)) {
-    return doc.required ? "필수서류 첨부 완료" : "첨부 완료";
-  }
-  return "미첨부";
-}
-
 function EmptyCompleteState() {
   return (
     <main className="seller-apply-page">
@@ -187,9 +174,6 @@ export function SellerApplyComplete() {
   const isBusiness = receipt.sellerType === "business";
   const isIndividual = receipt.sellerType === "individual";
   const contactLabel = isIndividual ? "신청자" : "담당자";
-  const requiredDocs = summary.documents.filter((doc) => doc.required);
-  const requiredDocsOk =
-    requiredDocs.length > 0 && requiredDocs.every((doc) => documentAttached(doc));
 
   return (
     <main className="seller-apply-page">
@@ -206,8 +190,7 @@ export function SellerApplyComplete() {
           <span className="section-kicker">APPLICATION COMPLETE</span>
           <h1 id="seller-complete-title">판매점 가입신청이 완료되었습니다.</h1>
           <p className="seller-complete-lead">
-            현재 홈페이지 운영 여행사가 신청정보와 증빙서류를 검토한 후 담당자 이메일로 결과를
-            안내합니다.
+            현재 홈페이지 운영 여행사가 신청정보를 검토한 후 담당자 이메일로 결과를 안내합니다.
           </p>
           <p className="seller-complete-status-line">
             처리상태:{" "}
@@ -307,45 +290,7 @@ export function SellerApplyComplete() {
                   <dd className="seller-complete-break">{summary.homepageOrSns}</dd>
                 </div>
               ) : null}
-              {summary.applicationNote ? (
-                <div>
-                  <dt>활동 및 신청내용</dt>
-                  <dd className="seller-complete-break">{summary.applicationNote}</dd>
-                </div>
-              ) : null}
             </dl>
-          </section>
-
-          <section className="seller-complete-docs" aria-labelledby="seller-complete-docs-title">
-            <h2 id="seller-complete-docs-title">증빙서류</h2>
-            {isIndividual ? (
-              <p className="seller-complete-docs-note">
-                개인 판매점은 가입 단계에서 필수 첨부서류가 없습니다.
-              </p>
-            ) : null}
-            {isBusiness && requiredDocsOk ? (
-              <p className="seller-complete-docs-note">필수서류 첨부 완료</p>
-            ) : null}
-            <ul className="seller-complete-doc-list">
-              {summary.documents.map((doc) => (
-                <li key={doc.key}>
-                  <div>
-                    <strong>{doc.label}</strong>
-                    {doc.required ? <span className="seller-complete-doc-req">필수</span> : null}
-                    {documentAttached(doc) && (doc.fileName || doc.fileNames?.[0]) ? (
-                      <span className="seller-complete-doc-name">
-                        {doc.fileNames && doc.fileNames.length > 1
-                          ? doc.fileNames.join(", ")
-                          : doc.fileName || doc.fileNames?.[0]}
-                      </span>
-                    ) : null}
-                  </div>
-                  <span className={documentAttached(doc) ? "is-attached" : "is-missing"}>
-                    {documentStatusLabel(doc)}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </section>
 
           <section

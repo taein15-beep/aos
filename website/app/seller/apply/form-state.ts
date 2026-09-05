@@ -67,10 +67,9 @@ export type SellerSingleAttachmentKey =
   | "activityProofFile";
 
 export type SellerAttachmentSlot = {
-  key: SellerSingleAttachmentKey | "otherFiles";
+  key: SellerSingleAttachmentKey;
   label: string;
   required: boolean;
-  multiple?: boolean;
 };
 
 export const FILE_ACCEPT = ".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png";
@@ -80,17 +79,9 @@ export const MAX_FILE_SIZE_LABEL = "10MB";
 export const MAX_OTHER_FILES = 3;
 export const MAX_APPLICATION_NOTE_LENGTH = 500;
 
-export const BUSINESS_ATTACHMENT_SLOTS: SellerAttachmentSlot[] = [
-  { key: "businessLicenseFile", label: "사업자등록증", required: true },
-  { key: "mailOrderLicenseFile", label: "통신판매업 신고증", required: false },
-  { key: "tourismLicenseFile", label: "여행업등록증", required: false },
-  { key: "otherFiles", label: "기타 증빙서류", required: false, multiple: true },
-];
+export const BUSINESS_ATTACHMENT_SLOTS: SellerAttachmentSlot[] = [];
 
-export const INDIVIDUAL_ATTACHMENT_SLOTS: SellerAttachmentSlot[] = [
-  { key: "activityProofFile", label: "활동 경력 증빙", required: false },
-  { key: "otherFiles", label: "기타 증빙서류", required: false, multiple: true },
-];
+export const INDIVIDUAL_ATTACHMENT_SLOTS: SellerAttachmentSlot[] = [];
 
 export function getAttachmentSlotsForSellerType(
   sellerType: SelectedSellerType,
@@ -334,8 +325,7 @@ export function areRequiredSellerTermsAgreed(form: SellerApplyForm) {
 
 /** 상호명 → 판매점명 동기화 */
 export function applyBusinessNameToSellerName(form: SellerApplyForm): SellerApplyForm {
-  if (!form.useBusinessNameAsSellerName) return form;
-  return { ...form, sellerName: form.businessName };
+  return { ...form, sellerName: form.businessName, useBusinessNameAsSellerName: true };
 }
 
 export function setUseBusinessNameAsSellerName(
@@ -347,10 +337,14 @@ export function setUseBusinessNameAsSellerName(
   return next;
 }
 
+/** 사업자: 상호명 변경 시 판매점명(표시용)도 상호명으로 동기화합니다. */
 export function updateBusinessName(form: SellerApplyForm, businessName: string): SellerApplyForm {
-  const next = { ...form, businessName };
-  if (next.useBusinessNameAsSellerName) next.sellerName = businessName;
-  return next;
+  return {
+    ...form,
+    businessName,
+    sellerName: businessName,
+    useBusinessNameAsSellerName: true,
+  };
 }
 
 /** 대표자명 → 담당자명 동기화 */
@@ -493,11 +487,6 @@ export function isSellerApplyFormDirty(form: SellerApplyForm): boolean {
   );
 }
 
-function validateAttachedFileField(file: File | null, emptyMessage: string): string | undefined {
-  if (!file) return emptyMessage;
-  return validateAttachmentFile(file) ?? undefined;
-}
-
 /**
  * 화면·포커스용 필드 순서.
  * 유형에 맞지 않는 키는 firstErrorFieldId에서 오류가 없을 때만 건너뜁니다.
@@ -545,9 +534,9 @@ export function validateSellerApplyForm(form: SellerApplyForm): SellerApplyField
 
   if (isBusiness) {
     if (!form.businessName.trim()) errors.businessName = "상호명을 입력해 주세요.";
+  } else if (isIndividual) {
+    if (!form.sellerName.trim()) errors.sellerName = "판매점명을 입력해 주세요.";
   }
-
-  if (!form.sellerName.trim()) errors.sellerName = "판매점명을 입력해 주세요.";
 
   if (isBusiness) {
     if (!form.businessNumber.trim()) {
@@ -591,14 +580,6 @@ export function validateSellerApplyForm(form: SellerApplyForm): SellerApplyField
     errors.contactEmail = "이메일 형식이 올바르지 않습니다.";
   }
 
-  if (!form.contactEmailConfirm.trim()) {
-    errors.contactEmailConfirm = "이메일 확인을 입력해 주세요.";
-  } else if (!isValidEmail(form.contactEmailConfirm)) {
-    errors.contactEmailConfirm = "이메일 확인 형식이 올바르지 않습니다.";
-  } else if (!emailsMatch(form.contactEmail, form.contactEmailConfirm)) {
-    errors.contactEmailConfirm = "이메일과 이메일 확인이 일치하지 않습니다.";
-  }
-
   if (!form.referralCodePhone.trim()) {
     errors.referralCodePhone = "추천인코드용 휴대전화번호를 입력해 주세요.";
   } else if (!isValidMobilePhone(form.referralCodePhone)) {
@@ -608,40 +589,6 @@ export function validateSellerApplyForm(form: SellerApplyForm): SellerApplyField
 
   if (form.applicationNote && !isApplicationNoteWithinLimit(form.applicationNote)) {
     errors.applicationNote = `활동 및 신청내용은 최대 ${MAX_APPLICATION_NOTE_LENGTH}자까지 입력할 수 있습니다.`;
-  }
-
-  if (isBusiness) {
-    const licenseError = validateAttachedFileField(
-      form.businessLicenseFile,
-      "사업자등록증을 첨부해 주세요.",
-    );
-    if (licenseError) errors.businessLicenseFile = licenseError;
-
-    if (form.mailOrderLicenseFile) {
-      const mailError = validateAttachmentFile(form.mailOrderLicenseFile);
-      if (mailError) errors.mailOrderLicenseFile = mailError;
-    }
-    if (form.tourismLicenseFile) {
-      const tourismError = validateAttachmentFile(form.tourismLicenseFile);
-      if (tourismError) errors.tourismLicenseFile = tourismError;
-    }
-  }
-
-  if (isIndividual && form.activityProofFile) {
-    const activityError = validateAttachmentFile(form.activityProofFile);
-    if (activityError) errors.activityProofFile = activityError;
-  }
-
-  if (form.otherFiles.length > MAX_OTHER_FILES) {
-    errors.otherFiles = `기타 증빙서류는 최대 ${MAX_OTHER_FILES}개까지 첨부할 수 있습니다.`;
-  } else {
-    for (const file of form.otherFiles) {
-      const otherError = validateAttachmentFile(file);
-      if (otherError) {
-        errors.otherFiles = otherError;
-        break;
-      }
-    }
   }
 
   if (!areRequiredSellerTermsAgreed(form)) {
@@ -745,20 +692,6 @@ export function buildSellerApplyFormSummary(form: SellerApplyForm): SellerApplyF
 
   const documents: SellerDocumentMeta[] = [];
   for (const slot of getAttachmentSlotsForSellerType(form.sellerType)) {
-    if (slot.key === "otherFiles") {
-      documents.push({
-        key: slot.key,
-        label: slot.label,
-        required: slot.required,
-        fileName: form.otherFiles[0]?.name ?? null,
-        fileNames: form.otherFiles.map((file) => file.name),
-        fileSizeLabel:
-          form.otherFiles.length > 0
-            ? form.otherFiles.map((file) => formatFileSize(file.size)).join(", ")
-            : undefined,
-      });
-      continue;
-    }
     documents.push(
       documentMetaFromFile(slot.key, slot.label, slot.required, form[slot.key] as File | null),
     );
@@ -766,7 +699,10 @@ export function buildSellerApplyFormSummary(form: SellerApplyForm): SellerApplyF
 
   const summary: SellerApplyFormSummary = {
     sellerType: form.sellerType,
-    sellerName: form.sellerName.trim(),
+    sellerName:
+      form.sellerType === "business"
+        ? form.businessName.trim() || form.sellerName.trim()
+        : form.sellerName.trim(),
     applicantOrContactName: form.contactName.trim(),
     address: form.address.trim(),
     contactPhone: form.contactPhone.trim(),

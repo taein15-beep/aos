@@ -84,7 +84,6 @@ export const SELLER_SAMPLE_APPLICATIONS: SellerSampleApplication[] = [
       { name: "사업자등록증", state: "첨부 완료", required: true, fileName: "sample-biz-license.png" },
       { name: "통신판매업 신고증", state: "미첨부", required: false },
       { name: "여행업등록증", state: "미첨부", required: false },
-      { name: "기타 증빙서류", state: "미첨부", required: false },
     ],
     history: [
       {
@@ -118,7 +117,6 @@ export const SELLER_SAMPLE_APPLICATIONS: SellerSampleApplication[] = [
       { name: "사업자등록증", state: "보완 필요", required: true, fileName: "blurry-sample.png" },
       { name: "통신판매업 신고증", state: "미첨부", required: false },
       { name: "여행업등록증", state: "첨부 완료", required: false, fileName: "sample-tourism.png" },
-      { name: "기타 증빙서류", state: "미첨부", required: false },
     ],
     history: [
       {
@@ -161,7 +159,6 @@ export const SELLER_SAMPLE_APPLICATIONS: SellerSampleApplication[] = [
       { name: "사업자등록증", state: "확인 완료", required: true, fileName: "sample-biz-ok.png" },
       { name: "통신판매업 신고증", state: "확인 완료", required: false, fileName: "sample-mail.png" },
       { name: "여행업등록증", state: "미첨부", required: false },
-      { name: "기타 증빙서류", state: "미첨부", required: false },
     ],
     history: [
       {
@@ -205,7 +202,6 @@ export const SELLER_SAMPLE_APPLICATIONS: SellerSampleApplication[] = [
     processedAt: "2026. 8. 18. 오후 4:10",
     documents: [
       { name: "활동 경력 증빙", state: "확인 완료", required: false, fileName: "sample-activity.pdf" },
-      { name: "기타 증빙서류", state: "미첨부", required: false },
     ],
     history: [
       {

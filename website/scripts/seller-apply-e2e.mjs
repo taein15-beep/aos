@@ -3,9 +3,6 @@
  * Run: node scripts/seller-apply-e2e.mjs
  */
 import { chromium } from "playwright";
-import path from "path";
-import fs from "fs";
-import os from "os";
 
 const BASE = process.env.SELLER_BASE || "http://localhost:3001";
 const RECEIPT_KEY = "aos.seller.apply.prototype.receipt.v1";
@@ -17,22 +14,10 @@ function ok(name, pass, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? ` — ${detail}` : ""}`);
 }
 
-function makeTinyPng() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "seller-apply-"));
-  const filePath = path.join(dir, "license.png");
-  const buf = Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
-    "base64",
-  );
-  fs.writeFileSync(filePath, buf);
-  return filePath;
-}
-
 async function fillCommonContact(page, { name = "김담당" } = {}) {
   await page.fill("#contactName", name);
   await page.fill("#contactPhone", "010-1234-5678");
   await page.fill("#contactEmail", "seller@example.com");
-  await page.fill("#contactEmailConfirm", "seller@example.com");
 }
 
 async function agreeAllRequired(page) {
@@ -60,8 +45,6 @@ async function main() {
     if (msg.type() === "error") consoleErrors.push(msg.text());
   });
   page.on("pageerror", (err) => pageErrors.push(String(err)));
-
-  const pngPath = makeTinyPng();
 
   // --- Application status: no seller receipt ---
   await page.goto(`${BASE}/seller/application-status`, { waitUntil: "networkidle" });
@@ -229,18 +212,15 @@ async function main() {
   await page.getByLabel("사업자 판매점").click();
   await page.waitForTimeout(200);
   ok("사업자 필드 표시", await page.locator("#businessName").isVisible());
-  ok("사업자등록증 슬롯", await page.locator("#businessLicenseFile").isVisible());
-  ok("개인 활동증빙 숨김", (await page.locator("#activityProofFile").count()) === 0);
+  ok("증빙서류 섹션 없음", (await page.locator("#seller-docs-title").count()) === 0);
+  ok("사업자등록증 슬롯 없음", (await page.locator("#businessLicenseFile").count()) === 0);
 
   await submit.click();
   await page.waitForTimeout(300);
   ok("사업자 빈 제출 오류", (await page.locator(".seller-field-error").count()) > 0);
 
-  await page.fill("#businessName", "테스트상호");
-  await page.getByText("상호명을 판매점명으로 사용").click();
-  ok("상호명→판매점명 동기화", (await page.inputValue("#sellerName")) === "테스트상호");
   await page.fill("#businessName", "테스트상호변경");
-  ok("상호명 변경 동기화", (await page.inputValue("#sellerName")) === "테스트상호변경");
+  ok("사업자 상호명 입력", (await page.inputValue("#businessName")) === "테스트상호변경");
 
   await page.fill("#businessNumber", "12-34");
   await page.getByRole("button", { name: "중복확인" }).first().click();
@@ -276,15 +256,7 @@ async function main() {
   ok("추천인코드 연동 변경", (await page.inputValue("#referralCodePhone")) === "010-3333-4444");
 
   await page.fill("#contactEmail", "biz@example.com");
-  await page.fill("#contactEmailConfirm", "biz@example.com");
   await page.fill("#homepageOrSns", "https://example.com");
-
-  await page.locator("#businessLicenseFile-input").setInputFiles(pngPath);
-  await page.waitForTimeout(200);
-  ok(
-    "사업자등록증 선택",
-    (await page.locator("#businessLicenseFile .seller-file-meta strong").count()) > 0,
-  );
 
   await agreeAllRequired(page);
   await submit.click();
@@ -319,7 +291,7 @@ async function main() {
   ok("사업자 상호명 표시", completeText.includes("상호명") && completeText.includes("테스트상호변경"));
   ok("사업자번호 마스킹", completeText.includes("123-**-*****"));
   ok("휴대전화 마스킹", completeText.includes("010-****-4444"));
-  ok("필수서류 첨부 완료", completeText.includes("필수서류 첨부 완료") || completeText.includes("사업자등록증"));
+  ok("완료 화면 증빙서류 섹션 없음", !completeText.includes("증빙서류"));
   ok("신청현황 링크", await page.locator(".seller-complete-actions a[href='/seller/application-status']").isVisible());
 
   await page.reload({ waitUntil: "networkidle" });
@@ -343,7 +315,7 @@ async function main() {
   ok("최근 가입유형", recentText.includes("사업자 판매점"));
   ok("최근 승인대기", recentText.includes("승인대기"));
   ok("최근 마스킹", recentText.includes("123-**-*****") && recentText.includes("010-****-4444"));
-  ok("최근 필수서류", recentText.includes("사업자등록증") && recentText.includes("첨부 완료"));
+  ok("최근 신청 증빙서류 섹션 없음", !(await page.locator("#seller-status-docs-title").count()));
   const historyText = await page.locator(".seller-status-history").innerText();
   ok(
     "최근 이력은 접수·승인대기",
@@ -384,7 +356,7 @@ async function main() {
   ok("개인 판매점명", await page.locator("#sellerName").isVisible());
   ok("개인 상호명 없음", (await page.locator("#businessName").count()) === 0);
   ok("신청자 정보 제목", await page.getByRole("heading", { name: "신청자 정보" }).isVisible());
-  ok("활동 경력 증빙", await page.locator("#activityProofFile").isVisible());
+  ok("개인 증빙서류 섹션 없음", (await page.locator("#seller-docs-title").count()) === 0);
   ok("사업자등록증 숨김", (await page.locator("#businessLicenseFile").count()) === 0);
 
   await page.fill("#sellerName", "개인판매점A");
@@ -404,7 +376,7 @@ async function main() {
   ok("개인 판매점명 완료 표시", indText.includes("개인판매점A"));
   ok("개인 가입유형 라벨", indText.includes("개인 판매점"));
   ok("개인 사업자 정보 미표시", !indText.includes("사업자등록번호") && !indText.includes("상호명"));
-  ok("개인 필수서류 없음 안내", indText.includes("필수 첨부서류가 없습니다"));
+  ok("개인 완료 증빙서류 섹션 없음", !indText.includes("증빙서류"));
   ok("개인 휴대전화 마스킹", indText.includes("010-****-5678"));
 
   // Type change confirm
