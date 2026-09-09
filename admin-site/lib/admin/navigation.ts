@@ -10,8 +10,7 @@ export const ADMIN_MENU: AdminMenuItem[] = [
   { icon: "▤", label: "예약관리", children: ["예약접수현황", "예약달력"] },
   { icon: "₩", label: "결제관리", children: ["결제현황", "취소/환불"] },
   { icon: "⇄", label: "정산관리", children: ["정산현황", "판매점정산", "공급사정산"] },
-  { icon: "♙", label: "회원관리", children: ["웹회원관리", "제휴여행사", "관리자/직원", "그룹/권한"] },
-  { icon: "▣", label: "판매점관리" },
+  { icon: "♙", label: "회원관리", children: ["웹회원관리", "제휴여행사", "판매점관리", "관리자/직원", "그룹/권한"] },
   { icon: "⌂", label: "거래처관리" },
   {
     icon: "qr",
@@ -49,6 +48,10 @@ export function navigateAdminChild(child: string, act: (message: string) => void
   }
   if (child === "제휴여행사") {
     window.location.assign("/members/affiliates");
+    return;
+  }
+  if (child === "판매점관리") {
+    window.location.assign("/members/sellers");
     return;
   }
   if (child === "예약접수현황") {

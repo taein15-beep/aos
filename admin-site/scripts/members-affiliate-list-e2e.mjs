@@ -59,8 +59,10 @@ async function main() {
 
   const menuChildren = await page.locator(".nav-group").filter({ hasText: "회원관리" }).locator(".subnav button").allInnerTexts();
   ok(
-    "메뉴 순서 웹회원→제휴여행사",
-    menuChildren[0]?.includes("웹회원관리") && menuChildren[1]?.includes("제휴여행사"),
+    "메뉴 순서 웹회원→제휴여행사→판매점",
+    menuChildren[0]?.includes("웹회원관리") &&
+      menuChildren[1]?.includes("제휴여행사") &&
+      menuChildren[2]?.includes("판매점관리"),
     menuChildren.join(" | "),
   );
   ok(
@@ -71,32 +73,50 @@ async function main() {
   const rowCount = await page.locator(".member-affiliate-table tbody tr").count();
   ok("시드 행 8건", rowCount === 8);
 
-  const firstIdCell = await page.locator(".member-affiliate-table tbody tr").first().locator(".member-affiliate-id-cell").innerText();
+  const firstPartnerCode = await page
+    .locator(".member-affiliate-table tbody tr")
+    .first()
+    .locator(".member-affiliate-partner-code")
+    .innerText();
   ok(
-    "최신순 접수번호(승인 전)",
-    firstIdCell.includes("AOS-P-20260903-1003") && !firstIdCell.includes("AFF-"),
-    firstIdCell.replace(/\s+/g, " ").trim(),
+    "최신순 거래처코드",
+    firstPartnerCode.replace(/\s+/g, "").includes("AOS00003"),
+    firstPartnerCode.replace(/\s+/g, " ").trim(),
   );
 
-  const detailHref = await page.locator(".member-affiliate-table tbody tr").first().locator("a.member-detail-button").getAttribute("href");
+  const headers = await page.locator(".member-affiliate-table thead th").allInnerTexts();
+  ok(
+    "목록 컬럼 구성",
+    headers.join("|") === "NO|거래처코드|여행사명|사업자등록번호|담당자|가입신청상태|신청일|삭제",
+    headers.join("|"),
+  );
+
+  const detailHref = await page
+    .locator(".member-affiliate-table tbody tr")
+    .first()
+    .locator(".member-affiliate-name a")
+    .getAttribute("href");
   ok("상세 href AFA-003", detailHref === "/members/affiliates/AFA-003", detailHref || "");
 
-  const approvedRow = page.locator(".member-affiliate-table tbody tr").filter({ hasText: "AFF-102" }).first();
-  ok("승인 후 AFF 코드", await approvedRow.locator(".member-affiliate-id-cell strong").innerText().then((t) => t.includes("AFF-102")));
+  const approvedRow = page.locator(".member-affiliate-table tbody tr").filter({ hasText: "AOS00007" }).first();
   ok(
-    "승인 후 보조 접수번호",
-    await approvedRow.locator(".member-affiliate-id-cell small").innerText().then((t) => t.includes("AOS-P-")),
+    "승인완료 거래처코드",
+    await approvedRow.locator(".member-affiliate-partner-code").innerText().then((t) => t.includes("AOS00007")),
   );
   ok(
-    "복수 그룹 요약",
-    await approvedRow.locator(".member-affiliate-groups").innerText().then((t) => t.includes("외") && t.includes("개")),
+    "승인완료 가입상태",
+    await approvedRow.locator(".badge").innerText().then((t) => t.includes("승인완료")),
   );
 
-  const maskedBiz = await page.locator(".member-affiliate-biz").first().innerText();
-  ok("사업자번호 마스킹", /^\d{3}-\*\*-\*{5}$/.test(maskedBiz.trim()), maskedBiz);
+  const fullBiz = await page.locator(".member-affiliate-biz").first().innerText();
+  ok("사업자번호 전체 표시", /^\d{3}-\d{2}-\d{5}$/.test(fullBiz.trim()), fullBiz);
+
+  const fullPhone = await page.locator(".member-affiliate-contact").first().locator("small").innerText();
+  ok("담당자 휴대폰 전체 표시", /^010-\d{4}-\d{4}$/.test(fullPhone.trim()), fullPhone);
 
   const bodyHtml = await page.content();
   ok("수락대기 미사용", !bodyHtml.includes("수락대기"));
+  ok("제휴관계·그룹 컬럼 없음", !headers.includes("제휴관계 상태") && !headers.includes("상품공유그룹"));
 
   // Draft change should not apply until search
   await page.fill("#affiliate-keyword", "블루하버");
@@ -121,15 +141,15 @@ async function main() {
     (await page.locator(".member-affiliate-list-head strong b").innerText()).trim() === "1",
   );
 
-  await page.fill("#affiliate-keyword", "AFF-101");
+  await page.fill("#affiliate-keyword", "AOS00006");
   await page.getByRole("button", { name: "검색", exact: true }).click();
   await page.waitForFunction(
     () => document.querySelector(".member-affiliate-list-head strong b")?.textContent?.trim() === "1",
     null,
     { timeout: 3000 },
   ).catch(() => null);
-  const affHits = (await page.locator(".member-affiliate-list-head strong b").innerText()).trim();
-  ok("제휴코드 검색", affHits === "1", affHits);
+  const partnerHits = (await page.locator(".member-affiliate-list-head strong b").innerText()).trim();
+  ok("거래처코드 검색", partnerHits === "1", partnerHits);
 
   await page.fill("#affiliate-keyword", "1018111111");
   await page.getByRole("button", { name: "검색", exact: true }).click();
@@ -221,12 +241,12 @@ async function main() {
     await page.locator(".member-affiliate-totals").innerText().then((t) => t.includes("전체") && t.includes("8") && t.includes("승인대기") && t.includes("3") && t.includes("보완요청") && t.includes("2")),
   );
   ok(
-    "초기화 후 AFF-101 복원",
-    await page.locator(".member-affiliate-table").getByText("AFF-101").count().then((n) => n >= 1),
+    "초기화 후 AOS00006 복원",
+    await page.locator(".member-affiliate-table").getByText("AOS00006", { exact: true }).count().then((n) => n >= 1),
   );
   ok(
-    "초기화 후 AFF-102 복원",
-    await page.locator(".member-affiliate-table").getByText("AFF-102").count().then((n) => n >= 1),
+    "초기화 후 AOS00007 복원",
+    await page.locator(".member-affiliate-table").getByText("AOS00007", { exact: true }).count().then((n) => n >= 1),
   );
 
   // Responsive: no body overflow at 1280 / 1024

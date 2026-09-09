@@ -403,6 +403,13 @@ export function maskAffiliateBusinessNumber(value: string) {
   return `${digits.slice(0, 3)}-**-*****`;
 }
 
+/** 목록 표시용 사업자등록번호 — 마스킹 없이 전체 표시 */
+export function formatAffiliateBusinessNumber(value: string) {
+  const digits = digitsOnly(value);
+  if (digits.length !== 10) return value.trim() || "—";
+  return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
+}
+
 export function maskAffiliateMobilePhone(value: string) {
   const digits = digitsOnly(value);
   if (digits.length < 10) return value.trim() || "—";
@@ -410,6 +417,25 @@ export function maskAffiliateMobilePhone(value: string) {
     return `${digits.slice(0, 3)}-***-${digits.slice(6)}`;
   }
   return `${digits.slice(0, 3)}-****-${digits.slice(7)}`;
+}
+
+/** 목록 표시용 휴대폰 — 마스킹 없이 전체 표시 */
+export function formatAffiliateMobilePhone(value: string) {
+  const digits = digitsOnly(value);
+  if (digits.length === 11) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length === 10) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return value.trim() || "—";
+}
+
+/** 거래처코드: AOS + 숫자 5자리 (예: AFA-001 → AOS00001) */
+export function formatAffiliatePartnerCode(applicationId: string) {
+  const match = /^AFA-(\d+)$/i.exec(applicationId.trim());
+  if (!match?.[1]) return "—";
+  return `AOS${match[1].padStart(5, "0")}`;
 }
 
 export function maskAffiliateEmail(value: string) {
@@ -1139,7 +1165,10 @@ export function filterAffiliateApplications(
         row.agencyName,
         row.applicationNumber,
         row.affiliateAgencyId ?? "",
+        formatAffiliatePartnerCode(row.applicationId),
         row.contactName,
+        row.contactPhone,
+        row.businessNumber,
       ]
         .join(" ")
         .toLowerCase();
@@ -1698,6 +1727,7 @@ export function findAffiliateApplicationSeedById(applicationId: string) {
 type AffiliatePrototypeStoragePayload = {
   version: typeof STORAGE_SCHEMA_VERSION;
   overrides: Record<string, AffiliateApplication>;
+  deletedIds: string[];
 };
 
 function isBrowserStorageAvailable() {
@@ -1730,14 +1760,14 @@ function isValidStoredApplication(value: unknown): value is AffiliateApplication
 
 function readPrototypePayload(): AffiliatePrototypeStoragePayload {
   if (!isBrowserStorageAvailable()) {
-    return { version: STORAGE_SCHEMA_VERSION, overrides: {} };
+    return { version: STORAGE_SCHEMA_VERSION, overrides: {}, deletedIds: [] };
   }
   try {
     const raw = window.sessionStorage.getItem(AFFILIATE_PROTOTYPE_STORAGE_KEY);
-    if (!raw) return { version: STORAGE_SCHEMA_VERSION, overrides: {} };
+    if (!raw) return { version: STORAGE_SCHEMA_VERSION, overrides: {}, deletedIds: [] };
     const parsed = JSON.parse(raw) as Partial<AffiliatePrototypeStoragePayload>;
     if (parsed.version !== STORAGE_SCHEMA_VERSION || !parsed.overrides || typeof parsed.overrides !== "object") {
-      return { version: STORAGE_SCHEMA_VERSION, overrides: {} };
+      return { version: STORAGE_SCHEMA_VERSION, overrides: {}, deletedIds: [] };
     }
     const overrides: Record<string, AffiliateApplication> = {};
     for (const [key, value] of Object.entries(parsed.overrides)) {
@@ -1745,9 +1775,12 @@ function readPrototypePayload(): AffiliatePrototypeStoragePayload {
       if (value.applicationId !== key) continue;
       overrides[key] = cloneApplication(value);
     }
-    return { version: STORAGE_SCHEMA_VERSION, overrides };
+    const deletedIds = Array.isArray(parsed.deletedIds)
+      ? parsed.deletedIds.filter((id): id is string => typeof id === "string" && /^AFA-\d+$/.test(id))
+      : [];
+    return { version: STORAGE_SCHEMA_VERSION, overrides, deletedIds };
   } catch {
-    return { version: STORAGE_SCHEMA_VERSION, overrides: {} };
+    return { version: STORAGE_SCHEMA_VERSION, overrides: {}, deletedIds: [] };
   }
 }
 
@@ -1763,8 +1796,9 @@ function writePrototypePayload(payload: AffiliatePrototypeStoragePayload) {
 
 /** 시드 + sessionStorage override를 병합한 현재 목록 (프로토타입) */
 export function loadPrototypeAffiliateApplications(): AffiliateApplication[] {
-  const { overrides } = readPrototypePayload();
-  return SEED_APPLICATIONS.map((seed) => {
+  const { overrides, deletedIds } = readPrototypePayload();
+  const deleted = new Set(deletedIds);
+  return SEED_APPLICATIONS.filter((seed) => !deleted.has(seed.applicationId)).map((seed) => {
     const override = overrides[seed.applicationId];
     return override ? cloneApplication(override) : cloneApplication(seed);
   });
@@ -1785,7 +1819,20 @@ export function savePrototypeAffiliateApplication(application: AffiliateApplicat
     return false;
   }
   const payload = readPrototypePayload();
+  if (payload.deletedIds.includes(application.applicationId)) return false;
   payload.overrides[application.applicationId] = cloneApplication(application);
+  return writePrototypePayload(payload);
+}
+
+/** 목록에서 신청 1건을 프로토타입 삭제(숨김) 처리 */
+export function deletePrototypeAffiliateApplication(applicationId: string): boolean {
+  if (!/^AFA-\d+$/.test(applicationId)) return false;
+  if (!SEED_APPLICATIONS.some((seed) => seed.applicationId === applicationId)) return false;
+  const payload = readPrototypePayload();
+  if (!payload.deletedIds.includes(applicationId)) {
+    payload.deletedIds = [...payload.deletedIds, applicationId];
+  }
+  delete payload.overrides[applicationId];
   return writePrototypePayload(payload);
 }
 

@@ -10,14 +10,14 @@ import {
   AFFILIATE_PARTNERSHIP_STATUS_OPTIONS,
   EMPTY_AFFILIATE_LIST_FILTERS,
   affiliateApplicationStatusBadgeClass,
-  affiliatePartnershipStatusBadgeClass,
+  deletePrototypeAffiliateApplication,
   filterAffiliateApplications,
   formatAffiliateAppliedDate,
-  formatAffiliateShareGroupsLabel,
+  formatAffiliateBusinessNumber,
+  formatAffiliateMobilePhone,
+  formatAffiliatePartnerCode,
   getAffiliateListTotals,
   loadPrototypeAffiliateApplications,
-  maskAffiliateBusinessNumber,
-  maskAffiliateMobilePhone,
   paginateAffiliateApplications,
   resetPrototypeAffiliateApplications,
   type AffiliateApplication,
@@ -116,6 +116,21 @@ export function AffiliateMemberList() {
     setPage(1);
     setResetOpen(false);
     act("제휴여행사 샘플 데이터를 초기화했습니다.");
+  };
+
+  const removeRow = (row: AffiliateApplication) => {
+    const partnerCode = formatAffiliatePartnerCode(row.applicationId);
+    const confirmed = window.confirm(
+      `${row.agencyName}(${partnerCode}) 신청을 목록에서 삭제할까요?\n샘플 초기화로 다시 불러올 수 있습니다.`,
+    );
+    if (!confirmed) return;
+    const ok = deletePrototypeAffiliateApplication(row.applicationId);
+    if (!ok) {
+      act("삭제에 실패했습니다. 다시 시도해 주세요.");
+      return;
+    }
+    reloadRows();
+    act(`${row.agencyName} 신청을 삭제했습니다.`);
   };
 
   return (
@@ -275,7 +290,7 @@ export function AffiliateMemberList() {
                     value={draft.keyword}
                     onChange={(event) => setDraft((current) => ({ ...current, keyword: event.target.value }))}
                     onKeyDown={(event) => event.key === "Enter" && search()}
-                    placeholder="여행사명, 접수번호, 제휴코드, 사업자번호, 담당자명"
+                    placeholder="여행사명, 거래처코드, 사업자번호, 담당자명"
                   />
                 </div>
               </label>
@@ -389,36 +404,22 @@ export function AffiliateMemberList() {
                   <table className="member-affiliate-table">
                     <thead>
                       <tr>
-                        {[
-                          "접수번호 / 제휴코드",
-                          "여행사명",
-                          "사업자등록번호",
-                          "담당자",
-                          "가입신청 상태",
-                          "제휴관계 상태",
-                          "상품공유그룹",
-                          "신청일",
-                          "관리",
-                        ].map((title) => (
-                          <th key={title}>{title}</th>
-                        ))}
+                        {["NO", "거래처코드", "여행사명", "사업자등록번호", "담당자", "가입신청상태", "신청일", "삭제"].map(
+                          (title) => (
+                            <th key={title}>{title}</th>
+                          ),
+                        )}
                       </tr>
                     </thead>
                     <tbody>
                       {pagination.rows.length > 0 ? (
-                        pagination.rows.map((row) => {
-                          const approved = Boolean(row.affiliateAgencyId);
+                        pagination.rows.map((row, index) => {
+                          const no = (pagination.page - 1) * AFFILIATE_LIST_PAGE_SIZE + index + 1;
                           return (
                             <tr key={row.applicationId}>
-                              <td className="member-affiliate-id-cell">
-                                {approved ? (
-                                  <>
-                                    <strong>{row.affiliateAgencyId}</strong>
-                                    <small>{row.applicationNumber}</small>
-                                  </>
-                                ) : (
-                                  <strong>{row.applicationNumber}</strong>
-                                )}
+                              <td className="member-affiliate-no">{no}</td>
+                              <td className="member-affiliate-partner-code">
+                                <strong>{formatAffiliatePartnerCode(row.applicationId)}</strong>
                               </td>
                               <td className="member-affiliate-name">
                                 <Link
@@ -430,11 +431,11 @@ export function AffiliateMemberList() {
                                 </Link>
                               </td>
                               <td className="member-affiliate-biz">
-                                {maskAffiliateBusinessNumber(row.businessNumber)}
+                                {formatAffiliateBusinessNumber(row.businessNumber)}
                               </td>
                               <td className="member-affiliate-contact">
                                 <strong>{row.contactName}</strong>
-                                <small>{maskAffiliateMobilePhone(row.contactPhone)}</small>
+                                <small>{formatAffiliateMobilePhone(row.contactPhone)}</small>
                               </td>
                               <td>
                                 <span
@@ -443,32 +444,23 @@ export function AffiliateMemberList() {
                                   {row.applicationStatus}
                                 </span>
                               </td>
-                              <td>
-                                <span
-                                  className={`badge ${affiliatePartnershipStatusBadgeClass(row.partnershipStatus)}`}
-                                >
-                                  {row.partnershipStatus}
-                                </span>
-                              </td>
-                              <td className="member-affiliate-groups" title={row.shareGroups.join(", ") || "미지정"}>
-                                {formatAffiliateShareGroupsLabel(row.shareGroups)}
-                              </td>
                               <td className="date-cell">{formatAffiliateAppliedDate(row.appliedAt)}</td>
                               <td>
-                                <Link
-                                  href={`/members/affiliates/${row.applicationId}`}
-                                  className="member-detail-button"
-                                  aria-label={`${row.agencyName} 상세보기`}
+                                <button
+                                  type="button"
+                                  className="member-affiliate-delete-btn"
+                                  onClick={() => removeRow(row)}
+                                  aria-label={`${row.agencyName} 삭제`}
                                 >
-                                  상세보기
-                                </Link>
+                                  삭제
+                                </button>
                               </td>
                             </tr>
                           );
                         })
                       ) : (
                         <tr>
-                          <td colSpan={9}>
+                          <td colSpan={8}>
                             <div className="member-affiliate-empty">
                               {rowsAll.length === 0 ? (
                                 <>

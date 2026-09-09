@@ -257,10 +257,8 @@ async function main() {
   const approveListRow = listRowByAgency(page, "[샘플] 블루하버여행");
   ok(
     "승인·목록 반영",
-    (await approveListRow.locator(".badge").nth(0).innerText()).includes("승인완료") &&
-      (await approveListRow.locator(".badge").nth(1).innerText()).includes("활성") &&
-      (await approveListRow.getByText("AFF-103", { exact: true }).count()) === 1 &&
-      (await approveListRow.locator(".member-affiliate-groups").innerText()).includes("미지정"),
+    (await approveListRow.locator(".badge").first().innerText()).includes("승인완료") &&
+      (await approveListRow.locator(".member-affiliate-partner-code").innerText()).includes("AOS00001"),
   );
   const afterApproveTotals = await listTotals(page);
   ok(
@@ -417,8 +415,8 @@ async function main() {
   const supplementListRow = listRowByAgency(page, "[샘플] 블루하버여행");
   ok(
     "보완요청·목록 반영",
-    (await supplementListRow.locator(".badge").nth(0).innerText()).includes("보완요청") &&
-      (await supplementListRow.locator(".badge").nth(1).innerText()).includes("미활성"),
+    (await supplementListRow.locator(".badge").first().innerText()).includes("보완요청") &&
+      (await supplementListRow.locator(".member-affiliate-partner-code").innerText()).includes("AOS00001"),
   );
   const afterSupplementTotals = await listTotals(page);
   ok(
@@ -625,7 +623,7 @@ async function main() {
   await page.goto(`${BASE}/members/affiliates`, { waitUntil: "networkidle" });
   const nameHref = await page.locator(".member-affiliate-name a").first().getAttribute("href");
   ok("목록 여행사명 href", Boolean(nameHref && nameHref.startsWith("/members/affiliates/AFA-")));
-  await page.locator("a.member-detail-button").first().click();
+  await page.locator(".member-affiliate-name a").first().click();
   await page.waitForURL(/\/members\/affiliates\/AFA-\d+/);
   await page.waitForSelector("h1");
   ok(

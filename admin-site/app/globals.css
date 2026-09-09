@@ -775,30 +775,77 @@ td.money,td.money-danger{text-align:right}
 .member-affiliate-reset-sample{height:28px;padding:0 9px;border:1px solid #d7dee8;border-radius:5px;background:#fff;color:#64748b;font-size:10px;font-weight:650}
 .member-affiliate-reset-sample:hover{background:#f8fafc;color:#334155}
 .member-affiliate-table-wrap{overflow-x:auto}
-.member-affiliate-table{width:100%;min-width:1180px;table-layout:fixed}
-.member-affiliate-table th{height:42px;padding:0 8px;border-right:1px solid #d9e0e8;text-align:center;font-size:10px}
-.member-affiliate-table td{height:58px;padding:7px 8px;border-right:1px solid #edf0f4;text-align:center;vertical-align:middle;font-size:10px}
-.member-affiliate-table th:nth-child(1){width:12%}
-.member-affiliate-table th:nth-child(2){width:16%}
-.member-affiliate-table th:nth-child(3),.member-affiliate-table th:nth-child(8){width:10%}
-.member-affiliate-table th:nth-child(4){width:11%}
-.member-affiliate-table th:nth-child(5),.member-affiliate-table th:nth-child(6){width:9%}
-.member-affiliate-table th:nth-child(7){width:13%}
-.member-affiliate-table th:nth-child(9){width:8%}
+.member-affiliate-table{width:100%;min-width:1080px;table-layout:fixed}
+.member-affiliate-table th{height:44px;padding:0 8px;border-right:1px solid #d9e0e8;text-align:center;font-size:12px}
+.member-affiliate-table td{height:60px;padding:8px;border-right:1px solid #edf0f4;text-align:center;vertical-align:middle;font-size:12px}
+.member-affiliate-table th:nth-child(1){width:6%}
+.member-affiliate-table th:nth-child(2){width:12%}
+.member-affiliate-table th:nth-child(3){width:20%}
+.member-affiliate-table th:nth-child(4){width:14%}
+.member-affiliate-table th:nth-child(5){width:16%}
+.member-affiliate-table th:nth-child(6){width:12%}
+.member-affiliate-table th:nth-child(7){width:12%}
+.member-affiliate-table th:nth-child(8){width:8%}
+/* Seller list — affiliates chrome 재사용, 아래는 seller 전용 확장만 */
+.member-seller-filter-grid{grid-template-columns:minmax(240px,1.4fr) minmax(120px,.65fr) minmax(110px,.6fr) minmax(110px,.6fr) minmax(230px,.95fr)}
+@media(max-width:1480px){.member-seller-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1050px){.member-seller-filter-grid{grid-template-columns:1fr}}
+.member-affiliate-table.member-seller-table{width:100%;min-width:1520px;table-layout:fixed}
+.member-affiliate-table.member-seller-table th{white-space:nowrap}
+.member-affiliate-table.member-seller-table th:nth-child(1),
+.member-affiliate-table.member-seller-table td.member-seller-check{width:44px}
+.member-affiliate-table.member-seller-table th:nth-child(2),
+.member-affiliate-table.member-seller-table td:nth-child(2){width:250px;min-width:230px}
+.member-affiliate-table.member-seller-table th:nth-child(3),
+.member-affiliate-table.member-seller-table td:nth-child(3){width:78px}
+.member-affiliate-table.member-seller-table th:nth-child(4),
+.member-affiliate-table.member-seller-table td:nth-child(4){width:128px;min-width:118px}
+.member-affiliate-table.member-seller-table th:nth-child(5),
+.member-affiliate-table.member-seller-table td:nth-child(5){width:158px;min-width:148px}
+.member-affiliate-table.member-seller-table th:nth-child(6),
+.member-affiliate-table.member-seller-table td:nth-child(6){width:86px}
+.member-affiliate-table.member-seller-table th:nth-child(7),
+.member-affiliate-table.member-seller-table td:nth-child(7){width:94px}
+.member-affiliate-table.member-seller-table th:nth-child(8),
+.member-affiliate-table.member-seller-table td:nth-child(8){width:94px}
+.member-affiliate-table.member-seller-table th:nth-child(9),
+.member-affiliate-table.member-seller-table td:nth-child(9){width:94px}
+.member-affiliate-table.member-seller-table th:nth-child(10),
+.member-affiliate-table.member-seller-table td:nth-child(10){width:104px}
+.member-affiliate-table.member-seller-table th:nth-child(11),
+.member-affiliate-table.member-seller-table td:nth-child(11){width:156px}
+.member-seller-check{text-align:center!important;vertical-align:middle}
+.member-seller-check input{width:15px;height:15px;accent-color:#2563eb;cursor:pointer}
+.member-affiliate-table.member-seller-table .member-affiliate-name b{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-affiliate-table.member-seller-table .member-affiliate-name small{display:block;margin-top:3px;color:#8b96a7;font-size:11px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-seller-person{text-align:left!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#2f3d52;font-size:12px;font-weight:650}
+.member-seller-contact strong{font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
+.member-seller-email{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-seller-status-cell{text-align:center!important;vertical-align:middle}
+.member-seller-status-cell .badge{white-space:nowrap}
+.member-seller-manage{text-align:center!important}
+.member-seller-action-group{display:inline-flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:5px}
+.member-seller-setting-btn:disabled{opacity:.45;cursor:not-allowed;background:#f8fafc;color:#94a3b8;border-color:#e2e8f0}
+@media(max-width:1480px){.member-seller-email{display:none}}
+.member-affiliate-no{color:#647188;font-variant-numeric:tabular-nums;font-weight:650}
+.member-affiliate-partner-code{text-align:center!important}
+.member-affiliate-partner-code strong{color:#1f2d42;font-size:13px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .member-affiliate-id-cell{text-align:left!important}
-.member-affiliate-id-cell strong{display:block;color:#1f2d42;font-size:11px;font-variant-numeric:tabular-nums}
-.member-affiliate-id-cell small{display:block;margin-top:3px;color:#8b96a7;font-size:9px;font-variant-numeric:tabular-nums}
+.member-affiliate-id-cell strong{display:block;color:#1f2d42;font-size:13px;font-variant-numeric:tabular-nums}
+.member-affiliate-id-cell small{display:block;margin-top:3px;color:#8b96a7;font-size:11px;font-variant-numeric:tabular-nums}
 .member-affiliate-name{text-align:left!important}
 .member-affiliate-name a{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;color:inherit}
 .member-affiliate-name a:hover b{color:#2563eb;text-decoration:underline}
-.member-affiliate-name b{color:#1f2d42;font-size:11px}
-.member-affiliate-biz{color:#647188;font-variant-numeric:tabular-nums}
+.member-affiliate-name b{color:#1f2d42;font-size:13px}
+.member-affiliate-biz{color:#334155;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .member-affiliate-contact{text-align:left!important}
-.member-affiliate-contact strong{display:block;color:#2f3d52;font-size:10px}
-.member-affiliate-contact small{display:block;margin-top:3px;color:#8b96a7;font-size:9px;font-variant-numeric:tabular-nums}
+.member-affiliate-contact strong{display:block;color:#2f3d52;font-size:12px}
+.member-affiliate-contact small{display:block;margin-top:3px;color:#475569;font-size:12px;font-variant-numeric:tabular-nums}
 .member-affiliate-groups{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#536176}
-.member-affiliate-table .date-cell{color:#647188;font-variant-numeric:tabular-nums}
-.member-affiliate-table .badge{height:23px;padding:0 7px;font-size:9px}
+.member-affiliate-table .date-cell{color:#647188;font-size:12px;font-variant-numeric:tabular-nums}
+.member-affiliate-table .badge{height:25px;padding:0 8px;font-size:11px}
+.member-affiliate-delete-btn{height:30px;padding:0 10px;border:1px solid #e8b4b8;border-radius:5px;background:#fff;color:#b91c1c;font-size:12px;font-weight:650}
+.member-affiliate-delete-btn:hover{background:#fef7f7;border-color:#dc8f96}
 .member-affiliate-footer{height:59px;padding:0 13px;border-top:1px solid #e5eaf0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
 .member-affiliate-footer>span{color:#7f8b9d;font-size:9px}
 .member-affiliate-empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8390a2;padding:20px}
