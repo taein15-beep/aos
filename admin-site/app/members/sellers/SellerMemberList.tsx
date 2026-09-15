@@ -6,30 +6,34 @@ import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   EMPTY_SELLER_LIST_FILTERS,
   SELLER_APPROVAL_STATUS_FILTER_OPTIONS,
+  SELLER_APPROVAL_STATUS_LABELS,
   SELLER_LIST_PAGE_SIZE,
   SELLER_SALES_STATUS_FILTER_OPTIONS,
+  SELLER_SALES_STATUS_LABELS,
   SELLER_TYPE_BADGE_LABELS,
   SELLER_TYPE_FILTER_OPTIONS,
   SELLER_TYPE_LABELS,
   filterSellerApplications,
   formatSellerAppliedDate,
-  formatSellerCommissionText,
   formatSellerListDisplayName,
   formatSellerListNameSubtext,
   formatSellerMobilePhone,
   formatSellerPersonName,
-  formatSellerProductCount,
   getSellerListTotals,
   loadPrototypeSellerApplications,
   paginateSellerApplications,
   resetPrototypeSellerApplications,
+  sellerApplicationSourceShortLabel,
   sellerApplicationStatusBadgeClass,
-  sellerCommissionBadgeClass,
-  sellerProductCountBadgeClass,
+  sellerApprovalStatusLabel,
+  sellerSalesSetupStatusBadgeClass,
+  sellerSalesSetupStatusLabel,
   resolveSellerSalesStatus,
   sellerSalesStatusBadgeClass,
+  sellerSalesStatusLabel,
   sellerTypeBadgeClass,
   type SellerApplication,
+  type SellerApprovalStatusCode,
   type SellerListFilters,
 } from "@/lib/admin/members-seller-data";
 
@@ -111,6 +115,20 @@ export function SellerMemberList() {
     setPage(1);
     setSelectedIds([]);
     act("검색 조건을 초기화했습니다.");
+  };
+
+  const applyApprovalQuickFilter = (approvalStatus: SellerListFilters["approvalStatus"]) => {
+    const next: SellerListFilters = { ...draft, approvalStatus };
+    setDraft(next);
+    setApplied(next);
+    setDateError("");
+    setPage(1);
+    setSelectedIds([]);
+    act(
+      approvalStatus === "전체"
+        ? "전체 판매점을 표시합니다."
+        : `${SELLER_APPROVAL_STATUS_LABELS[approvalStatus]} 신청만 표시합니다.`,
+    );
   };
 
   const confirmResetSample = () => {
@@ -277,10 +295,41 @@ export function SellerMemberList() {
               <h1>판매점관리</h1>
               <p>가입된 판매점과 가입 신청 현황을 관리하고 판매 권한 및 수수료 설정 상태를 확인합니다.</p>
               <p className="member-affiliate-totals" aria-live="polite">
-                전체 <b>{ready ? totals.total : "—"}</b>건 · 승인대기 <b>{ready ? totals.pending : "—"}</b>
-                건 · 승인완료 <b>{ready ? totals.approved : "—"}</b>건 · 승인거절{" "}
-                <b>{ready ? totals.rejected : "—"}</b>건
+                전체 판매점 <b>{ready ? totals.total : "—"}</b>건 · 승인대기{" "}
+                <b>{ready ? totals.pending : "—"}</b>건 · 검토중 <b>{ready ? totals.reviewing : "—"}</b>건 ·
+                보완요청 <b>{ready ? totals.supplement : "—"}</b>건 · 승인완료{" "}
+                <b>{ready ? totals.approved : "—"}</b>건
               </p>
+              <div className="member-seller-quick-filters" role="group" aria-label="승인상태 빠른 필터">
+                {(
+                  [
+                    { value: "전체" as const, label: "전체", count: totals.total },
+                    { value: "pending" as const, label: "승인대기", count: totals.pending },
+                    { value: "reviewing" as const, label: "검토중", count: totals.reviewing },
+                    { value: "supplement_requested" as const, label: "보완요청", count: totals.supplement },
+                    { value: "approved" as const, label: "승인완료", count: totals.approved },
+                    { value: "rejected" as const, label: "승인거절", count: totals.rejected },
+                  ] satisfies {
+                    value: "전체" | SellerApprovalStatusCode;
+                    label: string;
+                    count: number;
+                  }[]
+                ).map((item) => {
+                  const active = applied.approvalStatus === item.value;
+                  return (
+                    <button
+                      key={item.value}
+                      type="button"
+                      className={`member-seller-quick-filter${active ? " is-active" : ""}`}
+                      aria-pressed={active}
+                      onClick={() => applyApprovalQuickFilter(item.value)}
+                    >
+                      {item.label}
+                      <em>{ready ? item.count : "—"}</em>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </section>
 
@@ -343,7 +392,7 @@ export function SellerMemberList() {
                 >
                   {SELLER_APPROVAL_STATUS_FILTER_OPTIONS.map((option) => (
                     <option key={option} value={option}>
-                      {option}
+                      {option === "전체" ? "전체" : SELLER_APPROVAL_STATUS_LABELS[option]}
                     </option>
                   ))}
                 </select>
@@ -363,7 +412,7 @@ export function SellerMemberList() {
                 >
                   {SELLER_SALES_STATUS_FILTER_OPTIONS.map((option) => (
                     <option key={option} value={option}>
-                      {option}
+                      {option === "전체" ? "전체" : SELLER_SALES_STATUS_LABELS[option]}
                     </option>
                   ))}
                 </select>
@@ -454,11 +503,11 @@ export function SellerMemberList() {
                           "유형",
                           "대표자 / 신청자",
                           "연락처",
-                          "판매상품",
-                          "수수료",
+                          "신청경로",
+                          "신청일",
                           "승인상태",
+                          "판매설정",
                           "판매상태",
-                          "가입일",
                           "관리",
                         ].map((title) => (
                           <th key={title}>{title}</th>
@@ -471,12 +520,8 @@ export function SellerMemberList() {
                           const displayName = formatSellerListDisplayName(row);
                           const nameSubtext = formatSellerListNameSubtext(row);
                           const personName = formatSellerPersonName(row);
-                          const productLabel = formatSellerProductCount(row.productCount);
-                          const productBadgeClass = sellerProductCountBadgeClass(row.productCount);
-                          const commissionLabel = formatSellerCommissionText(row.commissionText);
-                          const commissionBadgeClass = sellerCommissionBadgeClass(row.commissionText);
                           const salesStatus = resolveSellerSalesStatus(row);
-                          const canConfigureSales = row.applicationStatus === "승인완료";
+                          const canConfigureSales = row.applicationStatus === "approved";
                           return (
                             <tr key={row.applicationId}>
                               <td className="member-seller-check">
@@ -510,65 +555,46 @@ export function SellerMemberList() {
                                   </small>
                                 ) : null}
                               </td>
-                              <td className="member-seller-status-cell member-seller-products">
+                              <td className="member-seller-status-cell member-seller-source">
                                 <span
-                                  className={`badge ${productBadgeClass}`}
-                                  title={
-                                    row.productCount === null || row.productCount === undefined
-                                      ? "판매 허용 상품이 설정되지 않았습니다."
-                                      : row.productCount === 0
-                                        ? "판매 허용 상품이 0개입니다."
-                                        : `판매 허용 상품 ${productLabel}`
-                                  }
+                                  className={`badge ${row.applicationSource === "homepage" ? "info" : "gray"}`}
+                                  title={sellerApplicationSourceShortLabel(row.applicationSource)}
                                 >
-                                  {productLabel}
+                                  {sellerApplicationSourceShortLabel(row.applicationSource)}
                                 </span>
                               </td>
-                              <td className="member-seller-status-cell member-seller-commission">
-                                <span
-                                  className={`badge ${commissionBadgeClass}`}
-                                  title={
-                                    commissionLabel === "미설정"
-                                      ? "기본 판매수수료가 설정되지 않았습니다."
-                                      : commissionLabel === "개별설정"
-                                        ? "상품별 수수료가 서로 다릅니다."
-                                        : `기본 판매수수료 ${commissionLabel}`
-                                  }
-                                >
-                                  {commissionLabel}
-                                </span>
+                              <td className="date-cell" title="가입 신청일">
+                                {formatSellerAppliedDate(row.appliedAt)}
                               </td>
                               <td className="member-seller-status-cell">
                                 <span
                                   className={`badge ${sellerApplicationStatusBadgeClass(row.applicationStatus)}`}
-                                  title={`승인상태: ${row.applicationStatus}`}
+                                  title={`승인상태: ${sellerApprovalStatusLabel(row.applicationStatus)}`}
                                 >
-                                  {row.applicationStatus}
+                                  {sellerApprovalStatusLabel(row.applicationStatus)}
+                                </span>
+                              </td>
+                              <td className="member-seller-status-cell">
+                                <span
+                                  className={`badge ${sellerSalesSetupStatusBadgeClass(row.salesSetupStatus)}`}
+                                  title={`판매설정: ${sellerSalesSetupStatusLabel(row.salesSetupStatus)}`}
+                                >
+                                  {sellerSalesSetupStatusLabel(row.salesSetupStatus)}
                                 </span>
                               </td>
                               <td className="member-seller-status-cell member-seller-sales-status">
-                                {salesStatus ? (
-                                  <span
-                                    className={`badge ${sellerSalesStatusBadgeClass(salesStatus)}`}
-                                    title={
-                                      salesStatus === "판매가능"
-                                        ? "현재 실제 판매가 가능한 상태입니다."
-                                        : "관리자가 판매를 중지한 상태입니다."
-                                    }
-                                  >
-                                    {salesStatus}
-                                  </span>
-                                ) : (
-                                  <span
-                                    className="badge gray"
-                                    title="승인대기·승인거절에서는 판매상태를 적용하지 않습니다."
-                                  >
-                                    -
-                                  </span>
-                                )}
-                              </td>
-                              <td className="date-cell" title="가입 신청일">
-                                {formatSellerAppliedDate(row.appliedAt)}
+                                <span
+                                  className={`badge ${sellerSalesStatusBadgeClass(salesStatus)}`}
+                                  title={
+                                    salesStatus === "active"
+                                      ? "현재 실제 판매가 가능한 상태입니다."
+                                      : salesStatus === "suspended"
+                                        ? "관리자가 판매를 중지한 상태입니다."
+                                        : "판매상품·수수료 설정 전 또는 판매 개시 전 상태입니다."
+                                  }
+                                >
+                                  {sellerSalesStatusLabel(salesStatus)}
+                                </span>
                               </td>
                               <td className="member-seller-manage">
                                 <div className="member-seller-action-group">
@@ -576,7 +602,7 @@ export function SellerMemberList() {
                                     type="button"
                                     className="member-detail-button"
                                     onClick={() =>
-                                      act("판매점 상세 화면은 아직 연결되지 않았습니다.")
+                                      window.location.assign(`/members/sellers/${row.applicationId}`)
                                     }
                                     aria-label={`${displayName} 상세보기`}
                                   >
@@ -592,7 +618,9 @@ export function SellerMemberList() {
                                         : "승인완료 후 판매설정이 가능합니다."
                                     }
                                     onClick={() =>
-                                      act("판매설정 화면은 아직 연결되지 않았습니다.")
+                                      window.location.assign(
+                                        `/members/sellers/${row.applicationId}?tab=products`,
+                                      )
                                     }
                                     aria-label={`${displayName} 판매설정`}
                                   >

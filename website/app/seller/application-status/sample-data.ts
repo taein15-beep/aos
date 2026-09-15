@@ -14,7 +14,7 @@ export const SELLER_STATUS_SAMPLE_STATUSES = [
   "승인대기",
   "보완요청",
   "승인완료",
-  "가입거절",
+  "승인거절",
 ] as const;
 
 export type SellerStatusSampleStatus = (typeof SELLER_STATUS_SAMPLE_STATUSES)[number];
@@ -152,7 +152,7 @@ export const SELLER_SAMPLE_APPLICATIONS: SellerSampleApplication[] = [
     contactEmail: "seller-ok@example.com",
     referralCodePhone: "010-3000-4000",
     status: "승인완료",
-    operatingStatus: "설정대기",
+    operatingStatus: "판매전",
     processMessage:
       "판매점 가입이 승인되었습니다. 판매 가능 상품과 수수료 등 운영 설정이 완료된 후 판매를 시작할 수 있습니다.",
     documents: [
@@ -195,7 +195,7 @@ export const SELLER_SAMPLE_APPLICATIONS: SellerSampleApplication[] = [
     contactPhone: "010-4000-5000",
     contactEmail: "seller-reject@example.com",
     referralCodePhone: "010-4000-5000",
-    status: "가입거절",
+    status: "승인거절",
     processMessage: "검토 결과 판매점 가입이 승인되지 않았습니다.",
     rejectionReason:
       "제출하신 활동 정보와 신청 내용이 판매점 가입 기준에 맞지 않아 가입이 거절되었습니다. (샘플 사유)",
@@ -216,8 +216,8 @@ export const SELLER_SAMPLE_APPLICATIONS: SellerSampleApplication[] = [
       },
       {
         at: "2026. 8. 18. 오후 4:10",
-        label: "가입거절",
-        status: "가입거절",
+        label: "승인거절",
+        status: "승인거절",
       },
     ],
   },
@@ -238,12 +238,13 @@ export function findSellerSampleByNumberAndEmail(applicationNumber: string, emai
 export function sellerStatusBadgeTone(status: SellerApplicationStatus) {
   switch (status) {
     case "승인대기":
+    case "검토중":
       return "wait";
     case "보완요청":
       return "fix";
     case "승인완료":
       return "ok";
-    case "가입거절":
+    case "승인거절":
       return "reject";
     default:
       return "wait";

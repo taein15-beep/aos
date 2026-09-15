@@ -245,10 +245,10 @@ function StatusGuide({ view }: { view: StatusViewModel }) {
     );
   }
 
-  if (view.status === "가입거절") {
+  if (view.status === "승인거절") {
     return (
       <aside className="seller-status-guide seller-status-guide-reject" role="alert">
-        <h2>가입거절 안내</h2>
+        <h2>승인거절 안내</h2>
         <p>{view.rejectionReason || view.processMessage}</p>
         {view.processedAt ? (
           <p>

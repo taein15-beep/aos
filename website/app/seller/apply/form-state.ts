@@ -8,18 +8,89 @@
  */
 
 /** 프로토타입 운영 여행사 — 실제 tenant ID가 아님. 향후 연동 시 교체 지점. */
-export const PROTOTYPE_OPERATOR_AGENCY_REF = "prototype-current-site" as const;
-export const PROTOTYPE_OPERATOR_AGENCY_DISPLAY_NAME = "현재 홈페이지 운영 여행사" as const;
+import {
+  PROTOTYPE_DEFAULT_AGENCY_ID,
+  PROTOTYPE_DEFAULT_AGENCY_NAME,
+  SELLER_APPROVAL_STATUS_LABELS,
+  type SellerApprovalStatusCode,
+  type SellerSalesStatusCode,
+} from "@/lib/seller/seller-domain";
+
+export const PROTOTYPE_OPERATOR_AGENCY_REF = PROTOTYPE_DEFAULT_AGENCY_ID;
+export const PROTOTYPE_OPERATOR_AGENCY_DISPLAY_NAME = PROTOTYPE_DEFAULT_AGENCY_NAME;
 
 export const SELLER_TYPE_OPTIONS = ["business", "individual"] as const;
 export type SellerType = (typeof SELLER_TYPE_OPTIONS)[number];
 /** 가입유형 선택 전 빈 상태 포함 */
 export type SelectedSellerType = SellerType | "";
 
-export const SELLER_TYPE_LABELS: Record<SellerType, string> = {
-  business: "사업자 판매점",
-  individual: "개인 판매점",
-};
+export {
+  SELLER_TYPE_LABELS,
+  SELLER_APPROVAL_STATUS_LABELS,
+  SELLER_PUBLIC_APPROVAL_STATUS_LABELS,
+  SELLER_SALES_STATUS_LABELS,
+  SELLER_SALES_SETUP_STATUS_LABELS,
+  SELLER_APPLICATION_SOURCE_LABELS,
+  PROTOTYPE_DEFAULT_AGENCY_ID,
+  PROTOTYPE_DEFAULT_AGENCY_NAME,
+  PROTOTYPE_DEFAULT_SITE_ID,
+  sellerApprovalStatusLabel,
+  sellerPublicApprovalStatusLabel,
+  sellerSalesStatusLabel,
+  sellerSalesSetupStatusLabel,
+  canStartSelling,
+  type SellerApprovalStatusCode,
+  type SellerSalesStatusCode,
+  type SellerSalesSetupStatusCode,
+  type SellerApplicationSource,
+  type SellerAttachmentMeta,
+  type SellerProfile,
+  type SellerAgencyRelation,
+  type SellerSupplementRequest,
+} from "@/lib/seller/seller-domain";
+
+/**
+ * 화면 표시용 승인상태 라벨 (코드와 1:1)
+ * - 기존 "가입거절" 표기는 "승인거절"로 통일
+ */
+export const SELLER_APPLICATION_STATUSES = [
+  SELLER_APPROVAL_STATUS_LABELS.pending,
+  SELLER_APPROVAL_STATUS_LABELS.reviewing,
+  SELLER_APPROVAL_STATUS_LABELS.supplement_requested,
+  SELLER_APPROVAL_STATUS_LABELS.approved,
+  SELLER_APPROVAL_STATUS_LABELS.rejected,
+] as const;
+export type SellerApplicationStatus = (typeof SELLER_APPLICATION_STATUSES)[number];
+
+/** @deprecated 운영상태는 salesStatus로 정렬. 표시 호환용 */
+export const SELLER_OPERATING_STATUSES = [
+  "판매전",
+  "판매중",
+  "판매중지",
+  "설정대기",
+  "판매가능",
+  "거래중지",
+  "관계종료",
+] as const;
+export type SellerOperatingStatus = (typeof SELLER_OPERATING_STATUSES)[number];
+
+export function sellerApprovalStatusFromLabel(label: string): SellerApprovalStatusCode | null {
+  const entry = (Object.entries(SELLER_APPROVAL_STATUS_LABELS) as [SellerApprovalStatusCode, string][]).find(
+    ([, value]) => value === label || (label === "가입거절" && value === "승인거절"),
+  );
+  return entry?.[0] ?? null;
+}
+
+export function sellerSalesStatusFromOperating(
+  value: SellerOperatingStatus | undefined,
+): SellerSalesStatusCode | null {
+  if (!value) return null;
+  if (value === "판매중" || value === "판매가능") return "active";
+  if (value === "판매중지" || value === "거래중지" || value === "관계종료") return "suspended";
+  if (value === "판매전" || value === "설정대기") return "not_started";
+  return null;
+}
+
 
 export type SellerApplyForm = {
   sellerType: SelectedSellerType;
@@ -169,24 +240,6 @@ export const SELLER_POLICY_GUIDE_ITEMS = [
   "가입 승인만으로 바로 판매를 시작하지 않습니다.",
   "등록 휴대전화번호가 추천인코드로 사용됩니다.",
 ] as const;
-
-/** 가입신청 상태 (신청 심사) — 운영상태와 합치지 않음 */
-export const SELLER_APPLICATION_STATUSES = [
-  "승인대기",
-  "보완요청",
-  "승인완료",
-  "가입거절",
-] as const;
-export type SellerApplicationStatus = (typeof SELLER_APPLICATION_STATUSES)[number];
-
-/** 운영상태 (승인 후 판매 가능 여부) — 가입신청 상태와 합치지 않음 */
-export const SELLER_OPERATING_STATUSES = [
-  "설정대기",
-  "판매가능",
-  "거래중지",
-  "관계종료",
-] as const;
-export type SellerOperatingStatus = (typeof SELLER_OPERATING_STATUSES)[number];
 
 export const INITIAL_SELLER_APPLY_FORM: SellerApplyForm = {
   sellerType: "",
