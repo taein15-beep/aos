@@ -645,7 +645,10 @@ export function SellerApplicationDetail() {
                 예약·정산 탭은 조회용 Mock이며 API·회계연동은 포함하지 않습니다.
               </p>
 
-              <section className="member-web-detail-summary" aria-label="판매점 요약">
+              <section
+                className="member-web-detail-summary member-seller-detail-summary"
+                aria-label="판매점 요약"
+              >
                 <SummaryKpi label="판매점 유형">
                   <span className={`badge ${sellerTypeBadgeClass(application.sellerType)}`}>
                     {SELLER_TYPE_BADGE_LABELS[application.sellerType]}

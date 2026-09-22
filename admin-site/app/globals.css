@@ -772,8 +772,15 @@ td.money,td.money-danger{text-align:right}
 .member-affiliate-list-head strong{color:#425066;font-size:11px}
 .member-affiliate-list-head strong b{color:#2563eb;font-variant-numeric:tabular-nums}
 .member-affiliate-list-head span{height:23px;padding:0 7px;border-radius:4px;background:#f1f5f9;color:#708096;font-size:9px;display:inline-flex;align-items:center}
+.member-seller-list-head-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.member-seller-type-quick{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:transparent}
+.member-seller-type-quick-btn{height:28px;padding:0 12px;border:1px solid #d7dee8;border-radius:6px;background:#fff;color:#64748b;font-size:11px;font-weight:650;cursor:pointer}
+.member-seller-type-quick-btn:hover{border-color:#b7c4d6;color:#1e3a5f;background:#f8fafc}
+.member-seller-type-quick-btn.is-active{border-color:#2563eb;background:#2563eb;color:#fff}
 .member-affiliate-reset-sample{height:28px;padding:0 9px;border:1px solid #d7dee8;border-radius:5px;background:#fff;color:#64748b;font-size:10px;font-weight:650}
 .member-affiliate-reset-sample:hover{background:#f8fafc;color:#334155}
+.member-seller-register-btn{height:32px;padding:0 12px;display:inline-flex;align-items:center;gap:5px;text-decoration:none;font-size:12px;font-weight:650;border-radius:6px}
+.member-affiliate-empty .member-seller-register-btn{margin-top:10px}
 .member-affiliate-table-wrap{overflow-x:auto}
 .member-affiliate-table{width:100%;min-width:1080px;table-layout:fixed}
 .member-affiliate-table th{height:44px;padding:0 8px;border-right:1px solid #d9e0e8;text-align:center;font-size:12px}
@@ -795,25 +802,25 @@ td.money,td.money-danger{text-align:right}
 .member-affiliate-table.member-seller-table th:nth-child(1),
 .member-affiliate-table.member-seller-table td.member-seller-check{width:44px}
 .member-affiliate-table.member-seller-table th:nth-child(2),
-.member-affiliate-table.member-seller-table td:nth-child(2){width:250px;min-width:230px}
+.member-affiliate-table.member-seller-table td:nth-child(2){width:220px;min-width:200px}
 .member-affiliate-table.member-seller-table th:nth-child(3),
-.member-affiliate-table.member-seller-table td:nth-child(3){width:78px}
+.member-affiliate-table.member-seller-table td:nth-child(3){width:120px;min-width:120px;max-width:120px;box-sizing:border-box}
 .member-affiliate-table.member-seller-table th:nth-child(4),
-.member-affiliate-table.member-seller-table td:nth-child(4){width:128px;min-width:118px}
+.member-affiliate-table.member-seller-table td:nth-child(4){width:120px;min-width:110px}
 .member-affiliate-table.member-seller-table th:nth-child(5),
-.member-affiliate-table.member-seller-table td:nth-child(5){width:158px;min-width:148px}
+.member-affiliate-table.member-seller-table td:nth-child(5){width:210px;min-width:190px}
 .member-affiliate-table.member-seller-table th:nth-child(6),
 .member-affiliate-table.member-seller-table td:nth-child(6){width:96px}
 .member-affiliate-table.member-seller-table th:nth-child(7),
 .member-affiliate-table.member-seller-table td:nth-child(7){width:104px}
 .member-affiliate-table.member-seller-table th:nth-child(8),
-.member-affiliate-table.member-seller-table td:nth-child(8){width:94px}
+.member-affiliate-table.member-seller-table td:nth-child(8),
 .member-affiliate-table.member-seller-table th:nth-child(9),
-.member-affiliate-table.member-seller-table td:nth-child(9){width:94px}
+.member-affiliate-table.member-seller-table td:nth-child(9),
 .member-affiliate-table.member-seller-table th:nth-child(10),
-.member-affiliate-table.member-seller-table td:nth-child(10){width:94px}
+.member-affiliate-table.member-seller-table td:nth-child(10),
 .member-affiliate-table.member-seller-table th:nth-child(11),
-.member-affiliate-table.member-seller-table td:nth-child(11){width:156px}
+.member-affiliate-table.member-seller-table td:nth-child(11){width:104px;min-width:104px;max-width:104px;box-sizing:border-box}
 .member-seller-quick-filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .member-seller-quick-filter{height:30px;padding:0 10px;border:1px solid #d7dee8;border-radius:6px;background:#fff;color:#445163;font-size:12px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .member-seller-quick-filter em{font-style:normal;color:#6b7788;font-variant-numeric:tabular-nums}
@@ -839,17 +846,33 @@ td.money,td.money-danger{text-align:right}
 }
 .member-seller-check{text-align:center!important;vertical-align:middle}
 .member-seller-check input{width:15px;height:15px;accent-color:#2563eb;cursor:pointer}
+.member-affiliate-table.member-seller-table .member-affiliate-name a{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none;color:inherit}
+.member-affiliate-table.member-seller-table .member-affiliate-name a:hover b{color:#2563eb;text-decoration:underline}
 .member-affiliate-table.member-seller-table .member-affiliate-name b{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .member-affiliate-table.member-seller-table .member-affiliate-name small{display:block;margin-top:3px;color:#8b96a7;font-size:11px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.member-seller-person{text-align:left!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#2f3d52;font-size:12px;font-weight:650}
-.member-seller-contact strong{font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
-.member-seller-email{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-seller-person{text-align:center!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#2f3d52;font-size:12px;font-weight:650}
+.member-affiliate-table.member-seller-table .member-seller-contact{text-align:center!important}
+.member-affiliate-table.member-seller-table .member-seller-contact strong{display:block;font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
+.member-affiliate-table.member-seller-table .member-seller-email{display:block;max-width:100%;margin:0 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .member-seller-status-cell{text-align:center!important;vertical-align:middle}
 .member-seller-status-cell .badge{white-space:nowrap}
+.member-seller-type-cell{vertical-align:middle}
+.member-seller-type-stack{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-width:0}
+.member-seller-type-bizno{display:block;color:#647188;font-size:12px;font-variant-numeric:tabular-nums;line-height:1.3;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .member-seller-manage{text-align:center!important}
 .member-seller-action-group{display:inline-flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:5px}
 .member-seller-setting-btn:disabled{opacity:.45;cursor:not-allowed;background:#f8fafc;color:#94a3b8;border-color:#e2e8f0}
 @media(max-width:1480px){.member-seller-email{display:none}}
+/* Seller detail — 요약 KPI 6개 한 줄 유지 */
+.member-seller-detail-summary{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.member-seller-detail-summary .member-web-detail-kpi{height:56px;padding:8px 10px}
+.member-seller-detail-summary .member-web-detail-kpi>span{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0}
+.member-seller-detail-summary .member-web-detail-kpi small{flex:0 0 auto;white-space:nowrap}
+.member-seller-detail-summary .member-web-detail-kpi strong{flex:1 1 auto;min-width:0;text-align:right;font-size:13px}
+.member-seller-detail-summary .member-web-detail-kpi .badge{white-space:nowrap}
+@media(max-width:1480px){.member-seller-detail-summary{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:1050px){.member-seller-detail-summary{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.member-seller-detail-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Seller detail — 기본정보 좌측 본문 + 우측 가입 승인 */
 .member-seller-detail-basic{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,360px);gap:12px;align-items:start}
 .member-seller-detail-aside{position:sticky;top:12px}
@@ -1093,3 +1116,314 @@ td.money,td.money-danger{text-align:right}
 .member-seller-status-readonly{display:flex;align-items:center;gap:8px}
 .member-seller-password-readonly{flex:1;min-width:0}
 @media(max-width:1050px){.member-seller-type-options{grid-template-columns:1fr}}
+/* Seller Admin — 여행사 ERP와 분리된 판매점 관리자 영역 */
+.seller-admin-shell .sidebar .nav-item.active{background:rgba(15,118,110,.22);color:#fff}
+.seller-admin-shell .sidebar .nav-item.active .nav-icon{color:#5eead4}
+.seller-sidebar-brand{min-height:92px;padding:16px 17px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;position:relative}
+.seller-sidebar-brand .collapse{position:absolute;top:12px;right:10px}
+.seller-sidebar-brand-copy{display:grid;gap:4px;min-width:0;padding-right:22px}
+.seller-sidebar-brand-copy strong{color:#fff;font-size:16px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seller-sidebar-brand-copy span{color:#94a3b8;font-size:11px;font-weight:650}
+.seller-logo{display:grid;place-items:center;overflow:hidden;flex:0 0 auto;border-radius:10px;background:#0f766e;color:#fff;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.seller-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.seller-logo--sidebar{width:42px;height:42px;font-size:18px}
+.seller-logo--header{width:34px;height:34px;font-size:15px}
+.seller-logo--placeholder{background:linear-gradient(180deg,#129184 0%,#0f766e 100%)}
+.seller-topbar .breadcrumb{min-width:0}
+.seller-top-actions{align-items:center;gap:8px;flex-wrap:wrap}
+.seller-top-contact{display:inline-flex;align-items:center;gap:8px;padding:0 4px;color:#334056}
+.seller-top-contact small{color:#7a8699;font-size:10px;font-weight:700}
+.seller-top-contact strong{color:#1f2d42;font-size:12px;font-weight:750}
+.seller-top-btn{height:34px;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap}
+.seller-top-btn--logout{color:#b42318;border-color:#f2c8c5;background:#fff7f7}
+.seller-top-btn--logout:hover{background:#fef2f2}
+.seller-admin-shell.is-collapsed .seller-sidebar-brand{justify-content:center;padding-left:12px;padding-right:12px}
+.seller-admin-shell.is-collapsed .seller-sidebar-brand .collapse{display:none}
+@media(max-width:760px){
+  .seller-top-contact{display:none}
+  .seller-top-actions .divider{display:none}
+}
+.seller-auth-shell{min-height:100vh;background:linear-gradient(180deg,#f6f8fc 0%,#eef3f8 100%)}
+.seller-login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.seller-login-card{width:min(100%,440px);padding:30px 30px 24px;border-color:#dce3ea}
+.seller-login-brand{display:grid;justify-items:center;text-align:center;margin-bottom:24px}
+.seller-login-logo{width:52px;height:52px;border-radius:14px;background:#0f766e;color:#fff;display:grid;place-items:center;font-size:28px;font-weight:800;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.seller-login-brand strong{display:block;margin-top:14px;color:#162136;font-size:25px;letter-spacing:.03em}
+.seller-login-brand span{display:block;margin-top:4px;color:#0f766e;font-size:15px;font-weight:750}
+.seller-login-brand p{margin:8px 0 0;color:#6b778b;font-size:12px;line-height:1.6}
+.seller-login-form{display:grid;gap:14px}
+.seller-login-field{display:grid;gap:6px}
+.seller-login-field>span{color:#516074;font-size:11px;font-weight:700}
+.seller-login-field input{width:100%;height:42px;border:1px solid #d7dee8;border-radius:8px;background:#fff;color:#213047;padding:0 12px;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s}
+.seller-login-field input:focus{border-color:#0f766e;box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+.seller-login-field input[aria-invalid="true"]{border-color:#fca5a5;background:#fffafa}
+.seller-login-password{display:flex;align-items:center;gap:8px}
+.seller-login-password input{flex:1;min-width:0}
+.seller-login-password-toggle{height:42px;padding:0 11px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex:0 0 auto}
+.seller-login-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.seller-login-check{display:inline-flex;align-items:center;gap:8px;color:#4d5b70;font-size:12px}
+.seller-login-check input{width:15px;height:15px}
+.seller-login-link{border:0;background:transparent;padding:0;color:#0f766e;font-size:12px;font-weight:700}
+.seller-login-helper,.seller-login-error{margin:0;font-size:12px;line-height:1.5}
+.seller-login-helper{color:#6b778b}
+.seller-login-error{color:#dc2626;font-weight:650}
+.seller-login-submit{height:44px;justify-content:center}
+.seller-login-submit[disabled]{opacity:.75;cursor:wait}
+.seller-login-support{margin-top:20px;padding-top:18px;border-top:1px solid #e5eaf0;display:grid;gap:12px}
+.seller-login-support strong{color:#1f2d42;font-size:12px}
+.seller-login-support p{margin:5px 0 0;color:#6b778b;font-size:11px;line-height:1.6}
+.seller-login-support-note{padding:11px 12px;border:1px solid #dbe7e5;border-radius:8px;background:#f6fbfa;display:grid;gap:4px}
+.seller-login-support-note span{color:#5f6d81;font-size:10px;font-weight:700}
+.seller-login-support-note strong{font-size:12px;color:#0f766e}
+@media(max-width:760px){
+  .seller-login-card{padding:24px 18px 20px}
+  .seller-login-password{flex-direction:column;align-items:stretch}
+  .seller-login-password-toggle{width:100%;justify-content:center}
+  .seller-login-row{align-items:flex-start;flex-direction:column}
+}
+/* Seller Admin Dashboard */
+.seller-dashboard{display:grid;gap:12px}
+.seller-dashboard-kpi{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:0}
+.seller-dashboard-kpi .kpi{cursor:default}
+.seller-dashboard-kpi .kpi>b{display:none}
+.seller-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.9fr);gap:12px;align-items:start}
+.seller-dashboard-recent .panel-head,.seller-dashboard-top .panel-head{background:#f7fbfa;box-shadow:inset 4px 0 0 #0f766e}
+.seller-dashboard-recent .text-btn{color:#0f766e;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap}
+.seller-dashboard-recent .text-btn:hover{text-decoration:underline}
+.seller-dashboard-empty{text-align:center;color:#7a8699;padding:28px 12px!important}
+.seller-dashboard-empty--block{padding:24px 14px;color:#7a8699;font-size:12px;text-align:center}
+.seller-dashboard-top-table{padding:0 0 8px}
+.seller-dashboard-top-row{display:grid;grid-template-columns:minmax(0,1.6fr) .7fr .7fr 1fr;gap:8px;align-items:center;padding:11px 14px;border-bottom:1px solid #e5eaf0;color:#4d5b70;font-size:11px}
+.seller-dashboard-top-row strong{display:flex;align-items:center;gap:8px;min-width:0;color:#1f2d42;font-size:12px}
+.seller-dashboard-top-row strong em{width:20px;height:20px;border-radius:5px;background:#ecf8f6;color:#0f766e;display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:800;flex:0 0 auto}
+.seller-dashboard-top-row span:last-child{text-align:right;font-weight:700;color:#213047}
+@media(max-width:1280px){
+  .seller-dashboard-grid{grid-template-columns:1fr}
+}
+@media(max-width:1050px){
+  .seller-dashboard-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .seller-dashboard-kpi{grid-template-columns:1fr}
+  .seller-dashboard-top-row{grid-template-columns:1fr 1fr;gap:6px}
+  .seller-dashboard-top-row strong{grid-column:1 / -1}
+}
+/* Seller Admin Products */
+.seller-products-page{display:grid;gap:12px}
+.seller-products-filter{align-items:flex-end}
+.seller-products-filter-grid{grid-template-columns:minmax(200px,1.2fr) minmax(180px,1fr) minmax(140px,.7fr)!important}
+.seller-products-toolbar{background:#f7fbfa;box-shadow:inset 4px 0 0 #0f766e}
+.seller-products-toolbar p b{color:#0f766e}
+.seller-products-table{min-width:1080px}
+.seller-products-table th:nth-child(1),.seller-products-table td:nth-child(1){width:88px}
+.seller-products-table th:nth-child(7),.seller-products-table td:nth-child(7){width:96px;text-align:center}
+.seller-products-table th:nth-child(8),.seller-products-table td:nth-child(8){width:210px;text-align:center}
+.seller-product-thumb{width:72px;height:54px;border-radius:6px;border:1px solid #e2e8f0;background:#f1f5f9;display:grid;place-items:center;overflow:hidden}
+.seller-product-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.seller-product-thumb em{color:#94a3b8;font-size:10px;font-style:normal;font-weight:700}
+.seller-product-name-cell{max-width:280px}
+.seller-product-name-cell strong{display:block;color:#1f2d42;font-size:12px;line-height:1.4}
+.seller-product-name-cell small{display:block;margin-top:3px;color:#7a8699;font-size:11px;font-variant-numeric:tabular-nums}
+.seller-product-share-path{display:block;margin-top:5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#0f766e;font-size:10px;background:transparent;padding:0}
+.seller-product-actions{display:inline-flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.seller-product-actions button{height:30px;padding:0 9px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-size:11px}
+.seller-products-empty{text-align:center;padding:36px 16px!important;color:#7a8699}
+.seller-products-empty strong{display:block;color:#334056;font-size:13px}
+.seller-products-empty p{margin:6px 0 0;font-size:12px}
+@media(max-width:1050px){
+  .seller-products-filter-grid{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:760px){
+  .seller-products-filter{flex-direction:column;align-items:stretch}
+  .seller-products-filter-grid{grid-template-columns:1fr!important}
+  .seller-product-actions{flex-direction:column;align-items:stretch}
+}
+/* Seller product share modal */
+.seller-share-modal{width:min(520px,calc(100vw - 32px));background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 25px 70px rgba(15,23,42,.3)}
+.seller-share-modal .modal-head{padding:14px 16px;border-bottom:1px solid #e7ebf0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.seller-share-modal .modal-head>div{display:flex;align-items:center;gap:8px}
+.seller-share-modal-icon{width:30px;height:30px;border-radius:7px;background:#ecf8f6;color:#0f766e;display:grid;place-items:center}
+.seller-share-modal .modal-head h3{margin:0;color:#1f2d42;font-size:14px}
+.seller-share-modal .modal-head>button{width:30px;height:30px;border:0;border-radius:6px;background:transparent;color:#7a8699;display:grid;place-items:center}
+.seller-share-modal .modal-head>button:hover{background:#f1f5f9}
+.seller-share-body{padding:16px;display:grid;gap:14px}
+.seller-share-product{display:grid;gap:3px}
+.seller-share-product>span{color:#7a8699;font-size:10px;font-weight:700}
+.seller-share-product strong{color:#1f2d42;font-size:15px;line-height:1.35}
+.seller-share-product small{color:#7a8699;font-size:11px}
+.seller-share-url-field{display:grid;gap:6px}
+.seller-share-url-field>span{color:#516074;font-size:11px;font-weight:700}
+.seller-share-url-field input{width:100%;height:40px;border:1px solid #d7dee8;border-radius:8px;background:#f8fafc;color:#213047;padding:0 12px;font-size:12px}
+.seller-share-track{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.seller-share-track>div{padding:9px 10px;border:1px solid #e5eaf0;border-radius:7px;background:#fafbfd;display:grid;gap:4px;min-width:0}
+.seller-share-track dt{color:#7a8699;font-size:9px;font-weight:700}
+.seller-share-track dd{margin:0;color:#0f766e;font-size:11px;font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seller-share-actions{display:flex;flex-wrap:wrap;gap:8px}
+.seller-share-actions button{height:38px;padding:0 14px;display:inline-flex;align-items:center;gap:6px}
+.seller-share-extensions{padding-top:12px;border-top:1px solid #e7ebf0;display:grid;gap:8px}
+.seller-share-extensions>p{margin:0;color:#7a8699;font-size:11px;font-weight:700}
+.seller-share-extension-buttons{display:flex;flex-wrap:wrap;gap:6px}
+.seller-share-extension-buttons button{height:34px;padding:0 10px;display:inline-flex;align-items:center;gap:5px;font-size:11px}
+.seller-share-extension-buttons button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:760px){
+  .seller-share-track{grid-template-columns:1fr}
+  .seller-share-actions{flex-direction:column}
+  .seller-share-actions button{width:100%;justify-content:center}
+}
+/* 회원관리 · 관리자/직원관리 — UI polish v2 (dense ERP, no panel shadow) */
+.member-staff-content{max-width:1720px;padding-left:18px;padding-right:18px}
+.member-staff-page-head{margin-bottom:8px}
+.member-staff-page-head h1{margin:0!important;font-size:20px;letter-spacing:-.3px}
+.member-staff-toolbar{min-height:42px!important;height:42px!important;padding:0 10px!important;margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #d0d5dd;border-radius:3px!important;background:#f3f4f6!important;box-shadow:none!important}
+.member-staff-register.primary{height:28px!important;padding:0 10px!important;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex:0 0 auto;font-size:12px;font-weight:600;border-radius:3px!important;box-shadow:none!important}
+.member-staff-toolbar-filters{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0;flex:1}
+.member-staff-toolbar-filters select,.member-staff-toolbar-filters input{height:28px!important;border:1px solid #cfd5de;border-radius:3px!important;background:#fff;color:#3f4c60;padding:0 7px;font-size:12px;outline:none;min-width:0;box-shadow:none!important}
+.member-staff-toolbar-filters select:focus,.member-staff-toolbar-filters input:focus{border-color:#93c5fd;box-shadow:none!important}
+.member-staff-page-size{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.member-staff-page-size select{width:48px!important;padding-right:2px}
+.member-staff-page-size>span{color:#6b7788;font-size:12px}
+.member-staff-toolbar-filters>select{width:96px!important;min-width:96px!important}
+.member-staff-query{width:168px!important;min-width:140px;flex:0 0 auto!important}
+.member-staff-search-btn.primary{height:28px!important;padding:0 12px!important;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;flex:0 0 auto;font-size:12px;font-weight:600;border-radius:3px!important;box-shadow:none!important}
+@media(max-width:900px){
+  /* Desktop ERP 테이블 구조는 유지. 툴바만 좁은 폭에서 줄바꿈 */
+  .member-staff-toolbar{height:auto!important;min-height:42px!important;padding:8px 10px!important;flex-wrap:wrap;align-items:flex-start}
+  .member-staff-toolbar-filters{flex-wrap:wrap;justify-content:flex-start;width:100%}
+  .member-staff-query{flex:1 1 auto!important;min-width:140px;width:auto!important}
+}
+.member-staff-list-panel{padding:0;margin:0;overflow:hidden;border:1px solid #d0d5dd;border-radius:3px!important;background:#fff;box-shadow:none!important}
+.member-staff-table-wrap{overflow-x:auto}
+.member-staff-table{width:100%;min-width:1100px;table-layout:fixed;border-collapse:collapse;background:#fff}
+.member-staff-table thead th{height:36px!important;padding:0 6px!important;border:1px solid #d0d5dd;border-left:0;background:#eef0f3!important;color:#4b5563;font-size:12px;font-weight:600;text-align:center;white-space:nowrap;vertical-align:middle}
+.member-staff-table thead th:first-child{border-left:0}
+.member-staff-table thead th:last-child{border-right:0}
+.member-staff-table tbody td{height:40px;padding:4px 6px!important;border:1px solid #e1e4ea;border-top:0;border-left:0;font-size:12px;color:#4b5563;text-align:center;vertical-align:middle;background:#fff;white-space:nowrap}
+.member-staff-table tbody td.member-staff-email{height:auto;min-height:40px;padding:6px 6px!important;white-space:normal;line-height:1.35}
+.member-staff-email-line{display:block!important;white-space:nowrap}
+.member-staff-table tbody td:first-child{border-left:0}
+.member-staff-table tbody td:last-child{border-right:0}
+.member-staff-table th:nth-child(1),.member-staff-table td:nth-child(1){width:130px}
+.member-staff-table th:nth-child(2),.member-staff-table td:nth-child(2){width:90px}
+.member-staff-table th:nth-child(3),.member-staff-table td:nth-child(3){width:70px}
+.member-staff-table th:nth-child(4),.member-staff-table td:nth-child(4){width:100px}
+.member-staff-table th:nth-child(5),.member-staff-table td:nth-child(5){width:110px}
+.member-staff-table th:nth-child(6),.member-staff-table td:nth-child(6){width:110px}
+.member-staff-table th:nth-child(7),.member-staff-table td:nth-child(7){width:170px}
+.member-staff-table th:nth-child(8),.member-staff-table td:nth-child(8){width:110px}
+.member-staff-table th:nth-child(9),.member-staff-table td:nth-child(9){width:70px}
+.member-staff-table th:nth-child(10),.member-staff-table td:nth-child(10){width:86px}
+.member-staff-code{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:2px 8px;border:1px solid #d5e0ef;border-radius:3px;background:#fff;color:#374151;font-size:12px;font-weight:500;line-height:1.2;white-space:nowrap;box-shadow:none;font-family:inherit;cursor:pointer}
+.member-staff-permission-btn{height:24px;padding:0 8px;border:1px solid #cfd5de;border-radius:3px;background:#fff;color:#4b5563;font-size:11px;font-weight:500;font-family:inherit;line-height:1;white-space:nowrap;box-shadow:none;cursor:pointer}
+.member-staff-footer{position:relative;min-height:48px!important;height:48px!important;padding:0 14px!important;margin:8px 0 0;display:flex;align-items:center;justify-content:flex-end;border:1px solid #d0d5dd;border-radius:3px!important;background:#fff;box-shadow:none!important}
+.member-staff-pagination{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;justify-content:center;gap:4px;margin:0;width:auto;height:auto}
+.member-staff-pagination button{min-width:28px;width:28px;height:28px;padding:0;border:1px solid #d0d5dd;border-radius:3px;background:#fff;color:#64748b;font-size:12px;line-height:1;cursor:default}
+.member-staff-pagination button.is-active{background:#2563eb!important;border-color:#2563eb!important;color:#fff!important}
+.member-staff-excel.excel-button{height:30px!important;padding:0 10px!important;font-size:12px;font-weight:650;border-radius:3px!important;box-shadow:none!important}
+
+/* 회원관리 · 권한그룹 설정 — staff 목록형 재사용 */
+.member-perm-group-toolbar{justify-content:flex-start}
+.member-perm-group-table{min-width:900px}
+.member-perm-group-table th:nth-child(1),.member-perm-group-table td:nth-child(1){width:130px}
+.member-perm-group-table th:nth-child(2),.member-perm-group-table td:nth-child(2){width:auto}
+.member-perm-group-table th:nth-child(3),.member-perm-group-table td:nth-child(3){width:90px}
+.member-perm-group-table th:nth-child(4),.member-perm-group-table td:nth-child(4){width:90px}
+.member-perm-group-table th:nth-child(5),.member-perm-group-table td:nth-child(5){width:80px}
+.member-perm-group-table th:nth-child(6),.member-perm-group-table td:nth-child(6){width:150px}
+.member-perm-group-desc{text-align:left!important;padding-left:10px!important}
+.member-perm-group-actions{display:inline-flex;align-items:center;justify-content:center;gap:4px}
+
+/* 회원관리 · 권한그룹 권한설정 */
+.member-perm-setting-content{padding-bottom:28px}
+.member-perm-setting-summary{margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px 18px;color:#64748b;font-size:12px;line-height:1.45}
+.member-perm-setting-summary b{color:#374151;font-weight:600}
+.member-perm-setting-lock-notice{margin:8px 0 0;padding:8px 10px;border:1px solid #f0d2a8;border-radius:3px;background:#fffbeb;color:#92400e;font-size:12px;line-height:1.45}
+.member-perm-setting-table{min-width:720px}
+.member-perm-setting-table th:nth-child(1),.member-perm-setting-table td:nth-child(1){width:auto;text-align:left!important;padding-left:12px!important}
+.member-perm-setting-table th:nth-child(2),.member-perm-setting-table td:nth-child(2),
+.member-perm-setting-table th:nth-child(3),.member-perm-setting-table td:nth-child(3),
+.member-perm-setting-table th:nth-child(4),.member-perm-setting-table td:nth-child(4),
+.member-perm-setting-table th:nth-child(5),.member-perm-setting-table td:nth-child(5),
+.member-perm-setting-table th:nth-child(6),.member-perm-setting-table td:nth-child(6){width:72px}
+.member-perm-setting-table tbody td{height:34px!important;min-height:34px;padding:4px 6px!important}
+.member-perm-setting-group td{background:#f3f4f6!important;color:#374151;font-weight:700;text-align:left!important;padding-left:12px!important}
+.member-perm-setting-child .member-perm-setting-menu{padding-left:28px!important}
+.member-perm-setting-table input[type=checkbox]{width:14px;height:14px;margin:0;accent-color:#2563eb;cursor:pointer}
+.member-perm-setting-table input[type=checkbox]:disabled{cursor:not-allowed;opacity:.7}
+.member-perm-setting-hint{margin:8px 0 0;color:#8490a1;font-size:11px}
+.member-perm-setting-footer{justify-content:flex-start;margin-top:12px;gap:6px}
+
+/* 회원관리 · 관리자 개별 권한설정 */
+.member-staff-individual-perm-content{padding-bottom:28px}
+.member-staff-individual-perm-group-tag{margin-left:auto;height:22px;padding:0 8px;border:1px solid #d0d5dd;border-radius:3px;background:#f8fafc;color:#4b5563;font-size:11px;font-weight:600;display:inline-flex;align-items:center}
+.member-staff-individual-perm-group-wrap{max-height:360px;overflow:auto;border-top:1px solid #e1e4ea}
+.member-staff-individual-perm-guide{margin:0 0 10px;color:#64748b;font-size:12px;line-height:1.45}
+.member-staff-individual-perm-table{min-width:680px}
+.member-staff-individual-perm-table th:nth-child(1),.member-staff-individual-perm-table td:nth-child(1){width:auto;text-align:left!important;padding-left:12px!important}
+.member-staff-individual-perm-table th:nth-child(2),.member-staff-individual-perm-table td:nth-child(2),
+.member-staff-individual-perm-table th:nth-child(3),.member-staff-individual-perm-table td:nth-child(3),
+.member-staff-individual-perm-table th:nth-child(4),.member-staff-individual-perm-table td:nth-child(4){width:140px}
+.member-staff-individual-perm-select{height:28px;min-width:110px;border:1px solid #cfd5de;border-radius:3px;background:#fff;color:#3f4c60;padding:0 6px;font-size:12px;outline:none}
+.member-staff-individual-perm-flag{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:22px;padding:0 8px;border:1px solid #d0d5dd;border-radius:3px;background:#fff;color:#4b5563;font-size:11px;font-weight:600}
+.member-staff-individual-perm-flag.is-allow{border-color:#bbf7d0;background:#f0fdf4;color:#15803d}
+.member-staff-individual-perm-flag.is-deny{border-color:#e5e7eb;background:#f9fafb;color:#6b7280}
+.member-staff-individual-perm-footer{justify-content:flex-start;gap:6px}
+.member-staff-field-view-notice{margin:0 0 8px;padding:8px 10px;border:1px solid #d0d5dd;border-radius:3px;background:#f8fafc;color:#4b5563;font-size:12px;line-height:1.45}
+.member-staff-field-view-table{min-width:420px}
+.member-staff-field-view-table th:nth-child(1),.member-staff-field-view-table td:nth-child(1){width:auto;text-align:left!important;padding-left:12px!important}
+.member-staff-field-view-table th:nth-child(2),.member-staff-field-view-table td:nth-child(2){width:88px}
+.member-staff-field-view-table input[type=checkbox]{width:14px;height:14px;margin:0;accent-color:#2563eb;cursor:pointer}
+
+/* 회원관리 · 관리자/직원 신규등록 — dense ERP form */
+.member-staff-new-content{padding-bottom:24px;max-width:1280px}
+.member-staff-new-content .member-web-edit-stack{gap:8px}
+.member-staff-new-section{border:1px solid #d0d5dd;border-radius:3px;background:#fff;box-shadow:none;overflow:hidden}
+.member-staff-new-section-head{min-height:36px!important;padding:0 12px!important;border-bottom:1px solid #e1e4ea;background:#f3f4f6}
+.member-staff-new-section-head strong{font-size:12px!important;color:#374151;font-weight:700}
+.member-staff-new-form-body{padding:10px 12px!important}
+.member-staff-new-grid{gap:8px 10px!important}
+.member-staff-new-content .member-web-edit-field{gap:4px}
+.member-staff-new-content .member-web-edit-field>span{min-height:14px;color:#4b5563;font-size:11px;font-weight:650;line-height:1.2}
+.member-staff-new-content .member-web-edit-field input,
+.member-staff-new-content .member-web-edit-field select,
+.member-staff-new-content .member-web-edit-field textarea{height:32px;border:1px solid #cfd5de;border-radius:3px;padding:0 8px;font-size:12px;color:#374151;box-shadow:none!important}
+.member-staff-new-content .member-web-edit-field textarea{height:auto;min-height:56px;padding:6px 8px;line-height:1.4;resize:vertical}
+.member-staff-new-content .member-web-edit-field input:focus,
+.member-staff-new-content .member-web-edit-field select:focus,
+.member-staff-new-content .member-web-edit-field textarea:focus{border-color:#93c5fd;box-shadow:none!important}
+.member-staff-new-content .member-web-edit-readonly{min-height:32px;height:32px;padding:0 8px;border:1px solid #e1e4ea;border-radius:3px;background:#f8fafc;font-size:12px}
+.member-staff-new-content .member-web-edit-field.is-invalid input,
+.member-staff-new-content .member-web-edit-field.is-invalid select,
+.member-staff-new-content .member-web-edit-field.is-invalid textarea{border-color:#fca5a5;background:#fffafa;box-shadow:none!important}
+.member-staff-new-content .member-seller-form-error{margin-top:2px;font-size:11px}
+.member-staff-new-section-body{min-height:0}
+.member-staff-new-placeholder{margin:0;color:#8490a1;font-size:12px;line-height:1.45}
+.member-staff-new-footer{justify-content:flex-start;gap:6px;margin-top:4px;padding-top:8px}
+.member-staff-new-footer button{height:32px!important;border-radius:3px!important;font-size:12px}
+.member-staff-new-mini-btn.secondary{height:32px;padding:0 10px;font-size:11px;font-weight:650;border-radius:3px;white-space:nowrap;box-shadow:none}
+.member-staff-new-radio-row{display:flex;align-items:center;gap:12px;min-height:32px}
+.member-staff-new-radio{display:inline-flex;align-items:center;gap:5px;color:#374151;font-size:12px;font-weight:500;cursor:pointer}
+.member-staff-new-radio input{width:14px;height:14px;margin:0;accent-color:#2563eb}
+.member-staff-new-profile-row{display:flex;align-items:center;gap:10px;min-height:32px}
+.member-staff-new-profile-preview{width:40px;height:40px;border:1px solid #d0d5dd;border-radius:3px;background:#f8fafc;color:#64748b;font-size:11px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.member-staff-new-profile-meta{display:grid;gap:4px;min-width:0}
+.member-staff-new-profile-name{margin:0;color:#4b5563;font-size:12px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.member-staff-new-profile-actions{display:inline-flex;align-items:center;gap:6px}
+.member-staff-new-profile-actions .member-staff-new-mini-btn:disabled{opacity:.45;cursor:not-allowed}
+.member-staff-new-group-hint{margin:4px 0 0;color:#64748b;font-size:11px;line-height:1.4}
+.member-staff-new-field-org-hint{grid-column:1/-1;margin:0}
+.member-staff-new-perm-body{display:grid;gap:10px}
+.member-staff-new-perm-summary{padding:8px 10px;border:1px solid #e1e4ea;border-radius:3px;background:#f8fafc;box-shadow:none}
+.member-staff-new-perm-summary-title{display:block;margin:0 0 6px;color:#374151;font-size:12px;font-weight:700}
+.member-staff-new-perm-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.member-staff-new-perm-summary-grid em{display:block;margin:0 0 3px;color:#4b5563;font-size:11px;font-style:normal;font-weight:700}
+.member-staff-new-perm-summary-grid ul{margin:0;padding-left:16px;color:#4b5563;font-size:12px;line-height:1.45}
+.member-staff-new-perm-empty{margin:0;color:#8490a1;font-size:12px}
+.member-staff-new-perm-individual{display:grid;gap:6px}
+.member-staff-new-perm-toggle{display:inline-flex;align-items:center;gap:8px;color:#374151;font-size:12px;font-weight:600;cursor:pointer;width:fit-content}
+.member-staff-new-perm-toggle input{width:14px;height:14px;margin:0;accent-color:#2563eb}
+.member-staff-new-perm-toggle em{margin-left:4px;padding:1px 6px;border:1px solid #d0d5dd;border-radius:3px;background:#fff;color:#64748b;font-size:11px;font-style:normal;font-weight:600}
+.member-staff-new-perm-table-wrap{border:1px solid #e1e4ea;border-radius:3px}
+@media(max-width:900px){.member-staff-new-perm-summary-grid{grid-template-columns:1fr}}
+.member-staff-new-scope-subtitle{display:block;margin:0 0 8px;color:#374151;font-size:12px;font-weight:700}
+.member-staff-new-scope-lead{margin:0 0 8px}
+.member-staff-new-content .member-staff-field-view-notice{margin:0 0 8px;padding:6px 8px;border:1px solid #e1e4ea;border-radius:3px;background:#f8fafc;color:#4b5563;font-size:12px;line-height:1.4}

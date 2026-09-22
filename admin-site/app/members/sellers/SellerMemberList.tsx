@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { QrCode, RotateCcw, Search } from "lucide-react";
+import { Plus, QrCode, RotateCcw, Search } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   EMPTY_SELLER_LIST_FILTERS,
@@ -16,13 +17,12 @@ import {
   filterSellerApplications,
   formatSellerAppliedDate,
   formatSellerListDisplayName,
-  formatSellerListNameSubtext,
+  formatSellerListTypeSubtext,
   formatSellerMobilePhone,
   formatSellerPersonName,
   getSellerListTotals,
   loadPrototypeSellerApplications,
   paginateSellerApplications,
-  resetPrototypeSellerApplications,
   sellerApplicationSourceShortLabel,
   sellerApplicationStatusBadgeClass,
   sellerApprovalStatusLabel,
@@ -53,7 +53,6 @@ export function SellerMemberList() {
   const [draft, setDraft] = useState<SellerListFilters>(EMPTY_SELLER_LIST_FILTERS);
   const [applied, setApplied] = useState<SellerListFilters>(EMPTY_SELLER_LIST_FILTERS);
   const [dateError, setDateError] = useState("");
-  const [resetOpen, setResetOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const act = (message: string) => {
@@ -63,10 +62,6 @@ export function SellerMemberList() {
 
   const toggleMenu = (label: string) =>
     setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
-
-  const reloadRows = () => {
-    setRowsAll(loadPrototypeSellerApplications());
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -131,16 +126,20 @@ export function SellerMemberList() {
     );
   };
 
-  const confirmResetSample = () => {
-    resetPrototypeSellerApplications();
-    reloadRows();
-    setDraft(EMPTY_SELLER_LIST_FILTERS);
-    setApplied(EMPTY_SELLER_LIST_FILTERS);
+  const applySellerTypeQuickFilter = (sellerType: SellerListFilters["sellerType"]) => {
+    const next: SellerListFilters = { ...draft, sellerType };
+    setDraft(next);
+    setApplied(next);
     setDateError("");
     setPage(1);
     setSelectedIds([]);
-    setResetOpen(false);
-    act("판매점 샘플 데이터를 초기화했습니다.");
+    act(
+      sellerType === "전체"
+        ? "전체 유형 판매점을 표시합니다."
+        : sellerType === "individual"
+          ? "개인 판매점만 표시합니다."
+          : "법인(사업자) 판매점만 표시합니다.",
+    );
   };
 
   const pageIds = pagination.rows.map((row) => row.applicationId);
@@ -468,15 +467,38 @@ export function SellerMemberList() {
 
           <section className="panel member-affiliate-list-panel">
             <div className="member-affiliate-list-head">
-              <div>
+              <div className="member-seller-list-head-left">
                 <strong>
                   검색결과 <b aria-live="polite">{ready ? filteredRows.length : "—"}</b>건
                 </strong>
+                <div className="member-seller-type-quick" role="group" aria-label="판매점 유형 빠른 필터">
+                  {(
+                    [
+                      { value: "전체" as const, label: "전체" },
+                      { value: "individual" as const, label: "개인" },
+                      { value: "business" as const, label: "법인" },
+                    ] as const
+                  ).map((item) => {
+                    const active = applied.sellerType === item.value;
+                    return (
+                      <button
+                        key={item.value}
+                        type="button"
+                        className={`member-seller-type-quick-btn${active ? " is-active" : ""}`}
+                        aria-pressed={active}
+                        onClick={() => applySellerTypeQuickFilter(item.value)}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 <span>샘플 데이터 기준</span>
               </div>
-              <button type="button" className="member-affiliate-reset-sample" onClick={() => setResetOpen(true)}>
-                샘플 초기화
-              </button>
+              <Link href="/members/sellers/new" className="primary member-seller-register-btn">
+                <Plus size={14} aria-hidden="true" />
+                판매점등록
+              </Link>
             </div>
 
             {!ready ? (
@@ -518,7 +540,7 @@ export function SellerMemberList() {
                       {pagination.rows.length > 0 ? (
                         pagination.rows.map((row) => {
                           const displayName = formatSellerListDisplayName(row);
-                          const nameSubtext = formatSellerListNameSubtext(row);
+                          const typeSubtext = formatSellerListTypeSubtext(row);
                           const personName = formatSellerPersonName(row);
                           const salesStatus = resolveSellerSalesStatus(row);
                           const canConfigureSales = row.applicationStatus === "approved";
@@ -535,16 +557,28 @@ export function SellerMemberList() {
                                 />
                               </td>
                               <td className="member-affiliate-name">
-                                <b title={displayName}>{displayName}</b>
-                                {nameSubtext ? <small>{nameSubtext}</small> : null}
-                              </td>
-                              <td className="member-seller-status-cell">
-                                <span
-                                  className={`badge ${sellerTypeBadgeClass(row.sellerType)}`}
-                                  title={SELLER_TYPE_LABELS[row.sellerType]}
+                                <Link
+                                  href={`/members/sellers/${row.applicationId}`}
+                                  title={displayName}
+                                  aria-label={`${displayName} 상세보기`}
                                 >
-                                  {SELLER_TYPE_BADGE_LABELS[row.sellerType]}
-                                </span>
+                                  <b>{displayName}</b>
+                                </Link>
+                              </td>
+                              <td className="member-seller-status-cell member-seller-type-cell">
+                                <div className="member-seller-type-stack">
+                                  <span
+                                    className={`badge ${sellerTypeBadgeClass(row.sellerType)}`}
+                                    title={SELLER_TYPE_LABELS[row.sellerType]}
+                                  >
+                                    {SELLER_TYPE_BADGE_LABELS[row.sellerType]}
+                                  </span>
+                                  {typeSubtext ? (
+                                    <small className="member-seller-type-bizno" title={typeSubtext}>
+                                      {typeSubtext}
+                                    </small>
+                                  ) : null}
+                                </div>
                               </td>
                               <td className="member-seller-person">{personName}</td>
                               <td className="member-affiliate-contact member-seller-contact">
@@ -600,16 +634,6 @@ export function SellerMemberList() {
                                 <div className="member-seller-action-group">
                                   <button
                                     type="button"
-                                    className="member-detail-button"
-                                    onClick={() =>
-                                      window.location.assign(`/members/sellers/${row.applicationId}`)
-                                    }
-                                    aria-label={`${displayName} 상세보기`}
-                                  >
-                                    상세보기
-                                  </button>
-                                  <button
-                                    type="button"
                                     className="member-detail-button member-seller-setting-btn"
                                     disabled={!canConfigureSales}
                                     title={
@@ -637,8 +661,12 @@ export function SellerMemberList() {
                             <div className="member-affiliate-empty">
                               {rowsAll.length === 0 ? (
                                 <>
-                                  <strong>등록된 판매점 가입신청이 없습니다.</strong>
-                                  <p>샘플 초기화로 기본 데이터를 다시 불러올 수 있습니다.</p>
+                                  <strong>등록된 판매점이 없습니다.</strong>
+                                  <p>판매점등록 버튼으로 관리자가 직접 등록할 수 있습니다.</p>
+                                  <Link href="/members/sellers/new" className="primary member-seller-register-btn">
+                                    <Plus size={14} aria-hidden="true" />
+                                    판매점등록
+                                  </Link>
                                 </>
                               ) : (
                                 <>
@@ -702,37 +730,6 @@ export function SellerMemberList() {
           <footer>© 2026 AOS Travel ERP · AviaNext</footer>
         </main>
       </div>
-
-      {resetOpen ? (
-        <div className="modal-backdrop" role="presentation" onClick={() => setResetOpen(false)}>
-          <div
-            className="modal member-affiliate-reset-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="seller-reset-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="modal-head">
-              <h3 id="seller-reset-title">샘플 데이터 초기화</h3>
-              <button type="button" onClick={() => setResetOpen(false)} aria-label="닫기">
-                ×
-              </button>
-            </div>
-            <p>
-              판매점 프로토타입 저장 데이터만 초기화합니다. 삭제·필터 상태를 시드 상태로 되돌리며,
-              홈페이지·제휴여행사·상품공유 storage는 변경하지 않습니다.
-            </p>
-            <div className="modal-actions">
-              <button type="button" className="secondary" onClick={() => setResetOpen(false)}>
-                취소
-              </button>
-              <button type="button" className="primary" onClick={confirmResetSample}>
-                샘플 초기화
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
 
       {toast ? (
         <div className="toast">

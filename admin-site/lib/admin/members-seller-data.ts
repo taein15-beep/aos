@@ -527,13 +527,16 @@ export function formatSellerListDisplayName(row: SellerApplication) {
   return row.sellerName.trim() || "—";
 }
 
-/** 판매점명 Sub Text: 사업자=사업자등록번호, 개인="개인 판매점" */
-export function formatSellerListNameSubtext(row: SellerApplication): string | null {
-  if (row.sellerType === "individual") {
-    return "개인 판매점";
-  }
+/** 목록 「유형」 Subtext: 사업자만 사업자등록번호 표시 */
+export function formatSellerListTypeSubtext(row: SellerApplication): string | null {
+  if (row.sellerType !== "business") return null;
   const businessNumber = formatSellerBusinessNumber(row.businessNumber);
   return businessNumber === "-" ? null : businessNumber;
+}
+
+/** @deprecated 목록에서는 formatSellerListTypeSubtext 사용 */
+export function formatSellerListNameSubtext(row: SellerApplication): string | null {
+  return formatSellerListTypeSubtext(row);
 }
 
 /** 목록 「대표자 / 신청자」: 사업자=대표자명, 개인=신청자명 */
