@@ -15,10 +15,19 @@ export default function PermissionGroupsPage() {
   const [toast, setToast] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
+  const [useStatusById, setUseStatusById] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(PERMISSION_GROUP_MOCK_ROWS.map((row) => [row.id, row.useStatus !== "미사용"])),
+  );
 
   const act = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2200);
+  };
+
+  const toggleUseStatus = (id: string, groupName: string) => {
+    const next = !useStatusById[id];
+    setUseStatusById((value) => ({ ...value, [id]: next }));
+    act(`${groupName} 그룹이 ${next ? "사용" : "미사용"}으로 변경되었습니다.`);
   };
 
   const toggleMenu = (label: string) =>
@@ -194,11 +203,33 @@ export default function PermissionGroupsPage() {
                 <tbody>
                   {PERMISSION_GROUP_MOCK_ROWS.map((row) => (
                     <tr key={row.id}>
-                      <td>{row.groupName}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="member-staff-code"
+                          onClick={() =>
+                            window.location.assign(`/members/permission-groups/${encodeURIComponent(row.id)}/edit`)
+                          }
+                        >
+                          {row.groupName}
+                        </button>
+                      </td>
                       <td className="member-perm-group-desc">{row.description}</td>
                       <td>{row.memberCount}</td>
                       <td>{row.permissionCount}</td>
-                      <td>{row.useStatus}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className={`switch ${useStatusById[row.id] ? "on" : ""}`}
+                          role="switch"
+                          aria-checked={useStatusById[row.id]}
+                          aria-label={`${row.groupName} 사용여부`}
+                          title={useStatusById[row.id] ? "사용" : "미사용"}
+                          onClick={() => toggleUseStatus(row.id, row.groupName)}
+                        >
+                          <i />
+                        </button>
+                      </td>
                       <td>
                         <div className="member-perm-group-actions">
                           <button
@@ -209,9 +240,6 @@ export default function PermissionGroupsPage() {
                             }
                           >
                             권한설정
-                          </button>
-                          <button type="button" className="member-staff-permission-btn">
-                            수정
                           </button>
                         </div>
                       </td>

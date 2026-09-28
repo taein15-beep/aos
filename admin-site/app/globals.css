@@ -1351,6 +1351,10 @@ td.money,td.money-danger{text-align:right}
 .member-perm-setting-table input[type=checkbox]:disabled{cursor:not-allowed;opacity:.7}
 .member-perm-setting-hint{margin:8px 0 0;color:#8490a1;font-size:11px}
 .member-perm-setting-footer{justify-content:flex-start;margin-top:12px;gap:6px}
+.member-staff-individual-perm-group-row{margin-top:10px}
+.member-staff-individual-perm-group-row label{display:inline-flex;align-items:center;gap:8px;color:#4b5563;font-size:12px;font-weight:650}
+.member-staff-individual-perm-group-row select{height:32px;min-width:160px;border:1px solid #cfd5de;border-radius:3px;background:#fff;color:#374151;padding:0 8px;font-size:12px;outline:none}
+.member-staff-individual-perm-group-row select:focus{border-color:#93c5fd}
 
 /* 회원관리 · 관리자 개별 권한설정 */
 .member-staff-individual-perm-content{padding-bottom:28px}
@@ -1373,57 +1377,82 @@ td.money,td.money-danger{text-align:right}
 .member-staff-field-view-table th:nth-child(2),.member-staff-field-view-table td:nth-child(2){width:88px}
 .member-staff-field-view-table input[type=checkbox]{width:14px;height:14px;margin:0;accent-color:#2563eb;cursor:pointer}
 
-/* 회원관리 · 관리자/직원 신규등록 — dense ERP form */
-.member-staff-new-content{padding-bottom:24px;max-width:1280px}
-.member-staff-new-content .member-web-edit-stack{gap:8px}
-.member-staff-new-section{border:1px solid #d0d5dd;border-radius:3px;background:#fff;box-shadow:none;overflow:hidden}
-.member-staff-new-section-head{min-height:36px!important;padding:0 12px!important;border-bottom:1px solid #e1e4ea;background:#f3f4f6}
-.member-staff-new-section-head strong{font-size:12px!important;color:#374151;font-weight:700}
-.member-staff-new-form-body{padding:10px 12px!important}
-.member-staff-new-grid{gap:8px 10px!important}
-.member-staff-new-content .member-web-edit-field{gap:4px}
-.member-staff-new-content .member-web-edit-field>span{min-height:14px;color:#4b5563;font-size:11px;font-weight:650;line-height:1.2}
-.member-staff-new-content .member-web-edit-field input,
-.member-staff-new-content .member-web-edit-field select,
-.member-staff-new-content .member-web-edit-field textarea{height:32px;border:1px solid #cfd5de;border-radius:3px;padding:0 8px;font-size:12px;color:#374151;box-shadow:none!important}
-.member-staff-new-content .member-web-edit-field textarea{height:auto;min-height:56px;padding:6px 8px;line-height:1.4;resize:vertical}
-.member-staff-new-content .member-web-edit-field input:focus,
-.member-staff-new-content .member-web-edit-field select:focus,
-.member-staff-new-content .member-web-edit-field textarea:focus{border-color:#93c5fd;box-shadow:none!important}
-.member-staff-new-content .member-web-edit-readonly{min-height:32px;height:32px;padding:0 8px;border:1px solid #e1e4ea;border-radius:3px;background:#f8fafc;font-size:12px}
-.member-staff-new-content .member-web-edit-field.is-invalid input,
-.member-staff-new-content .member-web-edit-field.is-invalid select,
-.member-staff-new-content .member-web-edit-field.is-invalid textarea{border-color:#fca5a5;background:#fffafa;box-shadow:none!important}
-.member-staff-new-content .member-seller-form-error{margin-top:2px;font-size:11px}
-.member-staff-new-section-body{min-height:0}
-.member-staff-new-placeholder{margin:0;color:#8490a1;font-size:12px;line-height:1.45}
-.member-staff-new-footer{justify-content:flex-start;gap:6px;margin-top:4px;padding-top:8px}
-.member-staff-new-footer button{height:32px!important;border-radius:3px!important;font-size:12px}
-.member-staff-new-mini-btn.secondary{height:32px;padding:0 10px;font-size:11px;font-weight:650;border-radius:3px;white-space:nowrap;box-shadow:none}
-.member-staff-new-radio-row{display:flex;align-items:center;gap:12px;min-height:32px}
-.member-staff-new-radio{display:inline-flex;align-items:center;gap:5px;color:#374151;font-size:12px;font-weight:500;cursor:pointer}
-.member-staff-new-radio input{width:14px;height:14px;margin:0;accent-color:#2563eb}
-.member-staff-new-profile-row{display:flex;align-items:center;gap:10px;min-height:32px}
-.member-staff-new-profile-preview{width:40px;height:40px;border:1px solid #d0d5dd;border-radius:3px;background:#f8fafc;color:#64748b;font-size:11px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
-.member-staff-new-profile-meta{display:grid;gap:4px;min-width:0}
-.member-staff-new-profile-name{margin:0;color:#4b5563;font-size:12px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.member-staff-new-profile-actions{display:inline-flex;align-items:center;gap:6px}
-.member-staff-new-profile-actions .member-staff-new-mini-btn:disabled{opacity:.45;cursor:not-allowed}
+/* 회원관리 · 관리자/직원 신규등록 모달 · 상세 Form — dense ERP form */
+.member-staff-new-modal{width:min(1080px,calc(100vw - 32px));max-height:min(920px,calc(100vh - 24px));display:flex;flex-direction:column;overflow:hidden;border-radius:6px}
+.member-staff-new-modal .modal-head{flex:0 0 auto;height:48px;padding:0 14px}
+.member-staff-new-modal .modal-head h3{font-size:14px;color:#1f2d42}
+.member-staff-new-modal-body{flex:1 1 auto;min-height:0;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;-webkit-overflow-scrolling:touch}
+.member-staff-form{display:flex;flex-direction:column;gap:8px;min-width:0}
+.member-staff-detail-content{max-width:1280px;padding-bottom:28px}
+.member-staff-detail-summary{margin:8px 0 0;color:#64748b;font-size:12px;line-height:1.45}
+.member-staff-detail-summary b{color:#374151;font-weight:600}
+.member-staff-new-section{flex:0 0 auto;border:1px solid #d0d5dd;border-radius:3px;background:#fff;box-shadow:none;overflow:visible}
+.member-staff-new-section-head{min-height:34px;padding:0 12px;border-bottom:1px solid #e1e4ea;background:#f3f4f6;display:flex;align-items:center}
+.member-staff-new-section-head strong{font-size:12px;color:#374151;font-weight:700}
+.member-staff-new-form-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.member-staff-form .member-web-edit-field{display:grid;gap:4px;align-content:start;min-width:0}
+.member-staff-form .member-web-edit-field>span{min-height:14px;color:#4b5563;font-size:11px;font-weight:650;line-height:1.2}
+.member-staff-form .member-web-edit-field input:not([type=checkbox]):not([type=radio]),
+.member-staff-form .member-web-edit-field select{height:32px;width:100%;border:1px solid #cfd5de;border-radius:3px;padding:0 8px;font-size:12px;color:#374151;background:#fff;outline:none;box-shadow:none;box-sizing:border-box}
+.member-staff-form .member-web-edit-field input:not([type=checkbox]):not([type=radio]):focus,
+.member-staff-form .member-web-edit-field select:focus{border-color:#93c5fd;box-shadow:none}
+.member-staff-form .member-web-edit-field.is-invalid input:not([type=checkbox]):not([type=radio]),
+.member-staff-form .member-web-edit-field.is-invalid select{border-color:#fca5a5;background:#fffafa}
+.member-staff-form .member-web-edit-readonly{min-height:32px;height:32px;padding:0 8px;border:1px solid #e1e4ea;border-radius:3px;background:#f8fafc;color:#374151;font-size:12px;display:flex;align-items:center;box-sizing:border-box}
+.member-staff-form .member-seller-form-error{margin-top:2px;font-size:11px}
+.member-staff-form .member-seller-login-row{display:flex;align-items:center;gap:6px;min-width:0}
+.member-staff-form .member-seller-login-row input{min-width:0;flex:1 1 auto;width:auto!important}
+.member-staff-form .member-seller-login-row .member-staff-new-mini-btn{flex:0 0 auto;height:32px}
+.member-staff-new-modal-row{display:grid;gap:8px 10px;align-items:start;width:100%}
+.member-staff-new-modal-row--4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.member-staff-new-modal-row--3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.member-staff-new-modal-row--2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.member-staff-new-modal-row--address{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+.member-staff-new-mini-btn.secondary{height:32px;padding:0 10px;font-size:11px;font-weight:650;border-radius:3px;white-space:nowrap;box-shadow:none;line-height:1}
+.member-staff-form .member-staff-new-radio-row{display:flex;align-items:center;flex-wrap:wrap;gap:14px;min-height:32px}
+.member-staff-form .member-staff-new-radio{display:inline-flex;align-items:center;gap:6px;color:#374151;font-size:12px;font-weight:500;cursor:pointer;line-height:1}
+.member-staff-form .member-staff-new-radio input[type=radio]{width:14px!important;height:14px!important;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;accent-color:#2563eb;flex:0 0 14px;appearance:auto}
 .member-staff-new-group-hint{margin:4px 0 0;color:#64748b;font-size:11px;line-height:1.4}
-.member-staff-new-field-org-hint{grid-column:1/-1;margin:0}
-.member-staff-new-perm-body{display:grid;gap:10px}
-.member-staff-new-perm-summary{padding:8px 10px;border:1px solid #e1e4ea;border-radius:3px;background:#f8fafc;box-shadow:none}
-.member-staff-new-perm-summary-title{display:block;margin:0 0 6px;color:#374151;font-size:12px;font-weight:700}
-.member-staff-new-perm-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.member-staff-new-perm-summary-grid em{display:block;margin:0 0 3px;color:#4b5563;font-size:11px;font-style:normal;font-weight:700}
-.member-staff-new-perm-summary-grid ul{margin:0;padding-left:16px;color:#4b5563;font-size:12px;line-height:1.45}
-.member-staff-new-perm-empty{margin:0;color:#8490a1;font-size:12px}
-.member-staff-new-perm-individual{display:grid;gap:6px}
-.member-staff-new-perm-toggle{display:inline-flex;align-items:center;gap:8px;color:#374151;font-size:12px;font-weight:600;cursor:pointer;width:fit-content}
-.member-staff-new-perm-toggle input{width:14px;height:14px;margin:0;accent-color:#2563eb}
-.member-staff-new-perm-toggle em{margin-left:4px;padding:1px 6px;border:1px solid #d0d5dd;border-radius:3px;background:#fff;color:#64748b;font-size:11px;font-style:normal;font-weight:600}
-.member-staff-new-perm-table-wrap{border:1px solid #e1e4ea;border-radius:3px}
-@media(max-width:900px){.member-staff-new-perm-summary-grid{grid-template-columns:1fr}}
-.member-staff-new-scope-subtitle{display:block;margin:0 0 8px;color:#374151;font-size:12px;font-weight:700}
-.member-staff-new-scope-lead{margin:0 0 8px}
-.member-staff-new-content .member-staff-field-view-notice{margin:0 0 8px;padding:6px 8px;border:1px solid #e1e4ea;border-radius:3px;background:#f8fafc;color:#4b5563;font-size:12px;line-height:1.4}
+.member-staff-new-placeholder{margin:0;padding:10px;color:#8490a1;font-size:12px;line-height:1.45}
+.member-staff-new-pick-list{display:flex;flex-direction:column;max-height:148px;overflow:auto;border:1px solid #cfd5de;border-radius:3px;background:#fff}
+.member-staff-new-pick-item{display:flex;align-items:center;gap:8px;min-height:30px;margin:0;padding:0 10px;border:0;border-bottom:1px solid #eef1f5;border-radius:0;background:transparent;color:#374151;font-size:12px;font-weight:500;cursor:pointer;box-sizing:border-box}
+.member-staff-new-pick-item:last-child{border-bottom:0}
+.member-staff-new-pick-item:hover{background:#f8fafc}
+.member-staff-form .member-staff-new-pick-item input[type=checkbox]{width:14px!important;height:14px!important;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;accent-color:#2563eb;flex:0 0 14px;appearance:auto}
+.member-staff-new-pick-item span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+.member-staff-new-product-picker{display:grid;gap:8px;padding:8px 10px;border:1px solid #e1e4ea;border-radius:3px;background:#f8fafc}
+.member-staff-new-product-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 92px minmax(110px,.85fr) auto;gap:6px 8px;align-items:end}
+.member-staff-new-product-search-field select{min-width:0}
+.member-staff-new-product-keyword input{min-width:0}
+.member-staff-new-product-search-action{align-content:end}
+.member-staff-new-product-search-action .member-staff-new-mini-btn.primary,
+.member-staff-new-product-filters .member-staff-new-mini-btn.primary{height:32px;padding:0 10px;font-size:11px;font-weight:650;border-radius:3px;white-space:nowrap}
+.member-staff-new-product-panels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.member-staff-new-product-panel{min-width:0;display:grid;grid-template-rows:auto minmax(0,1fr);border:1px solid #cfd5de;border-radius:3px;background:#fff;overflow:hidden}
+.member-staff-new-product-panel-head{min-height:32px;padding:0 10px;border-bottom:1px solid #e1e4ea;background:#f3f4f6;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.member-staff-new-product-panel-head strong{color:#374151;font-size:12px;font-weight:700}
+.member-staff-new-product-panel-head>span{color:#64748b;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+.member-staff-new-product-panel-title{display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer}
+.member-staff-new-product-panel-title input[type=checkbox]{width:14px;height:14px;margin:0;accent-color:#2563eb;flex:0 0 14px}
+.member-staff-new-product-list{display:flex;flex-direction:column;max-height:200px;overflow:auto;background:#fff}
+.member-staff-new-product-row{display:grid;grid-template-columns:14px minmax(0,1fr);gap:8px;align-items:start;min-height:44px;margin:0;padding:7px 10px;border:0;border-bottom:1px solid #eef1f5;border-radius:0;background:transparent;color:#374151;cursor:pointer;box-sizing:border-box}
+.member-staff-new-product-row:last-child{border-bottom:0}
+.member-staff-new-product-row:hover{background:#f8fafc}
+.member-staff-form .member-staff-new-product-row input[type=checkbox]{width:14px!important;height:14px!important;margin:2px 0 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;accent-color:#2563eb;flex:0 0 14px;appearance:auto}
+.member-staff-new-product-copy{display:grid;gap:2px;min-width:0}
+.member-staff-new-product-copy em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b;font-style:normal;font-size:11px;font-weight:500;line-height:1.3}
+.member-staff-new-product-copy b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#374151;font-size:12px;font-weight:600;line-height:1.35}
+.member-staff-form-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;padding-top:4px}
+.member-staff-form-actions-left{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.member-staff-form-actions button{height:32px;border-radius:3px;font-size:12px}
+.member-staff-form--modal .member-staff-form-actions{position:sticky;bottom:0;margin:4px -14px -12px;padding:10px 14px;border-top:1px solid #e7ebf0;background:#fff}
+.member-staff-form--detail .member-staff-form-actions{margin-top:10px;padding-top:8px;border-top:1px solid #e7ebf0}
+@media(max-width:720px){
+  .member-staff-new-modal-row--4,
+  .member-staff-new-modal-row--3,
+  .member-staff-new-modal-row--2,
+  .member-staff-new-modal-row--address{grid-template-columns:1fr}
+  .member-staff-new-product-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .member-staff-new-product-search-action{grid-column:1 / -1}
+  .member-staff-new-product-panels{grid-template-columns:1fr}
+}

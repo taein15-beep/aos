@@ -2,15 +2,45 @@
 
 import { use, useState } from "react";
 import { QrCode } from "lucide-react";
+import { StaffMemberForm } from "@/components/members/StaffMemberForm";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
+import {
+  getStaffDetailByAdminCode,
+  staffDetailToFormState,
+} from "@/lib/admin/members-staff-form";
 
 /**
  * 회원관리 > 관리자/직원관리 > 상세
- * STEP: Route + 목록 복귀만 (상세 UI는 후속 단계)
+ * STEP: 신규등록 폼 기반 상세/수정 Mock UI (DB/API 없음)
  */
 export default function StaffMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const adminCode = decodeURIComponent(id);
+  const detail = getStaffDetailByAdminCode(adminCode);
+  const initial = detail
+    ? staffDetailToFormState(detail)
+    : staffDetailToFormState({
+        adminCode,
+        koreanName: "",
+        position: "",
+        englishName: "",
+        mobile: "",
+        directPhone: "",
+        email: "",
+        groupName: "",
+        salesManage: "",
+        hireDate: "",
+        resignDate: "",
+        address: "",
+        addressDetail: "",
+        bank: "",
+        accountNumber: "",
+        accountStatus: "사용",
+        productScope: "해당사항없음",
+        productCodes: [],
+        sellerIds: [],
+        affiliateIds: [],
+      });
 
   const [collapsed, setCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(["회원관리"]);
@@ -22,6 +52,8 @@ export default function StaffMemberDetailPage({ params }: { params: Promise<{ id
     setToast(message);
     window.setTimeout(() => setToast(""), 2200);
   };
+
+  const goList = () => window.location.assign("/members/staff");
 
   const toggleMenu = (label: string) =>
     setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
@@ -127,7 +159,7 @@ export default function StaffMemberDetailPage({ params }: { params: Promise<{ id
                   <button type="button">
                     <span className="alert-dot info" />
                     <span>
-                      관리자/직원 계정 알림이 있습니다.
+                      관리자/직원 상세 알림이 있습니다.
                       <small>방금 전</small>
                     </span>
                   </button>
@@ -165,16 +197,51 @@ export default function StaffMemberDetailPage({ params }: { params: Promise<{ id
           </div>
         </header>
 
-        <main className="content member-staff-content">
+        <main className="content member-staff-content member-staff-detail-content">
           <section className="page-head member-staff-page-head">
             <div>
               <h1>관리자/직원 상세</h1>
-              <p style={{ margin: "8px 0 0", color: "#64748b", fontSize: 13 }}>ID: {adminCode}</p>
+              <p className="member-staff-detail-summary">
+                ID: <b>{adminCode}</b>
+                {detail ? (
+                  <>
+                    {" · "}
+                    <b>{detail.koreanName || "—"}</b>
+                    {" · "}
+                    소속그룹 <b>{detail.groupName || "—"}</b>
+                  </>
+                ) : (
+                  <> · <span>등록되지 않은 ID입니다. (Mock)</span></>
+                )}
+              </p>
             </div>
-            <button type="button" className="secondary" onClick={() => window.location.assign("/members/staff")}>
-              목록
-            </button>
           </section>
+
+          <StaffMemberForm
+            key={adminCode}
+            mode="edit"
+            initialBasic={initial.basic}
+            initialScope={initial.scope}
+            onNotify={act}
+            formClassName="member-staff-form member-staff-form--detail"
+            footer={
+              <>
+                <button type="button" className="secondary" onClick={goList}>
+                  목록
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() =>
+                    window.location.assign(`/members/staff/${encodeURIComponent(adminCode)}/permissions`)
+                  }
+                >
+                  권한설정
+                </button>
+              </>
+            }
+            onSubmit={() => act("저장 기능은 다음 단계에서 제공됩니다. (현재는 화면 상태만 유지)")}
+          />
         </main>
       </div>
 

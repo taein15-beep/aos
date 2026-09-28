@@ -9,51 +9,38 @@ import {
   PERMISSION_ACTION_LABELS,
   PERMISSION_GROUP_OPTIONS,
   PERMISSION_MENU_ROWS,
-  STAFF_INDIVIDUAL_MENU_ROWS,
-  createDefaultFieldViewSettings,
-  createDefaultIndividualSettings,
   createEmptyPermissionRow,
-  getCategoryGroupAccess,
-  getFieldViewMenuRows,
-  getFieldViewNotice,
   getPermissionPresetByGroupName,
-  isFieldViewOnlyGroup,
   isPermissionRowAllChecked,
-  resolveFinalAccess,
-  type IndividualSettingValue,
+  type PermissionAction,
+  type PermissionRowState,
 } from "@/lib/admin/members-permission-groups-data";
 
 /**
  * 회원관리 > 관리자/직원관리 > 개별 권한설정
- * STEP: Mock UI (DB/API/실제 저장 없음)
- * - 가이드/기사: 조회 전용 현장 메뉴 UI
+ * STEP: 권한그룹 권한설정과 동일한 Mock 체크박스 UI (DB/API 없음)
  */
 export default function StaffIndividualPermissionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const adminCode = decodeURIComponent(id);
   const staff = getStaffMemberByAdminCode(adminCode);
 
-  const initialGroup = staff?.groupName ?? "최종관리자";
-  const displayName = staff?.koreanName ?? "장용선";
-  const displayCode = staff?.adminCode ?? "changys888";
+  const initialGroup = staff?.groupName ?? "직원";
+  const displayName = staff?.koreanName ?? adminCode;
+  const displayCode = staff?.adminCode ?? adminCode;
 
   const [collapsed, setCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(["회원관리"]);
   const [toast, setToast] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
-
   const [groupName, setGroupName] = useState(initialGroup);
-  const [baselineGroup, setBaselineGroup] = useState(initialGroup);
-  const [individualSettings, setIndividualSettings] = useState(() => createDefaultIndividualSettings());
-  const [baselineIndividual, setBaselineIndividual] = useState(() => createDefaultIndividualSettings());
-  const [fieldViewSettings, setFieldViewSettings] = useState(() => createDefaultFieldViewSettings(initialGroup));
-  const [baselineFieldView, setBaselineFieldView] = useState(() => createDefaultFieldViewSettings(initialGroup));
+  const [permissions, setPermissions] = useState(() => getPermissionPresetByGroupName(initialGroup));
 
-  const groupPreset = useMemo(() => getPermissionPresetByGroupName(groupName), [groupName]);
-  const isFieldViewGroup = isFieldViewOnlyGroup(groupName);
-  const fieldViewMenus = useMemo(() => getFieldViewMenuRows(groupName), [groupName]);
-  const fieldViewNotice = getFieldViewNotice(groupName);
+  const editableRowCount = useMemo(
+    () => PERMISSION_MENU_ROWS.filter((row) => !row.isGroup).length,
+    [],
+  );
 
   const act = (message: string) => {
     setToast(message);
@@ -65,33 +52,33 @@ export default function StaffIndividualPermissionPage({ params }: { params: Prom
   const toggleMenu = (label: string) =>
     setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
 
+  const setRow = (rowId: string, next: PermissionRowState) => {
+    setPermissions((prev) => ({ ...prev, [rowId]: next }));
+  };
+
+  const toggleAll = (rowId: string, checked: boolean) => {
+    setRow(rowId, {
+      view: checked,
+      create: checked,
+      update: checked,
+      delete: checked,
+    });
+  };
+
+  const toggleAction = (rowId: string, action: PermissionAction, checked: boolean) => {
+    const current = permissions[rowId] ?? createEmptyPermissionRow();
+    setRow(rowId, { ...current, [action]: checked });
+  };
+
   const changeGroup = (nextGroup: string) => {
     setGroupName(nextGroup);
-    if (isFieldViewOnlyGroup(nextGroup)) {
-      setFieldViewSettings(createDefaultFieldViewSettings(nextGroup));
-    }
+    setPermissions(getPermissionPresetByGroupName(nextGroup));
+    act(`${nextGroup} 그룹 기본권한을 불러왔습니다.`);
   };
 
-  const setIndividual = (menuId: string, value: IndividualSettingValue) => {
-    setIndividualSettings((prev) => ({ ...prev, [menuId]: value }));
-  };
-
-  const toggleFieldView = (menuId: string, checked: boolean) => {
-    setFieldViewSettings((prev) => ({ ...prev, [menuId]: checked }));
-  };
-
-  const cancelChanges = () => {
-    setGroupName(baselineGroup);
-    setIndividualSettings({ ...baselineIndividual });
-    setFieldViewSettings({ ...baselineFieldView });
-    act("변경사항을 취소했습니다.");
-  };
-
-  const savePermissions = () => {
-    setBaselineGroup(groupName);
-    setBaselineIndividual({ ...individualSettings });
-    setBaselineFieldView({ ...fieldViewSettings });
-    act("권한저장 기능은 다음 단계에서 제공됩니다. (현재는 화면 상태만 유지)");
+  const resetPermissions = () => {
+    setPermissions(getPermissionPresetByGroupName(groupName));
+    act("소속그룹 Mock Preset으로 초기화했습니다.");
   };
 
   return (
@@ -161,7 +148,7 @@ export default function StaffIndividualPermissionPage({ params }: { params: Prom
             <b>/</b>
             <strong>관리자/직원관리</strong>
             <b>/</b>
-            <strong>개별 권한설정</strong>
+            <strong>권한설정</strong>
           </div>
           <div className="top-actions">
             <label className="search">
@@ -233,229 +220,112 @@ export default function StaffIndividualPermissionPage({ params }: { params: Prom
           </div>
         </header>
 
-        <main className="content member-web-detail-content member-web-edit-content member-staff-individual-perm-content">
-          <section className="page-head member-web-detail-page-head">
+        <main className="content member-staff-content member-perm-setting-content">
+          <section className="page-head member-staff-page-head">
             <div>
-              <p className="member-web-breadcrumb">회원관리 &gt; 관리자/직원관리 &gt; 개별 권한설정</p>
-              <div className="member-web-detail-title-row">
-                <h1>관리자 개별 권한설정</h1>
+              <h1>개별 권한설정</h1>
+              <p className="member-perm-setting-summary">
+                <span>
+                  ID: <b>{displayCode}</b>
+                </span>
+                <span>
+                  이름: <b>{displayName}</b>
+                </span>
+              </p>
+              <div className="member-staff-individual-perm-group-row">
+                <label>
+                  <span>소속그룹</span>
+                  <select
+                    value={groupName}
+                    onChange={(e) => changeGroup(e.target.value)}
+                    aria-label="소속그룹"
+                  >
+                    {PERMISSION_GROUP_OPTIONS.map((option) => (
+                      <option key={option.id} value={option.name}>
+                        {option.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
-            </div>
-            <div className="member-web-detail-actions">
-              <button type="button" className="secondary" onClick={goList}>
-                목록
-              </button>
             </div>
           </section>
 
-          <div className="member-web-edit-stack">
-            <section className="panel member-web-detail-card">
-              <div className="member-web-detail-card-head">
-                <strong>기본정보</strong>
-              </div>
-              <div className="member-web-edit-form-body">
-                <div className="member-web-edit-form-grid member-web-edit-form-grid--3">
-                  <div className="member-web-edit-field member-web-edit-field--readonly">
-                    <span>ID</span>
-                    <div className="member-web-edit-readonly">{displayCode}</div>
-                  </div>
-                  <div className="member-web-edit-field member-web-edit-field--readonly">
-                    <span>이름</span>
-                    <div className="member-web-edit-readonly">{displayName}</div>
-                  </div>
-                  <label className="member-web-edit-field">
-                    <span>소속그룹</span>
-                    <select
-                      value={groupName}
-                      onChange={(e) => changeGroup(e.target.value)}
-                      aria-label="소속그룹"
-                    >
-                      {PERMISSION_GROUP_OPTIONS.map((option) => (
-                        <option key={option.id} value={option.name}>
-                          {option.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-              </div>
-            </section>
-
-            {isFieldViewGroup ? (
-              <section className="panel member-web-detail-card">
-                <div className="member-web-detail-card-head">
-                  <strong>{groupName} 조회 권한</strong>
-                  <span className="member-staff-individual-perm-group-tag">{groupName}</span>
-                </div>
-                <div className="member-web-edit-form-body">
-                  <p className="member-staff-field-view-notice">{fieldViewNotice}</p>
-                  <p className="member-staff-individual-perm-guide">
-                    조회 권한만 제공하며 등록 / 수정 / 삭제 권한은 적용되지 않습니다.
-                  </p>
-                  <div className="member-staff-table-wrap">
-                    <table className="member-staff-table member-staff-field-view-table">
-                      <thead>
-                        <tr>
-                          <th>메뉴</th>
-                          <th>조회</th>
+          <section className="member-staff-list-panel" aria-label="권한설정">
+            <div className="member-staff-table-wrap">
+              <table className="member-staff-table member-perm-setting-table">
+                <thead>
+                  <tr>
+                    <th>메뉴</th>
+                    <th>전체</th>
+                    <th>조회</th>
+                    <th>등록</th>
+                    <th>수정</th>
+                    <th>삭제</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PERMISSION_MENU_ROWS.map((row) => {
+                    if (row.isGroup) {
+                      return (
+                        <tr key={row.id} className="member-perm-setting-group">
+                          <td colSpan={6}>{row.label}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {fieldViewMenus.map((row) => (
-                          <tr key={row.id}>
-                            <td className="member-staff-individual-perm-menu">{row.label}</td>
-                            <td>
-                              <input
-                                type="checkbox"
-                                checked={fieldViewSettings[row.id] ?? true}
-                                aria-label={`${row.label} 조회`}
-                                onChange={(e) => toggleFieldView(row.id, e.target.checked)}
-                              />
-                            </td>
-                          </tr>
+                      );
+                    }
+
+                    const state = permissions[row.id] ?? createEmptyPermissionRow();
+                    const allChecked = isPermissionRowAllChecked(state);
+
+                    return (
+                      <tr key={row.id} className={row.depth === 1 ? "member-perm-setting-child" : undefined}>
+                        <td className="member-perm-setting-menu">{row.label}</td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={allChecked}
+                            aria-label={`${row.label} 전체`}
+                            onChange={(e) => toggleAll(row.id, e.target.checked)}
+                          />
+                        </td>
+                        {PERMISSION_ACTIONS.map((action) => (
+                          <td key={action}>
+                            <input
+                              type="checkbox"
+                              checked={state[action]}
+                              aria-label={`${row.label} ${PERMISSION_ACTION_LABELS[action]}`}
+                              onChange={(e) => toggleAction(row.id, action, e.target.checked)}
+                            />
+                          </td>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </section>
-            ) : (
-              <>
-                <section className="panel member-web-detail-card">
-                  <div className="member-web-detail-card-head">
-                    <strong>그룹 기본권한</strong>
-                    <span className="member-staff-individual-perm-group-tag">{groupName}</span>
-                  </div>
-                  <div className="member-staff-table-wrap member-staff-individual-perm-group-wrap">
-                    <table className="member-staff-table member-perm-setting-table">
-                      <thead>
-                        <tr>
-                          <th>메뉴</th>
-                          <th>전체</th>
-                          <th>조회</th>
-                          <th>등록</th>
-                          <th>수정</th>
-                          <th>삭제</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {PERMISSION_MENU_ROWS.map((row) => {
-                          if (row.isGroup) {
-                            return (
-                              <tr key={row.id} className="member-perm-setting-group">
-                                <td colSpan={6}>{row.label}</td>
-                              </tr>
-                            );
-                          }
-                          const state = groupPreset[row.id] ?? createEmptyPermissionRow();
-                          const allChecked = isPermissionRowAllChecked(state);
-                          return (
-                            <tr key={row.id} className={row.depth === 1 ? "member-perm-setting-child" : undefined}>
-                              <td className="member-perm-setting-menu">{row.label}</td>
-                              <td>
-                                <input
-                                  type="checkbox"
-                                  checked={allChecked}
-                                  disabled
-                                  readOnly
-                                  aria-label={`${row.label} 전체`}
-                                />
-                              </td>
-                              {PERMISSION_ACTIONS.map((action) => (
-                                <td key={action}>
-                                  <input
-                                    type="checkbox"
-                                    checked={state[action]}
-                                    disabled
-                                    readOnly
-                                    aria-label={`${row.label} ${PERMISSION_ACTION_LABELS[action]}`}
-                                  />
-                                </td>
-                              ))}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-
-                <section className="panel member-web-detail-card">
-                  <div className="member-web-detail-card-head">
-                    <strong>개별 권한 설정</strong>
-                  </div>
-                  <div className="member-web-edit-form-body">
-                    <p className="member-staff-individual-perm-guide">
-                      그룹 기본권한을 기준으로 사용자별 권한을 추가하거나 제한할 수 있습니다.
-                    </p>
-                    <div className="member-staff-table-wrap">
-                      <table className="member-staff-table member-staff-individual-perm-table">
-                        <thead>
-                          <tr>
-                            <th>메뉴</th>
-                            <th>그룹권한</th>
-                            <th>개별설정</th>
-                            <th>최종권한</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {STAFF_INDIVIDUAL_MENU_ROWS.map((row) => {
-                            const groupAccess = getCategoryGroupAccess(groupPreset, row);
-                            const individual = individualSettings[row.id] ?? "기본값 사용";
-                            const finalAccess = resolveFinalAccess(groupAccess, individual);
-                            return (
-                              <tr key={row.id}>
-                                <td className="member-staff-individual-perm-menu">{row.label}</td>
-                                <td>
-                                  <span
-                                    className={`member-staff-individual-perm-flag is-${groupAccess === "허용" ? "allow" : "deny"}`}
-                                  >
-                                    {groupAccess}
-                                  </span>
-                                </td>
-                                <td>
-                                  <select
-                                    className="member-staff-individual-perm-select"
-                                    value={individual}
-                                    aria-label={`${row.label} 개별설정`}
-                                    onChange={(e) => setIndividual(row.id, e.target.value as IndividualSettingValue)}
-                                  >
-                                    <option value="기본값 사용">기본값 사용</option>
-                                    <option value="허용">허용</option>
-                                    <option value="차단">차단</option>
-                                  </select>
-                                </td>
-                                <td>
-                                  <span
-                                    className={`member-staff-individual-perm-flag is-${finalAccess === "허용" ? "allow" : "deny"}`}
-                                  >
-                                    {finalAccess}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </section>
-              </>
-            )}
-
-            <div className="member-web-edit-footer member-staff-individual-perm-footer">
-              <button type="button" className="secondary" onClick={goList}>
-                목록
-              </button>
-              <button type="button" className="secondary" onClick={cancelChanges}>
-                <RotateCcw size={14} />
-                변경취소
-              </button>
-              <button type="button" className="primary" onClick={savePermissions}>
-                <Save size={14} />
-                권한저장
-              </button>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
+          </section>
+
+          <p className="member-perm-setting-hint">
+            소속그룹({groupName}) Mock Preset 기준 · 메뉴 {editableRowCount}개 · 체크 상태는 화면에서만 반영됩니다.
+          </p>
+
+          <div className="member-web-edit-footer member-perm-setting-footer">
+            <button type="button" className="secondary" onClick={goList}>
+              목록
+            </button>
+            <button type="button" className="secondary" onClick={resetPermissions}>
+              <RotateCcw size={14} />
+              초기화
+            </button>
+            <button
+              type="button"
+              className="primary"
+              onClick={() => act("권한저장 기능은 다음 단계에서 제공됩니다.")}
+            >
+              <Save size={14} />
+              권한저장
+            </button>
           </div>
         </main>
       </div>
@@ -469,4 +339,3 @@ export default function StaffIndividualPermissionPage({ params }: { params: Prom
     </div>
   );
 }
-

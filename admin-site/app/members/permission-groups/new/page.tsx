@@ -17,8 +17,6 @@ export default function PermissionGroupNewPage() {
 
   const [groupName, setGroupName] = useState("예약·CS담당");
   const [description, setDescription] = useState("예약관리 및 고객상담 업무 담당자");
-  const [useStatus, setUseStatus] = useState("사용");
-
   const act = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2200);
@@ -207,13 +205,6 @@ export default function PermissionGroupNewPage() {
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="그룹 설명을 입력하세요"
                     />
-                  </label>
-                  <label className="member-web-edit-field">
-                    <span>사용여부</span>
-                    <select value={useStatus} onChange={(e) => setUseStatus(e.target.value)}>
-                      <option value="사용">사용</option>
-                      <option value="미사용">미사용</option>
-                    </select>
                   </label>
                 </div>
               </div>

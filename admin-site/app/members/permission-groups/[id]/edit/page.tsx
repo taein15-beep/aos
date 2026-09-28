@@ -1,35 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { FileSpreadsheet, QrCode } from "lucide-react";
-import { StaffNewModal } from "@/components/members/StaffNewModal";
+import { use, useState } from "react";
+import { QrCode, Save, X } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
-import { STAFF_MEMBER_MOCK_ROWS, splitStaffEmails } from "@/lib/admin/members-staff-data";
+import { getPermissionGroupById } from "@/lib/admin/members-permission-groups-data";
 
 /**
- * 회원관리 > 관리자/직원관리
- * STEP: Route + 기존 ERP Layout 뼈대만 구성 (목록 UI는 후속 단계)
+ * 회원관리 > 권한그룹 설정 > 수정
+ * STEP: 그룹 기본정보 수정 UI (DB/API 없음)
  */
-export default function StaffMembersPage() {
+export default function PermissionGroupEditPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const groupId = decodeURIComponent(id);
+  const group = getPermissionGroupById(groupId);
+
   const [collapsed, setCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(["회원관리"]);
   const [toast, setToast] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
-  const [newOpen, setNewOpen] = useState(false);
 
+  const [groupName, setGroupName] = useState(group?.groupName ?? "");
+  const [description, setDescription] = useState(group?.description ?? "");
   const act = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2200);
   };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("new") === "1") {
-      setNewOpen(true);
-      window.history.replaceState({}, "", "/members/staff");
-    }
-  }, []);
+  const goList = () => window.location.assign("/members/permission-groups");
 
   const toggleMenu = (label: string) =>
     setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
@@ -74,7 +72,7 @@ export default function StaffMembersPage() {
                     <button
                       key={child}
                       type="button"
-                      className={child === "관리자/직원" ? "current" : ""}
+                      className={child === "권한그룹 설정" ? "current" : ""}
                       onClick={() => navigateAdminChild(child, act)}
                     >
                       {child}
@@ -99,7 +97,9 @@ export default function StaffMembersPage() {
           <div className="breadcrumb">
             <span>회원관리</span>
             <b>/</b>
-            <strong>관리자/직원관리</strong>
+            <strong>권한그룹 설정</strong>
+            <b>/</b>
+            <strong>수정</strong>
           </div>
           <div className="top-actions">
             <label className="search">
@@ -133,7 +133,7 @@ export default function StaffMembersPage() {
                   <button type="button">
                     <span className="alert-dot info" />
                     <span>
-                      관리자/직원 계정 알림이 있습니다.
+                      권한그룹 수정 알림이 있습니다.
                       <small>방금 전</small>
                     </span>
                   </button>
@@ -171,133 +171,63 @@ export default function StaffMembersPage() {
           </div>
         </header>
 
-        <main className="content member-staff-content">
-          <section className="page-head member-staff-page-head">
+        <main className="content member-web-detail-content member-web-edit-content member-perm-group-form-content">
+          <section className="page-head member-web-detail-page-head">
             <div>
-              <h1>관리자/직원관리</h1>
+              <p className="member-web-breadcrumb">회원관리 &gt; 권한그룹 설정 &gt; 수정</p>
+              <div className="member-web-detail-title-row">
+                <h1>권한그룹 수정</h1>
+              </div>
             </div>
-          </section>
-
-          <section className="member-staff-toolbar" aria-label="관리자/직원 검색">
-            <button
-              type="button"
-              className="primary member-staff-register"
-              onClick={() => setNewOpen(true)}
-            >
-              + 신규등록
-            </button>
-            <div className="member-staff-toolbar-filters">
-              <label className="member-staff-page-size">
-                <select defaultValue="15" aria-label="페이지 출력수">
-                  <option value="15">15</option>
-                  <option value="30">30</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                </select>
-                <span>줄수</span>
-              </label>
-              <select defaultValue="한글이름" aria-label="검색조건">
-                <option value="한글이름">한글이름</option>
-                <option value="ID">ID</option>
-                <option value="영문이름">영문이름</option>
-                <option value="핸드폰">핸드폰</option>
-                <option value="직통번호">직통번호</option>
-                <option value="이메일">이메일</option>
-                <option value="소속그룹">소속그룹</option>
-              </select>
-              <input
-                type="text"
-                className="member-staff-query"
-                placeholder="검색어를 입력하세요"
-                aria-label="검색어"
-              />
-              <button type="button" className="primary member-staff-search-btn">
-                검색
+            <div className="member-web-detail-actions">
+              <button type="button" className="secondary" onClick={goList}>
+                목록
               </button>
             </div>
           </section>
 
-          <section className="member-staff-list-panel" aria-label="관리자/직원 목록">
-            <div className="member-staff-table-wrap">
-              <table className="member-staff-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>한글이름</th>
-                    <th>직급</th>
-                    <th>영문이름</th>
-                    <th>핸드폰</th>
-                    <th>직통번호</th>
-                    <th>이메일</th>
-                    <th>소속그룹</th>
-                    <th>판매관리</th>
-                    <th>권한관리</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {STAFF_MEMBER_MOCK_ROWS.map((row) => (
-                    <tr key={row.adminCode}>
-                      <td>
-                        <button
-                          type="button"
-                          className="member-staff-code"
-                          onClick={() => window.location.assign(`/members/staff/${encodeURIComponent(row.adminCode)}`)}
-                        >
-                          {row.adminCode}
-                        </button>
-                      </td>
-                      <td>{row.koreanName}</td>
-                      <td>{row.position}</td>
-                      <td>{row.englishName}</td>
-                      <td>{row.mobile}</td>
-                      <td>{row.directPhone}</td>
-                      <td className="member-staff-email">
-                        {splitStaffEmails(row.email).map((line) => (
-                          <div key={line} className="member-staff-email-line">
-                            {line}
-                          </div>
-                        ))}
-                      </td>
-                      <td>{row.groupName}</td>
-                      <td>{row.salesManage}</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="member-staff-permission-btn"
-                          onClick={() =>
-                            window.location.assign(`/members/staff/${encodeURIComponent(row.adminCode)}/permissions`)
-                          }
-                        >
-                          권한설정
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          <div className="member-web-edit-stack">
+            <section className="panel member-web-detail-card">
+              <div className="member-web-detail-card-head">
+                <strong>기본정보</strong>
+              </div>
+              <div className="member-web-edit-form-body">
+                <div className="member-web-edit-form-grid member-web-edit-form-grid--3">
+                  <label className="member-web-edit-field">
+                    <span>
+                      그룹명 <b className="member-seller-form-required">*</b>
+                    </span>
+                    <input
+                      value={groupName}
+                      onChange={(e) => setGroupName(e.target.value)}
+                      placeholder="그룹명"
+                    />
+                  </label>
+                  <label className="member-web-edit-field member-web-edit-field--span-2">
+                    <span>그룹설명</span>
+                    <input
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="그룹 설명을 입력하세요"
+                    />
+                  </label>
+                </div>
+              </div>
+            </section>
 
-          <section className="member-staff-footer" aria-label="목록 하단">
-            <div className="member-staff-pagination" role="navigation" aria-label="페이지">
-              <button type="button" className="is-active" aria-current="page">
-                1
+            <div className="member-web-edit-footer">
+              <button type="button" className="secondary" onClick={goList}>
+                <X size={14} />
+                취소
+              </button>
+              <button type="button" className="primary" onClick={() => act(`${groupName || "권한그룹"} 정보가 저장되었습니다. (Mock)`)}>
+                <Save size={14} />
+                저장
               </button>
             </div>
-            <button type="button" className="excel-button member-staff-excel">
-              <FileSpreadsheet size={14} aria-hidden="true" />
-              엑셀 다운로드
-            </button>
-          </section>
+          </div>
         </main>
       </div>
-
-      <StaffNewModal
-        open={newOpen}
-        onClose={() => setNewOpen(false)}
-        onNotify={act}
-        onRegistered={act}
-      />
 
       {toast ? (
         <div className="toast" role="status">
