@@ -1,13 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
-import { ArrowLeft, ClipboardList, Minus, Pencil, Plus, QrCode, Receipt } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, ClipboardList, Minus, Pencil, Plus, QrCode, Receipt, Wallet } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
+  applySettlementCancellation,
+  getSettlementRecordByReservation,
+  syncSettlementAfterReservationChange,
+} from "@/lib/admin/settlement-data";
+import {
+  applyReservationCancellation,
   calculatePaymentSummary,
+  closeReservation,
   formatKrw,
+  formatReservationTimestamp,
   getReservationDetail,
+  getReservationHistory,
+  handoverReservation,
   getReservationPayments,
   getReservationRefunds,
   parseKrw,
@@ -16,6 +26,28 @@ import {
   type ReservationPayment,
   type ReservationRefund,
 } from "@/lib/admin/reservations-data";
+import { getOperationAssignmentPath, getReservationOperationView } from "@/lib/admin/operation-assignment-data";
+import {
+  canEditReservation,
+  getReservationCloseAction,
+  getReservationHandoverAction,
+  getReservationSourceType,
+  getViewerActor,
+  withReservationViewer,
+} from "@/lib/admin/reservation-permission";
+import {
+  ReservationActionDialog,
+  ReservationHistorySection,
+  ReservationOperationCard,
+  ReservationPermissionBadges,
+  ReservationPermissionNotices,
+  ReservationSourceBadge,
+  ReservationSourceCards,
+  ReservationViewerSwitch,
+  buildReservationActionDetails,
+  useReservationViewer,
+  type ReservationActionDialogState,
+} from "@/components/reservations/ReservationSource";
 
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
@@ -118,7 +150,18 @@ function CountLimitStepper({
 export default function ReservationDetailPage() {
   const params = useParams<{ id: string }>();
   const reservationId = useMemo(() => decodeURIComponent(params.id ?? ""), [params.id]);
-  const reservation = useMemo(() => getReservationDetail(reservationId), [reservationId]);
+  const [reservationVersion, setReservationVersion] = useState(0);
+  const reservation = useMemo(
+    () => getReservationDetail(reservationId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reservationId, reservationVersion],
+  );
+  const reservationHistory = useMemo(
+    () => getReservationHistory(reservationId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reservationId, reservationVersion],
+  );
+  const [actionDialog, setActionDialog] = useState<ReservationActionDialogState | null>(null);
 
   const [collapsed, setCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(["예약관리"]);
@@ -158,6 +201,14 @@ export default function ReservationDetailPage() {
   }, [reservation, payments, refunds]);
 
   const isCancelled = isCancelledReservation(displayReserveStatus);
+  const router = useRouter();
+  const [viewer, changeViewer] = useReservationViewer();
+  const permissionTarget = { source: reservation?.source, reserveStatus: displayReserveStatus };
+  const operationAssignment = useMemo(
+    () => (reservation ? getReservationOperationView({ ...reservation, reserveStatus: displayReserveStatus }) : null),
+    [reservation, displayReserveStatus],
+  );
+  const canEdit = reservation ? canEditReservation({ reservation: permissionTarget, viewer }) : false;
   const paidAmountValue = reservation ? parseKrw(reservation.paidAmount) : 0;
   const totalPeople = reservation
     ? reservation.counts.adult + reservation.counts.child + reservation.counts.infant
@@ -191,7 +242,7 @@ export default function ReservationDetailPage() {
   };
 
   const openCancelModal = () => {
-    if (isCancelled) return;
+    if (isCancelled || !canEdit) return;
     resetCancelForm();
     setCancelModalOpen(true);
   };
@@ -226,6 +277,49 @@ export default function ReservationDetailPage() {
     const nowLabel = formatHistoryTimestamp(new Date());
     const primaryPaymentNumber = payments[0]?.paymentNumber ?? "PAY-UNKNOWN";
 
+    if (!reservation) return;
+    const actor = getViewerActor(viewer);
+    const processedAt = formatReservationTimestamp(new Date());
+    const cancellationType = cancelType === "예약 전체 취소" ? "full" : "partial";
+    const refundTotal =
+      (reservation.cancellation?.refundAmount ?? 0) + (refundMethod === "환불 없음" ? 0 : expectedRefundAmount);
+    const feeTotal = (reservation.cancellation?.cancellationFee ?? 0) + cancelFee;
+    const memo = adminMemo.trim();
+    const settlementBefore = getSettlementRecordByReservation(reservation.code);
+    if (settlementBefore && refundTotal + feeTotal > 0) {
+      const errors = applySettlementCancellation(
+        settlementBefore,
+        {
+          type: cancellationType,
+          refundAmount: refundTotal,
+          cancellationFee: feeTotal,
+          feeOwner: settlementBefore.liveBreakdown.cancellationFeeOwner,
+          reason: reasonText,
+          memo,
+        },
+        actor,
+        processedAt,
+      );
+      if (errors.length) {
+        act(errors[0]);
+        return;
+      }
+    } else {
+      applyReservationCancellation(reservation.code, {
+        type: cancellationType,
+        refundAmount: refundTotal,
+        cancellationFee: feeTotal,
+        reason: reasonText,
+        memo,
+        processedAt,
+        processedBy: actor,
+      });
+      if (settlementBefore) {
+        syncSettlementAfterReservationChange(settlementBefore, actor, processedAt, { cause: "환불조정", reason: reasonText });
+      }
+    }
+    setReservationVersion((value) => value + 1);
+
     let nextPaymentStatus = displayPaymentStatus;
     if (refundMethod === "환불 없음") {
       nextPaymentStatus = "환불완료";
@@ -235,7 +329,7 @@ export default function ReservationDetailPage() {
       nextPaymentStatus = "환불대기";
     }
 
-    setDisplayReserveStatus("취소");
+    if (cancellationType === "full") setDisplayReserveStatus("취소완료");
     setDisplayPaymentStatus(nextPaymentStatus);
 
     if (refundMethod !== "환불 없음" && expectedRefundAmount > 0) {
@@ -264,7 +358,7 @@ export default function ReservationDetailPage() {
         processedAt: formatHistoryTimestamp(new Date()),
         action: cancelType,
         statusBefore: reserveBefore,
-        statusAfter: "취소",
+        statusAfter: cancellationType === "full" ? "취소완료" : reserveBefore,
         paymentBefore,
         paymentAfter: nextPaymentStatus,
         reason: reasonText,
@@ -273,11 +367,58 @@ export default function ReservationDetailPage() {
       ...current,
     ]);
     closeCancelModal();
-    act("예약 취소 및 환불 처리가 완료되었습니다.");
+    if (!settlementBefore) {
+      act("예약 취소 및 환불 처리가 완료되었습니다.");
+    } else if (settlementBefore.status === "정산대기") {
+      act("예약 취소 및 환불 처리가 완료되었습니다. 정산금액이 자동 재계산되었습니다.");
+    } else if (settlementBefore.status === "지급완료") {
+      act("예약 취소 및 환불 처리가 완료되었습니다. 변경분은 차기 정산 조정으로 반영됩니다.");
+    } else {
+      act("예약 취소 및 환불 처리가 완료되었습니다. 정산 조정이 필요합니다.");
+    }
   };
 
   const toggleMenu = (label: string) =>
     setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
+
+  const openCloseDialog = () => {
+    if (!reservation || !getReservationCloseAction(permissionTarget, viewer).allowed) return;
+    const isShared = getReservationSourceType(reservation) !== "direct";
+    setActionDialog({
+      title: "예약을 마감하시겠습니까?",
+      notes: isShared
+        ? ["예약마감 후 판매여행사에서는 주요 예약정보 수정이 제한됩니다.", "운영인계가 완료되면 공급여행사에서 예약을 관리합니다."]
+        : ["예약마감 후 신규 변경은 운영 담당자가 확인 후 처리합니다."],
+      details: buildReservationActionDetails(reservation),
+      confirmLabel: "예약마감",
+      onConfirm: () => {
+        closeReservation(reservation.code, getViewerActor(viewer), formatReservationTimestamp(new Date()));
+        setDisplayReserveStatus("예약마감");
+        setReservationVersion((value) => value + 1);
+        setActionDialog(null);
+        act(isShared ? "예약마감이 완료되었습니다. 운영인계를 진행해주세요." : "예약마감이 완료되었습니다.");
+      },
+    });
+  };
+
+  const openHandoverDialog = () => {
+    if (!reservation || !getReservationHandoverAction(permissionTarget, viewer).allowed) return;
+    setActionDialog({
+      title: "운영관리 권한을 공급여행사로 인계하시겠습니까?",
+      notes: [
+        "운영인계 후 공급여행사가 예약정보를 관리합니다.",
+        "판매여행사는 예약내용을 계속 확인할 수 있지만 수정권한은 제한됩니다.",
+      ],
+      details: buildReservationActionDetails(reservation),
+      confirmLabel: "운영인계",
+      onConfirm: () => {
+        handoverReservation(reservation.code, getViewerActor(viewer), formatReservationTimestamp(new Date()));
+        setReservationVersion((value) => value + 1);
+        setActionDialog(null);
+        act("운영관리 권한이 공급여행사로 인계되었습니다.");
+      },
+    });
+  };
 
   if (!reservation) {
     return (
@@ -286,9 +427,13 @@ export default function ReservationDetailPage() {
           <section className="panel member-web-detail-not-found">
             <strong>예약을 찾을 수 없습니다.</strong>
             <p>요청하신 예약번호({reservationId || "-"})에 해당하는 예약 정보가 없습니다.</p>
-            <button type="button" className="secondary" onClick={() => window.history.back()}>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => router.push(withReservationViewer("/reservations", viewer))}
+            >
               <ArrowLeft size={14} />
-              이전 화면으로
+              예약목록으로
             </button>
           </section>
         </main>
@@ -421,27 +566,47 @@ export default function ReservationDetailPage() {
               <div className="member-web-detail-title-row">
                 <h1>{reservation.code}</h1>
                 <span className={`badge ${reserveDisplayClass(displayReserveStatus)}`}>{displayReserveStatus}</span>
+                <ReservationSourceBadge reservation={reservation} />
+                <ReservationPermissionBadges reservation={permissionTarget} viewer={viewer} />
               </div>
               <p className="member-web-detail-subtitle">{reservation.productName}</p>
             </div>
             <div className="member-web-detail-actions">
-              <button type="button" className="secondary" onClick={() => window.location.assign("/reservations")}>
+              <ReservationViewerSwitch viewer={viewer} onChange={changeViewer} />
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => router.push(withReservationViewer("/reservations", viewer))}
+              >
                 <ArrowLeft size={14} />
                 목록
               </button>
               <button
                 type="button"
                 className="secondary"
-                onClick={() => window.location.assign(`/reservations/${reservation.code}/edit`)}
+                onClick={() => router.push(withReservationViewer(`/reservations/${reservation.code}/edit`, viewer))}
               >
                 <Pencil size={14} />
-                예약수정
+                {canEdit ? "예약수정" : "예약정보 보기"}
               </button>
+              {reservation.settlement && reservation.source?.type !== "direct" && (
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() =>
+                    router.push(withReservationViewer(`/settlements/${reservation.settlement?.settlementCode}`, viewer))
+                  }
+                >
+                  <Wallet size={14} />
+                  정산 상세
+                </button>
+              )}
               <button
                 type="button"
-                className={isCancelled ? "secondary" : "primary"}
+                className={isCancelled || !canEdit ? "secondary" : "primary"}
                 onClick={openCancelModal}
-                disabled={isCancelled}
+                disabled={isCancelled || !canEdit}
+                title={!canEdit ? "예약 수정권한이 없습니다." : undefined}
               >
                 <Receipt size={14} />
                 {isCancelled ? "취소완료" : "취소/환불"}
@@ -468,7 +633,30 @@ export default function ReservationDetailPage() {
             </div>
           </section>
 
+          <ReservationOperationCard
+            reservation={permissionTarget}
+            viewer={viewer}
+            onClose={openCloseDialog}
+            onHandover={openHandoverDialog}
+            onViewSettlement={
+              reservation.settlement
+                ? () =>
+                    router.push(withReservationViewer(`/settlements/${reservation.settlement?.settlementCode}`, viewer))
+                : undefined
+            }
+            assignment={operationAssignment}
+            onOpenAssignment={
+              operationAssignment && viewer.type === "integrated"
+                ? () => router.push(getOperationAssignmentPath(operationAssignment.departureKey))
+                : undefined
+            }
+          />
+
+          <ReservationPermissionNotices reservation={permissionTarget} viewer={viewer} />
+
           <div className="member-web-detail-stack">
+            <ReservationSourceCards reservation={permissionTarget} viewer={viewer} />
+
             <section className="panel member-web-detail-card">
               <div className="member-web-detail-card-head">
                 <strong>기본정보</strong>
@@ -480,6 +668,9 @@ export default function ReservationDetailPage() {
                 <InfoField label="연락처" value={reservation.phone} />
                 <InfoField label="상품명" value={reservation.productName} />
                 <InfoField label="출발일" value={reservation.departureAt} />
+                {reservation.boardingPoint !== undefined && (
+                  <InfoField label="탑승지" value={reservation.boardingPoint} />
+                )}
                 <InfoField label="예약상태" value={displayReserveStatus} />
                 <InfoField label="결제상태" value={displayPaymentStatus} />
               </div>
@@ -686,9 +877,13 @@ export default function ReservationDetailPage() {
                 </div>
               </section>
             )}
+
+            <ReservationHistorySection history={reservationHistory} />
           </div>
         </main>
       </div>
+
+      <ReservationActionDialog dialog={actionDialog} onClose={() => setActionDialog(null)} />
 
       {cancelModalOpen && (
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="예약 취소 / 환불">

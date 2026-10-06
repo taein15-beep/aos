@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { QrCode, RotateCcw, Search } from "lucide-react";
+import { QrCode, RotateCcw, Search, X } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   PAYMENT_STATUS_FILTER_OPTIONS,
@@ -12,8 +12,41 @@ import {
   getReservationList,
   type ReservationListItem,
 } from "@/lib/admin/reservations-data";
+import {
+  RESERVATION_SOURCE_LABELS,
+  getReservationSourceType,
+  isReservationVisibleTo,
+  withReservationViewer,
+  type ReservationViewer,
+} from "@/lib/admin/reservation-permission";
+import {
+  ReservationOperationStageBadge,
+  ReservationSourceBadge,
+  ReservationViewerSwitch,
+  useReservationViewer,
+} from "@/components/reservations/ReservationSource";
+import { useQueryParam } from "@/components/settlements/SettlementParts";
+import {
+  GUIDE_ASSIGNMENT_STATUS_BADGE,
+  formatGuideDepartureDate,
+  getGuideOperationPath,
+} from "@/lib/admin/guide-operation-data";
+import {
+  getOperationAssignmentPath,
+  getOperationDepartureOverviews,
+  getReservationOperationViews,
+  type OperationDepartureOverview,
+  type ReservationOperationView,
+} from "@/lib/admin/operation-assignment-data";
+
+const OPERATION_PANEL_LIMIT = 3;
+
+const SOURCE_FILTER_OPTIONS = ["전체", "direct", "affiliate", "seller"] as const;
+type SourceFilter = (typeof SOURCE_FILTER_OPTIONS)[number];
 
 type SearchFilters = {
+  source: SourceFilter;
+  sellingAgency: string;
   keyword: string;
   code: string;
   bookerName: string;
@@ -27,6 +60,8 @@ type SearchFilters = {
 };
 
 const EMPTY_FILTERS: SearchFilters = {
+  source: "전체",
+  sellingAgency: "전체",
   keyword: "",
   code: "",
   bookerName: "",
@@ -42,10 +77,155 @@ const EMPTY_FILTERS: SearchFilters = {
 function matchesKeyword(reservation: ReservationListItem, keyword: string) {
   if (!keyword) return true;
   const value = keyword.toLowerCase();
-  return [reservation.code, reservation.bookerName, reservation.productName, reservation.phone]
+  return [
+    reservation.code,
+    reservation.bookerName,
+    reservation.productName,
+    reservation.phone,
+    reservation.source?.sellingAgencyName ?? "",
+    reservation.source?.sellerName ?? "",
+    reservation.source?.supplierAgencyName ?? "",
+    reservation.source?.originalProductCode ?? "",
+    reservation.source?.sharedProductCode ?? "",
+    reservation.source?.salesProductName ?? "",
+  ]
     .join(" ")
     .toLowerCase()
     .includes(value);
+}
+
+function partyColumnTitle(viewer: ReservationViewer) {
+  if (viewer.type === "sellingAgency" || viewer.type === "seller") return "공급여행사";
+  if (viewer.type === "supplierAgency") return "판매여행사";
+  return "공급 / 판매여행사";
+}
+
+function PartyCell({ reservation, viewer }: { reservation: ReservationListItem; viewer: ReservationViewer }) {
+  const source = reservation.source;
+  if (!source || source.type === "direct") return <span className="reservation-party-muted">자사</span>;
+  const seller = source.sellerName ? <small>판매점: {source.sellerName}</small> : null;
+  if (viewer.type === "seller") {
+    return (
+      <span className="reservation-party">
+        <b>공급: {source.supplierAgencyName}</b>
+        <small>판매: {source.sellingAgencyName}</small>
+      </span>
+    );
+  }
+  if (viewer.type === "sellingAgency") {
+    return (
+      <span className="reservation-party">
+        <b>공급: {source.supplierAgencyName}</b>
+        {seller}
+      </span>
+    );
+  }
+  if (viewer.type === "supplierAgency") {
+    return (
+      <span className="reservation-party">
+        <b>{source.sellingAgencyName}</b>
+        {seller}
+      </span>
+    );
+  }
+  return (
+    <span className="reservation-party">
+      <b>공급: {source.supplierAgencyName}</b>
+      <small>판매: {source.sellingAgencyName}</small>
+      {seller}
+    </span>
+  );
+}
+
+function OperationCell({ view, canOpen }: { view?: ReservationOperationView; canOpen: boolean }) {
+  if (!view) return <span className="reservation-party-muted">-</span>;
+  const content = (
+    <>
+      <span className={`badge ${view.badge}`}>{view.statusLabel}</span>
+      {view.vehicleShort && <small>{view.vehicleShort}</small>}
+      {view.vehicleCount === 1 && view.guideLabel && <small>{view.guideLabel}</small>}
+    </>
+  );
+  if (!canOpen) return <span className="reservation-ops-cell">{content}</span>;
+  return (
+    <Link
+      href={getOperationAssignmentPath(view.departureKey)}
+      className="reservation-ops-cell is-link"
+      title="상품 + 출발일 운영배정 화면으로 이동"
+    >
+      {content}
+    </Link>
+  );
+}
+
+function OperationSummaryPanel({
+  departures,
+  hiddenCount,
+  onShowReservations,
+}: {
+  departures: OperationDepartureOverview[];
+  hiddenCount: number;
+  onShowReservations: (departure: OperationDepartureOverview) => void;
+}) {
+  if (!departures.length) return null;
+  return (
+    <section className="panel reservation-ops-panel" aria-label="출발회차 운영현황">
+      <div className="reservation-ops-panel-head">
+        <strong>다가오는 출발회차 운영현황</strong>
+        <span>
+          운영배정은 상품 + 출발일 단위로 처리합니다. (SAMPLE)
+          {hiddenCount > 0 ? ` · 외 ${hiddenCount}개 출발회차는 예약의 운영배정 상태를 눌러 이동` : ""}
+        </span>
+      </div>
+      {departures.map((departure) => {
+        const { summary } = departure;
+        return (
+          <div className="reservation-ops-row" key={departure.key}>
+            <div className="reservation-ops-title">
+              <span className={`badge ${GUIDE_ASSIGNMENT_STATUS_BADGE[summary.status]}`}>{summary.status}</span>
+              <b>{departure.productName}</b>
+              <small>출발 {formatGuideDepartureDate(departure.departureDate)}</small>
+            </div>
+            <dl className="reservation-ops-stats">
+              <div>
+                <dt>예약인원</dt>
+                <dd>{summary.total}명</dd>
+              </div>
+              <div>
+                <dt>배정완료</dt>
+                <dd>{summary.assigned}명</dd>
+              </div>
+              <div className={summary.unassigned > 0 ? "is-warn" : ""}>
+                <dt>미배정</dt>
+                <dd>{summary.unassigned}명</dd>
+              </div>
+              <div>
+                <dt>운영차량</dt>
+                <dd>{summary.vehicleCount}대</dd>
+              </div>
+              <div>
+                <dt>담당가이드</dt>
+                <dd>{summary.guideCount}명</dd>
+              </div>
+            </dl>
+            <div className="reservation-ops-actions">
+              <button type="button" className="secondary" onClick={() => onShowReservations(departure)}>
+                예약보기
+              </button>
+              {departure.handedOver && (
+                <Link href={getGuideOperationPath(departure.key)} className="secondary">
+                  가이드 운영
+                </Link>
+              )}
+              <Link href={getOperationAssignmentPath(departure.key)} className="primary">
+                운영배정
+              </Link>
+            </div>
+          </div>
+        );
+      })}
+    </section>
+  );
 }
 
 function matchesDateRange(date: string, from: string, to: string) {
@@ -66,7 +246,32 @@ export default function ReservationsPage() {
   const [applied, setApplied] = useState<SearchFilters>(EMPTY_FILTERS);
 
   const pageSize = 8;
-  const allReservations = useMemo(() => getReservationList(), []);
+  const [viewer, changeViewer] = useReservationViewer();
+  const [linkedKeyword, setLinkedKeyword] = useQueryParam("keyword", "");
+  const reservationList = useMemo(() => getReservationList(), []);
+  const operationViews = useMemo(() => getReservationOperationViews(reservationList), [reservationList]);
+  const upcomingDepartures = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return getOperationDepartureOverviews().filter((item) => item.departureDate >= today && item.summary.total > 0);
+  }, []);
+  const allReservations = useMemo(
+    () => reservationList.filter((reservation) => isReservationVisibleTo(reservation, viewer)),
+    [reservationList, viewer],
+  );
+  const sellingAgencyOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(allReservations.map((reservation) => reservation.source?.sellingAgencyName).filter(Boolean)),
+      ) as string[],
+    [allReservations],
+  );
+
+  const selectViewer = (key: string) => {
+    changeViewer(key);
+    setDraft(EMPTY_FILTERS);
+    setApplied(EMPTY_FILTERS);
+    setPage(1);
+  };
 
   const act = (message: string) => {
     setToast(message);
@@ -78,6 +283,15 @@ export default function ReservationsPage() {
 
   const filtered = useMemo(() => {
     return allReservations.filter((reservation) => {
+      if (applied.source !== "전체" && getReservationSourceType(reservation) !== applied.source) return false;
+      if (
+        viewer.type === "supplierAgency" &&
+        applied.sellingAgency !== "전체" &&
+        reservation.source?.sellingAgencyName !== applied.sellingAgency
+      ) {
+        return false;
+      }
+      if (!matchesKeyword(reservation, linkedKeyword)) return false;
       if (!matchesKeyword(reservation, applied.keyword)) return false;
       if (applied.code && !reservation.code.toLowerCase().includes(applied.code.toLowerCase())) return false;
       if (applied.bookerName && !reservation.bookerName.includes(applied.bookerName)) return false;
@@ -88,7 +302,7 @@ export default function ReservationsPage() {
       if (!matchesDateRange(reservation.departureAt, applied.departureFrom, applied.departureTo)) return false;
       return true;
     });
-  }, [allReservations, applied]);
+  }, [allReservations, applied, linkedKeyword, viewer]);
 
   const kpis = useMemo(() => getReservationKpis(allReservations), [allReservations]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -103,8 +317,27 @@ export default function ReservationsPage() {
   const reset = () => {
     setDraft(EMPTY_FILTERS);
     setApplied(EMPTY_FILTERS);
+    setLinkedKeyword("");
     setPage(1);
     act("검색 조건을 초기화했습니다.");
+  };
+
+  const showDepartureReservations = (departure: OperationDepartureOverview) => {
+    const next: SearchFilters = {
+      ...EMPTY_FILTERS,
+      productName: departure.productName,
+      departureFrom: departure.departureDate,
+      departureTo: departure.departureDate,
+    };
+    setDraft(next);
+    setApplied(next);
+    setPage(1);
+    act(`${departure.productName} 출발 예약을 조회합니다.`);
+  };
+
+  const clearLinkedKeyword = () => {
+    setLinkedKeyword("");
+    setPage(1);
   };
 
   return (
@@ -236,6 +469,7 @@ export default function ReservationsPage() {
               <h1>예약목록</h1>
               <p>전체 예약 현황을 조회하고 예약 상세로 이동할 수 있습니다.</p>
             </div>
+            <ReservationViewerSwitch viewer={viewer} onChange={selectViewer} />
           </section>
 
           <section className="reservation-kpi-grid">
@@ -255,8 +489,16 @@ export default function ReservationsPage() {
             ))}
           </section>
 
-          <section className="panel member-web-filter reservation-filter">
-            <div className="reservation-filter-grid">
+          {viewer.type === "integrated" && (
+            <OperationSummaryPanel
+              departures={upcomingDepartures.slice(0, OPERATION_PANEL_LIMIT)}
+              hiddenCount={Math.max(0, upcomingDepartures.length - OPERATION_PANEL_LIMIT)}
+              onShowReservations={showDepartureReservations}
+            />
+          )}
+
+          <section className="panel member-web-filter reservation-filter reservation-filter--balanced">
+            <div className="reservation-filter-grid reservation-filter-grid--source">
               <label className="member-web-keyword">
                 <span>통합검색</span>
                 <div>
@@ -265,10 +507,41 @@ export default function ReservationsPage() {
                     value={draft.keyword}
                     onChange={(event) => setDraft((value) => ({ ...value, keyword: event.target.value }))}
                     onKeyDown={(event) => event.key === "Enter" && search()}
-                    placeholder="예약번호, 예약자명, 상품명 검색"
+                    placeholder="예약번호, 예약자, 상품명·상품코드, 판매여행사, 판매점 검색"
                   />
                 </div>
               </label>
+              <label>
+                <span>판매출처</span>
+                <select
+                  aria-label="판매출처"
+                  value={draft.source}
+                  onChange={(event) => setDraft((value) => ({ ...value, source: event.target.value as SourceFilter }))}
+                >
+                  {SOURCE_FILTER_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option === "전체" ? "전체" : RESERVATION_SOURCE_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {viewer.type === "supplierAgency" && (
+                <label>
+                  <span>판매여행사</span>
+                  <select
+                    aria-label="판매여행사"
+                    value={draft.sellingAgency}
+                    onChange={(event) => setDraft((value) => ({ ...value, sellingAgency: event.target.value }))}
+                  >
+                    <option value="전체">전체</option>
+                    {sellingAgencyOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <label>
                 <span>예약번호</span>
                 <input
@@ -373,6 +646,18 @@ export default function ReservationsPage() {
             </div>
           </section>
 
+          {linkedKeyword && (
+            <div className="settlement-drill-chip" role="status">
+              <span>
+                상품 연결 조회 <b>{linkedKeyword}</b> · 원본/판매 상품코드 기준으로 예약을 표시합니다.
+              </span>
+              <button type="button" className="secondary settlement-inline-button" onClick={clearLinkedKeyword}>
+                <X size={12} />
+                조건 해제
+              </button>
+            </div>
+          )}
+
           <section className="panel member-web-list-panel">
             <div className="member-web-list-head">
               <div>
@@ -383,7 +668,7 @@ export default function ReservationsPage() {
               </div>
             </div>
             <div className="member-web-table-wrap">
-              <table className="member-web-table reservation-list-table">
+              <table className="member-web-table reservation-list-table reservation-list-table--source reservation-list-table--ops">
                 <thead>
                   <tr>
                     {[
@@ -396,7 +681,9 @@ export default function ReservationsPage() {
                       "예약금액",
                       "결제상태",
                       "예약상태",
-                      "관리",
+                      "예약출처",
+                      partyColumnTitle(viewer),
+                      "운영배정",
                     ].map((title) => (
                       <th key={title}>{title}</th>
                     ))}
@@ -407,7 +694,10 @@ export default function ReservationsPage() {
                     rows.map((reservation) => (
                       <tr key={reservation.code}>
                         <td className="member-number">
-                          <Link href={`/reservations/${reservation.code}`} className="reservation-code-link">
+                          <Link
+                            href={withReservationViewer(`/reservations/${reservation.code}`, viewer)}
+                            className="reservation-code-link"
+                          >
                             {reservation.code}
                           </Link>
                         </td>
@@ -429,20 +719,31 @@ export default function ReservationsPage() {
                           <span className={`badge ${reservation.paymentStatusClass}`}>{reservation.paymentStatus}</span>
                         </td>
                         <td>
-                          <span className={`badge ${reservation.reserveStatusClass}`}>{reservation.reserveStatus}</span>
+                          <span className="reservation-status-stack">
+                            <span className={`badge ${reservation.reserveStatusClass}`}>{reservation.reserveStatus}</span>
+                            <ReservationOperationStageBadge reservation={reservation} compact />
+                          </span>
                         </td>
                         <td>
-                          <Link href={`/reservations/${reservation.code}`} className="member-detail-button">
-                            상세보기
-                          </Link>
+                          <ReservationSourceBadge reservation={reservation} />
+                        </td>
+                        <td className="text-left">
+                          <PartyCell reservation={reservation} viewer={viewer} />
+                        </td>
+                        <td>
+                          <OperationCell view={operationViews[reservation.code]} canOpen={viewer.type === "integrated"} />
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={10}>
+                      <td colSpan={12}>
                         <div className="member-web-empty">
-                          <strong>검색 조건에 맞는 예약이 없습니다.</strong>
+                          <strong>
+                            {linkedKeyword && filtered.length === 0
+                              ? "이 상품으로 접수된 예약이 없습니다."
+                              : "검색 조건에 맞는 예약이 없습니다."}
+                          </strong>
                           <p>조건을 변경하거나 초기화한 뒤 다시 검색해 주세요.</p>
                           <button type="button" className="secondary" onClick={reset}>
                             <RotateCcw size={13} />

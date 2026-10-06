@@ -1,3 +1,6 @@
+import type { ReservationSettlement } from "@/lib/admin/settlement-data";
+import { getGuideTourReservationSeeds } from "@/lib/admin/guide-operation-data";
+
 export type ReservationDetail = {
   code: string;
   reservedAt: string;
@@ -25,7 +28,138 @@ export type ReservationDetail = {
   adminMemo: string;
   internalNote: string;
   agency: string;
+  /** 탑승지 (탑승지가 있는 상품만) */
+  boardingPoint?: string;
+  /** 판매 출처. 없으면 자사 직접예약으로 봅니다. */
+  source?: ReservationSource;
+  /** 상품공유 예약 정산 정보 (SAMPLE) */
+  settlement?: ReservationSettlement;
+  /** 취소/환불 Mock 입력값. 예약상태와 별도로 부분취소/전체취소를 기록합니다. */
+  cancellation?: ReservationCancellation;
 };
+
+export type ReservationCancellationType = "partial" | "full";
+export type ReservationCancellationStatus = "none" | ReservationCancellationType;
+
+export const RESERVATION_CANCELLATION_LABELS: Record<ReservationCancellationStatus, string> = {
+  none: "정상",
+  partial: "부분취소",
+  full: "전체취소",
+};
+
+/** 취소/환불 처리값 (SAMPLE · 취소규정 자동계산 없음, 누적 금액 기준) */
+export type ReservationCancellation = {
+  type: ReservationCancellationType;
+  refundAmount: number;
+  cancellationFee: number;
+  reason: string;
+  memo: string;
+  processedAt: string;
+  processedBy: ReservationActor;
+};
+
+export type ReservationSourceType = "direct" | "affiliate" | "seller";
+
+/**
+ * 예약 판매 출처 (SAMPLE).
+ * 공급여행사 → 판매여행사(제휴여행사) → 판매점 → 고객 구조를 표현합니다.
+ * 예약마감(closed*)과 운영인계(handover*)는 예약상태와 별도로 기록합니다.
+ */
+export type ReservationSource = {
+  type: ReservationSourceType;
+  supplierAgencyName?: string;
+  sellingAgencyName?: string;
+  sellerName?: string;
+  /** 판매여행사에서 사용하는 판매 상품코드 */
+  sharedProductCode?: string;
+  /** 공급여행사 원본 상품코드 */
+  originalProductCode?: string;
+  originalProductName?: string;
+  salesProductName?: string;
+  createdBy?: string;
+  lastModifiedBy?: string;
+  /** 예약마감 처리 일시 / 처리자 */
+  closedAt?: string;
+  closedBy?: ReservationActor;
+  /** 운영관리 권한이 공급여행사로 인계된 일시 / 처리자 */
+  handoverAt?: string;
+  handoverBy?: ReservationActor;
+};
+
+/** 작업자와 소속 */
+export type ReservationActor = {
+  name: string;
+  agency: string;
+};
+
+export type ReservationHistoryType =
+  | "reservation_create"
+  | "info_update"
+  | "people_change"
+  | "boarding_change"
+  | "payment_status_change"
+  | "reservation_status_change"
+  | "reservation_close"
+  | "operation_handover"
+  | "reservation_cancel";
+
+export type ReservationHistoryCategory = "info" | "status" | "payment" | "handover";
+
+export type ReservationHistoryChange = {
+  label: string;
+  before: string;
+  after: string;
+};
+
+/** 예약 변경이력 (SAMPLE · 서버 저장 전) */
+export type ReservationHistoryEntry = {
+  id: string;
+  at: string;
+  actor: ReservationActor;
+  type: ReservationHistoryType;
+  summary?: string;
+  changes?: ReservationHistoryChange[];
+};
+
+export const RESERVATION_HISTORY_TYPE_LABELS: Record<ReservationHistoryType, string> = {
+  reservation_create: "예약생성",
+  info_update: "예약정보 수정",
+  people_change: "인원 변경",
+  boarding_change: "탑승지 변경",
+  payment_status_change: "결제상태 변경",
+  reservation_status_change: "예약상태 변경",
+  reservation_close: "예약마감",
+  operation_handover: "운영인계",
+  reservation_cancel: "취소/환불",
+};
+
+export const RESERVATION_HISTORY_TYPE_CATEGORY: Record<ReservationHistoryType, ReservationHistoryCategory> = {
+  reservation_create: "info",
+  info_update: "info",
+  people_change: "info",
+  boarding_change: "info",
+  payment_status_change: "payment",
+  reservation_status_change: "status",
+  reservation_close: "status",
+  operation_handover: "handover",
+  reservation_cancel: "payment",
+};
+
+export const RESERVATION_HISTORY_FILTER_OPTIONS: { value: "all" | ReservationHistoryCategory; label: string }[] = [
+  { value: "all", label: "전체" },
+  { value: "info", label: "예약정보" },
+  { value: "status", label: "상태" },
+  { value: "payment", label: "결제" },
+  { value: "handover", label: "운영인계" },
+];
+
+export function reservationHistoryBadgeClass(type: ReservationHistoryType) {
+  const category = RESERVATION_HISTORY_TYPE_CATEGORY[type];
+  if (type === "reservation_create") return "success";
+  if (category === "handover") return "info";
+  if (category === "status") return "warn";
+  return "gray";
+}
 
 export type ReservationListItem = ReservationDetail & {
   memberId?: string;
@@ -59,6 +193,9 @@ export const RESERVE_STATUS_FILTER_OPTIONS = [
   "예약접수",
   "예약확정",
   "대기",
+  "예약마감",
+  "운영인계",
+  "행사완료",
   "취소요청",
   "취소완료",
 ] as const;
@@ -76,6 +213,9 @@ export const RESERVE_EDIT_STATUS_OPTIONS = [
   "예약접수",
   "예약확정",
   "대기",
+  "예약마감",
+  "운영인계",
+  "행사완료",
   "취소요청",
   "취소완료",
 ] as const;
@@ -109,9 +249,9 @@ export function calculateReservationAmounts(productAmount: number, optionAmount:
 
 export function reserveStatusBadgeClass(status: string): ReservationDetail["reserveStatusClass"] {
   if (status === "예약확정") return "success";
-  if (status === "대기" || status === "부분결제") return "warn";
+  if (status === "대기" || status === "부분결제" || status === "예약마감") return "warn";
   if (status === "취소요청") return "danger";
-  if (status === "취소완료" || status === "환불완료") return "gray";
+  if (status === "취소완료" || status === "환불완료" || status === "행사완료") return "gray";
   if (status === "예약접수") return "info";
   return "info";
 }
@@ -365,7 +505,747 @@ const RESERVATION_DETAILS: ReservationListItem[] = [
     internalNote: "취소 요청 접수",
     agency: "행복투어",
   },
+  // 공유상품 예약 SAMPLE: 공급여행사 행복투어 → 판매여행사(제휴여행사) → (판매점)
+  {
+    code: "AOS-RSV-260001",
+    reservedAt: "2026-10-01",
+    bookerName: "김민수",
+    phone: "010-1111-2026",
+    email: "minsu.test@example.com",
+    productName: "[서울출발] 철원 DMZ 평화관광",
+    departureAt: "2026-10-24",
+    reserveStatus: "예약확정",
+    reserveStatusClass: "success",
+    paymentStatus: "미결제",
+    paymentStatusClass: "warn",
+    counts: { adult: 2, child: 0, infant: 0 },
+    productAmount: 138000,
+    optionAmount: 0,
+    discountAmount: 0,
+    totalAmount: "138,000원",
+    paidAmount: "0원",
+    unpaidAmount: "138,000원",
+    requestNote: "",
+    adminMemo: "",
+    internalNote: "",
+    agency: "현담여행사",
+    boardingPoint: "서울역",
+    source: {
+      type: "affiliate",
+      supplierAgencyName: "행복투어",
+      sellingAgencyName: "현담여행사",
+      sharedProductCode: "HD-DMZ01",
+      originalProductCode: "HT-DMZ01",
+      originalProductName: "철원 DMZ · 소이산 모노레일 당일",
+      salesProductName: "[서울출발] 철원 DMZ 평화관광",
+      createdBy: "현담여행사",
+    },
+    settlement: {
+      settlementCode: "STL-260001",
+      status: "정산대기",
+      affiliateCommissionRate: 10,
+      method: "예약건별",
+      cycle: "출발 후 3영업일",
+      payer: "판매여행사",
+      dueDate: "2026-10-29",
+      createdAt: "2026-10-01 11:30",
+    },
+  },
+  {
+    code: "AOS-RSV-260002",
+    reservedAt: "2026-09-27",
+    bookerName: "이서연",
+    phone: "010-2222-2026",
+    email: "seoyeon.test@example.com",
+    productName: "철원 DMZ · 소이산 모노레일 당일",
+    departureAt: "2026-10-17",
+    reserveStatus: "예약마감",
+    reserveStatusClass: "warn",
+    paymentStatus: "결제완료",
+    paymentStatusClass: "success",
+    counts: { adult: 2, child: 1, infant: 0 },
+    productAmount: 207000,
+    optionAmount: 0,
+    discountAmount: 0,
+    totalAmount: "207,000원",
+    paidAmount: "207,000원",
+    unpaidAmount: "0원",
+    requestNote: "",
+    adminMemo: "",
+    internalNote: "",
+    agency: "그래가자",
+    boardingPoint: "합정역",
+    source: {
+      type: "affiliate",
+      supplierAgencyName: "행복투어",
+      sellingAgencyName: "그래가자",
+      sharedProductCode: "GG-DMZ01",
+      originalProductCode: "HT-DMZ01",
+      originalProductName: "철원 DMZ · 소이산 모노레일 당일",
+      salesProductName: "철원 DMZ · 소이산 모노레일 당일",
+      createdBy: "그래가자",
+      closedAt: "2026-10-01 16:00",
+      closedBy: { name: "한지민", agency: "그래가자" },
+      handoverAt: "2026-10-01 16:20",
+      handoverBy: { name: "한지민", agency: "그래가자" },
+    },
+    settlement: {
+      settlementCode: "STL-260002",
+      status: "정산확정",
+      affiliateCommissionRate: 10,
+      method: "예약건별",
+      cycle: "출발 후 3영업일",
+      payer: "판매여행사",
+      dueDate: "2026-10-22",
+      createdAt: "2026-09-28 10:05",
+      confirmedAmounts: { grossAmount: 207000, discountAmount: 0 },
+    },
+  },
+  {
+    code: "AOS-RSV-260003",
+    reservedAt: "2026-09-18",
+    bookerName: "박지훈",
+    phone: "010-3333-2026",
+    email: "jihoon.test@example.com",
+    productName: "[서울출발] 철원 DMZ 평화관광",
+    departureAt: "2026-10-21",
+    reserveStatus: "예약마감",
+    reserveStatusClass: "warn",
+    paymentStatus: "결제완료",
+    paymentStatusClass: "success",
+    counts: { adult: 4, child: 0, infant: 0 },
+    productAmount: 276000,
+    optionAmount: 0,
+    discountAmount: 0,
+    totalAmount: "276,000원",
+    paidAmount: "276,000원",
+    unpaidAmount: "0원",
+    requestNote: "",
+    adminMemo: "",
+    internalNote: "",
+    agency: "스마트투어 판매점",
+    boardingPoint: "사당역",
+    source: {
+      type: "seller",
+      supplierAgencyName: "행복투어",
+      sellingAgencyName: "현담여행사",
+      sellerName: "스마트투어 판매점",
+      sharedProductCode: "HD-DMZ01",
+      originalProductCode: "HT-DMZ01",
+      originalProductName: "철원 DMZ · 소이산 모노레일 당일",
+      salesProductName: "[서울출발] 철원 DMZ 평화관광",
+      createdBy: "스마트투어 판매점",
+      closedAt: "2026-10-01 17:30",
+      closedBy: { name: "오세린", agency: "스마트투어 판매점" },
+      handoverAt: "2026-10-01 18:00",
+      handoverBy: { name: "오세린", agency: "스마트투어 판매점" },
+    },
+    settlement: {
+      settlementCode: "STL-260003",
+      status: "지급대기",
+      affiliateCommissionRate: 10,
+      sellerCommissionRate: 5,
+      method: "예약건별",
+      cycle: "출발 후 3영업일",
+      payer: "판매점",
+      dueDate: "2026-10-26",
+      createdAt: "2026-09-18 11:00",
+      // 확정 이후 예약금액이 296,000원 → 276,000원으로 변경된 SAMPLE
+      confirmedAmounts: { grossAmount: 296000, discountAmount: 0 },
+    },
+  },
+  {
+    code: "AOS-RSV-260004",
+    reservedAt: "2026-09-30",
+    bookerName: "최하은",
+    phone: "010-4444-2026",
+    email: "haeun.test@example.com",
+    productName: "[서울출발] 철원 DMZ 평화관광",
+    departureAt: "2026-10-31",
+    reserveStatus: "예약확정",
+    reserveStatusClass: "success",
+    paymentStatus: "부분결제",
+    paymentStatusClass: "warn",
+    counts: { adult: 1, child: 1, infant: 0 },
+    productAmount: 120000,
+    optionAmount: 0,
+    discountAmount: 0,
+    totalAmount: "120,000원",
+    paidAmount: "60,000원",
+    unpaidAmount: "60,000원",
+    requestNote: "",
+    adminMemo: "",
+    internalNote: "",
+    agency: "스마트투어 판매점",
+    boardingPoint: "종합운동장역",
+    source: {
+      type: "seller",
+      supplierAgencyName: "행복투어",
+      sellingAgencyName: "현담여행사",
+      sellerName: "스마트투어 판매점",
+      sharedProductCode: "HD-DMZ01",
+      originalProductCode: "HT-DMZ01",
+      originalProductName: "철원 DMZ · 소이산 모노레일 당일",
+      salesProductName: "[서울출발] 철원 DMZ 평화관광",
+      createdBy: "스마트투어 판매점",
+    },
+    settlement: {
+      settlementCode: "STL-260004",
+      status: "정산대기",
+      affiliateCommissionRate: 10,
+      sellerCommissionRate: 5,
+      method: "예약건별",
+      cycle: "출발 후 3영업일",
+      payer: "판매점",
+      dueDate: "2026-11-05",
+      createdAt: "2026-09-30 15:20",
+    },
+  },
+  // 정산 SAMPLE: 같은 상품 · 같은 출발일(2026-09-26) 집계용
+  {
+    code: "AOS-RSV-260005",
+    reservedAt: "2026-09-20",
+    bookerName: "정우성",
+    phone: "010-5555-2026",
+    email: "woosung.test@example.com",
+    productName: "[서울출발] 철원 DMZ 평화관광",
+    departureAt: "2026-09-26",
+    reserveStatus: "행사완료",
+    reserveStatusClass: "gray",
+    paymentStatus: "결제완료",
+    paymentStatusClass: "success",
+    counts: { adult: 3, child: 0, infant: 0 },
+    productAmount: 220000,
+    optionAmount: 0,
+    discountAmount: 20000,
+    totalAmount: "200,000원",
+    paidAmount: "200,000원",
+    unpaidAmount: "0원",
+    requestNote: "",
+    adminMemo: "",
+    internalNote: "",
+    agency: "현담여행사",
+    boardingPoint: "서울역",
+    source: {
+      type: "affiliate",
+      supplierAgencyName: "행복투어",
+      sellingAgencyName: "현담여행사",
+      sharedProductCode: "HD-DMZ01",
+      originalProductCode: "HT-DMZ01",
+      originalProductName: "철원 DMZ · 소이산 모노레일 당일",
+      salesProductName: "[서울출발] 철원 DMZ 평화관광",
+      createdBy: "현담여행사",
+      closedAt: "2026-09-24 18:00",
+      closedBy: { name: "이도현", agency: "현담여행사" },
+      handoverAt: "2026-09-24 18:10",
+      handoverBy: { name: "이도현", agency: "현담여행사" },
+    },
+    settlement: {
+      settlementCode: "STL-260005",
+      status: "지급완료",
+      affiliateCommissionRate: 10,
+      method: "예약건별",
+      cycle: "출발 후 3영업일",
+      payer: "판매여행사",
+      dueDate: "2026-10-01",
+      createdAt: "2026-09-20 10:20",
+      confirmedAmounts: { grossAmount: 220000, discountAmount: 20000 },
+      closing: {
+        closedAt: "2026-09-29 13:30",
+        closedBy: { name: "장윤호", agency: "애비아넥스트" },
+        finalSupplierAmount: 180000,
+      },
+      payment: {
+        paidAt: "2026-10-01",
+        amount: 180000,
+        method: "계좌이체",
+        memo: "",
+        processedBy: { name: "장윤호", agency: "애비아넥스트" },
+      },
+    },
+  },
+  {
+    code: "AOS-RSV-260006",
+    reservedAt: "2026-09-21",
+    bookerName: "한소희",
+    phone: "010-6666-2026",
+    email: "sohee.test@example.com",
+    productName: "[서울출발] 철원 DMZ 평화관광",
+    departureAt: "2026-09-26",
+    reserveStatus: "행사완료",
+    reserveStatusClass: "gray",
+    paymentStatus: "결제완료",
+    paymentStatusClass: "success",
+    counts: { adult: 2, child: 1, infant: 0 },
+    productAmount: 200000,
+    optionAmount: 0,
+    discountAmount: 0,
+    totalAmount: "200,000원",
+    paidAmount: "200,000원",
+    unpaidAmount: "0원",
+    requestNote: "",
+    adminMemo: "",
+    internalNote: "",
+    agency: "스마트투어 판매점",
+    boardingPoint: "사당역",
+    source: {
+      type: "seller",
+      supplierAgencyName: "행복투어",
+      sellingAgencyName: "현담여행사",
+      sellerName: "스마트투어 판매점",
+      sharedProductCode: "HD-DMZ01",
+      originalProductCode: "HT-DMZ01",
+      originalProductName: "철원 DMZ · 소이산 모노레일 당일",
+      salesProductName: "[서울출발] 철원 DMZ 평화관광",
+      createdBy: "스마트투어 판매점",
+      closedAt: "2026-09-24 17:30",
+      closedBy: { name: "오세린", agency: "스마트투어 판매점" },
+      handoverAt: "2026-09-24 17:40",
+      handoverBy: { name: "오세린", agency: "스마트투어 판매점" },
+    },
+    settlement: {
+      settlementCode: "STL-260006",
+      status: "정산대기",
+      affiliateCommissionRate: 10,
+      sellerCommissionRate: 5,
+      method: "예약건별",
+      cycle: "출발 후 3영업일",
+      payer: "판매점",
+      dueDate: "2026-10-01",
+      createdAt: "2026-09-21 09:00",
+    },
+  },
+  {
+    code: "AOS-RSV-260007",
+    reservedAt: "2026-09-15",
+    bookerName: "윤지수",
+    phone: "010-7777-2026",
+    email: "jisu.test@example.com",
+    productName: "철원 DMZ · 소이산 모노레일 당일",
+    departureAt: "2026-09-26",
+    reserveStatus: "취소완료",
+    reserveStatusClass: "gray",
+    paymentStatus: "환불완료",
+    paymentStatusClass: "gray",
+    counts: { adult: 2, child: 0, infant: 0 },
+    productAmount: 138000,
+    optionAmount: 0,
+    discountAmount: 0,
+    totalAmount: "138,000원",
+    paidAmount: "138,000원",
+    unpaidAmount: "0원",
+    requestNote: "",
+    adminMemo: "",
+    internalNote: "",
+    agency: "그래가자",
+    boardingPoint: "합정역",
+    source: {
+      type: "affiliate",
+      supplierAgencyName: "행복투어",
+      sellingAgencyName: "그래가자",
+      sharedProductCode: "GG-DMZ01",
+      originalProductCode: "HT-DMZ01",
+      originalProductName: "철원 DMZ · 소이산 모노레일 당일",
+      salesProductName: "철원 DMZ · 소이산 모노레일 당일",
+      createdBy: "그래가자",
+    },
+    cancellation: {
+      type: "full",
+      refundAmount: 118000,
+      cancellationFee: 20000,
+      reason: "고객 요청",
+      memo: "출발 2일 전 취소 (Mock 취소수수료)",
+      processedAt: "2026-09-24 11:00",
+      processedBy: { name: "한지민", agency: "그래가자" },
+    },
+    settlement: {
+      settlementCode: "STL-260007",
+      status: "정산보류",
+      affiliateCommissionRate: 10,
+      method: "예약건별",
+      cycle: "출발 후 3영업일",
+      payer: "판매여행사",
+      dueDate: "2026-10-01",
+      createdAt: "2026-09-15 14:00",
+      hold: {
+        reason: "취소/환불 확인",
+        detail: "고객 취소에 따른 환불금액 확인 필요",
+        heldAt: "2026-09-24 11:20",
+        heldBy: { name: "김민재", agency: "행복투어" },
+      },
+    },
+  },
+  ...buildGuideTourReservations(),
 ];
+
+/** 운영배정 대상 출발상품(가이드 운영 SAMPLE)의 자사 예약. 운영배정 정보는 예약과 별도로 관리합니다. */
+function buildGuideTourReservations(): ReservationListItem[] {
+  const unitPrice = 89000;
+  return getGuideTourReservationSeeds().map((seed) => {
+    const total = formatKrw(seed.people * unitPrice);
+    return {
+      code: seed.code,
+      reservedAt: seed.reservedAt,
+      bookerName: seed.bookerName,
+      phone: seed.phone,
+      email: "",
+      productName: seed.productName,
+      departureAt: seed.departureDate,
+      reserveStatus: "예약확정",
+      reserveStatusClass: "success",
+      paymentStatus: "결제완료",
+      paymentStatusClass: "success",
+      counts: { adult: seed.people, child: 0, infant: 0 },
+      productAmount: seed.people * unitPrice,
+      optionAmount: 0,
+      discountAmount: 0,
+      totalAmount: total,
+      paidAmount: total,
+      unpaidAmount: "0원",
+      requestNote: seed.notes.join(" / "),
+      adminMemo: "",
+      internalNote: "",
+      agency: "자사",
+      boardingPoint: seed.boardingPoint,
+    };
+  });
+}
+
+/** 세션 내 예약 수정 내용 (SAMPLE · 새로고침 시 초기화) */
+const sessionReservationEdits: Record<string, Partial<ReservationDetail>> = {};
+
+function withSessionEdits<T extends ReservationDetail>(reservation: T): T {
+  const edits = sessionReservationEdits[reservation.code];
+  if (!edits) return { ...reservation };
+  return {
+    ...reservation,
+    ...edits,
+    counts: { ...(edits.counts ?? reservation.counts) },
+    source: edits.source ?? reservation.source,
+  };
+}
+
+export function saveReservationEdits(code: string, patch: Partial<ReservationDetail>) {
+  sessionReservationEdits[code] = { ...sessionReservationEdits[code], ...patch };
+}
+
+export function formatReservationTimestamp(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export function formatPeopleLabel(counts: ReservationDetail["counts"]) {
+  const parts = [
+    counts.adult ? `성인 ${counts.adult}명` : "",
+    counts.child ? `소아 ${counts.child}명` : "",
+    counts.infant ? `유아 ${counts.infant}명` : "",
+  ].filter(Boolean);
+  return parts.length ? parts.join(" · ") : "0명";
+}
+
+const RESERVATION_HISTORY: Record<string, ReservationHistoryEntry[]> = {
+  "AOS-RSV-260001": [
+    {
+      id: "h-260001-1",
+      at: "2026-10-01 09:10",
+      actor: { name: "김민수", agency: "현담여행사" },
+      type: "reservation_create",
+      summary: "현담여행사를 통해 예약이 생성되었습니다.",
+    },
+    {
+      id: "h-260001-2",
+      at: "2026-10-01 10:20",
+      actor: { name: "이도현", agency: "현담여행사" },
+      type: "people_change",
+      changes: [{ label: "예약인원", before: "성인 1명", after: "성인 2명" }],
+    },
+    {
+      id: "h-260001-3",
+      at: "2026-10-01 11:30",
+      actor: { name: "이도현", agency: "현담여행사" },
+      type: "reservation_status_change",
+      changes: [{ label: "예약상태", before: "예약접수", after: "예약확정" }],
+    },
+  ],
+  "AOS-RSV-260002": [
+    {
+      id: "h-260002-1",
+      at: "2026-09-27 14:00",
+      actor: { name: "이서연", agency: "그래가자" },
+      type: "reservation_create",
+      summary: "그래가자를 통해 예약이 생성되었습니다.",
+    },
+    {
+      id: "h-260002-2",
+      at: "2026-09-28 10:00",
+      actor: { name: "한지민", agency: "그래가자" },
+      type: "payment_status_change",
+      changes: [{ label: "결제상태", before: "미결제", after: "결제완료" }],
+    },
+    {
+      id: "h-260002-3",
+      at: "2026-09-28 10:05",
+      actor: { name: "한지민", agency: "그래가자" },
+      type: "reservation_status_change",
+      changes: [{ label: "예약상태", before: "예약접수", after: "예약확정" }],
+    },
+    {
+      id: "h-260002-4",
+      at: "2026-10-01 16:00",
+      actor: { name: "한지민", agency: "그래가자" },
+      type: "reservation_close",
+      summary: "예약마감 처리",
+      changes: [{ label: "예약상태", before: "예약확정", after: "예약마감" }],
+    },
+    {
+      id: "h-260002-5",
+      at: "2026-10-01 16:20",
+      actor: { name: "한지민", agency: "그래가자" },
+      type: "operation_handover",
+      summary: "행복투어로 운영관리 권한 인계",
+    },
+  ],
+  "AOS-RSV-260003": [
+    {
+      id: "h-260003-1",
+      at: "2026-09-18 11:00",
+      actor: { name: "박지훈", agency: "스마트투어 판매점" },
+      type: "reservation_create",
+      summary: "스마트투어 판매점을 통해 예약이 생성되었습니다.",
+    },
+    {
+      id: "h-260003-2",
+      at: "2026-09-20 09:40",
+      actor: { name: "오세린", agency: "스마트투어 판매점" },
+      type: "boarding_change",
+      changes: [{ label: "탑승지", before: "잠실역", after: "사당역" }],
+    },
+    {
+      id: "h-260003-3",
+      at: "2026-10-01 17:30",
+      actor: { name: "오세린", agency: "스마트투어 판매점" },
+      type: "reservation_close",
+      summary: "예약마감 처리",
+      changes: [{ label: "예약상태", before: "예약확정", after: "예약마감" }],
+    },
+    {
+      id: "h-260003-4",
+      at: "2026-10-01 18:00",
+      actor: { name: "오세린", agency: "스마트투어 판매점" },
+      type: "operation_handover",
+      summary: "행복투어로 운영관리 권한 인계",
+    },
+  ],
+  "AOS-RSV-260004": [
+    {
+      id: "h-260004-1",
+      at: "2026-09-30 15:20",
+      actor: { name: "최하은", agency: "스마트투어 판매점" },
+      type: "reservation_create",
+      summary: "스마트투어 판매점을 통해 예약이 생성되었습니다.",
+    },
+    {
+      id: "h-260004-2",
+      at: "2026-09-30 16:00",
+      actor: { name: "오세린", agency: "스마트투어 판매점" },
+      type: "payment_status_change",
+      changes: [{ label: "결제상태", before: "미결제", after: "부분결제" }],
+    },
+  ],
+};
+
+/** 세션 내 추가된 변경이력 (SAMPLE · 새로고침 시 초기화) */
+const sessionReservationHistory: Record<string, ReservationHistoryEntry[]> = {};
+
+export function addReservationHistory(code: string, entries: Omit<ReservationHistoryEntry, "id">[]) {
+  const list = sessionReservationHistory[code] ?? [];
+  entries.forEach((entry, index) => {
+    list.push({ ...entry, id: `h-${code}-s${list.length + 1}-${index}` });
+  });
+  sessionReservationHistory[code] = list;
+}
+
+/** 최신순 변경이력 */
+export function getReservationHistory(code: string): ReservationHistoryEntry[] {
+  const reservation = RESERVATION_DETAILS.find((item) => item.code === code);
+  if (!reservation) return [];
+  const base = RESERVATION_HISTORY[code] ?? [
+    {
+      id: `h-${code}-0`,
+      at: reservation.reservedAt,
+      actor: { name: "시스템", agency: "애비아넥스트" },
+      type: "reservation_create" as const,
+      summary: "예약이 등록되었습니다.",
+    },
+  ];
+  const all = [...base, ...(sessionReservationHistory[code] ?? [])];
+  return all
+    .map((entry, order) => ({ entry, order }))
+    .sort((a, b) => (a.entry.at === b.entry.at ? b.order - a.order : a.entry.at < b.entry.at ? 1 : -1))
+    .map(({ entry }) => ({ ...entry, changes: entry.changes?.map((change) => ({ ...change })) }));
+}
+
+type ReservationEditableValues = Pick<
+  ReservationDetail,
+  | "bookerName"
+  | "phone"
+  | "email"
+  | "productName"
+  | "departureAt"
+  | "reserveStatus"
+  | "paymentStatus"
+  | "counts"
+  | "productAmount"
+  | "optionAmount"
+  | "discountAmount"
+  | "paidAmount"
+  | "requestNote"
+  | "adminMemo"
+  | "internalNote"
+  | "boardingPoint"
+>;
+
+/** 저장 전/후 값을 비교해 사용자가 읽을 수 있는 변경이력을 만듭니다. */
+export function buildReservationEditHistory(
+  before: ReservationEditableValues,
+  after: ReservationEditableValues,
+  actor: ReservationActor,
+  at: string,
+): Omit<ReservationHistoryEntry, "id">[] {
+  const text = (value: string | undefined) => (value && value.trim() ? value.trim() : "없음");
+  const entries: Omit<ReservationHistoryEntry, "id">[] = [];
+  const push = (type: ReservationHistoryType, changes: ReservationHistoryChange[]) => {
+    if (changes.length) entries.push({ at, actor, type, changes });
+  };
+
+  const peopleBefore = formatPeopleLabel(before.counts);
+  const peopleAfter = formatPeopleLabel(after.counts);
+  push("people_change", peopleBefore !== peopleAfter ? [{ label: "예약인원", before: peopleBefore, after: peopleAfter }] : []);
+
+  push(
+    "boarding_change",
+    text(before.boardingPoint) !== text(after.boardingPoint)
+      ? [{ label: "탑승지", before: text(before.boardingPoint), after: text(after.boardingPoint) }]
+      : [],
+  );
+
+  const infoFields: [string, string, string][] = [
+    ["예약자명", before.bookerName, after.bookerName],
+    ["연락처", before.phone, after.phone],
+    ["이메일", before.email, after.email],
+    ["상품명", before.productName, after.productName],
+    ["출발일", before.departureAt, after.departureAt],
+    ["요청사항", before.requestNote, after.requestNote],
+    ["상품금액", formatKrw(before.productAmount), formatKrw(after.productAmount)],
+    ["옵션금액", formatKrw(before.optionAmount), formatKrw(after.optionAmount)],
+    ["할인금액", formatKrw(before.discountAmount), formatKrw(after.discountAmount)],
+    ["결제금액", before.paidAmount, after.paidAmount],
+    ["관리자 메모", before.adminMemo, after.adminMemo],
+    ["내부관리용 비고", before.internalNote, after.internalNote],
+  ];
+  push(
+    "info_update",
+    infoFields
+      .filter(([, prev, next]) => text(prev) !== text(next))
+      .map(([label, prev, next]) => ({ label, before: text(prev), after: text(next) })),
+  );
+
+  push(
+    "payment_status_change",
+    before.paymentStatus !== after.paymentStatus
+      ? [{ label: "결제상태", before: before.paymentStatus, after: after.paymentStatus }]
+      : [],
+  );
+  push(
+    "reservation_status_change",
+    before.reserveStatus !== after.reserveStatus
+      ? [{ label: "예약상태", before: before.reserveStatus, after: after.reserveStatus }]
+      : [],
+  );
+  return entries;
+}
+
+/** 예약마감 업무 Action: 즉시 반영 + 변경이력 기록 */
+export function closeReservation(code: string, actor: ReservationActor, at: string) {
+  const reservation = getReservationDetail(code);
+  if (!reservation) return;
+  saveReservationEdits(code, {
+    reserveStatus: "예약마감",
+    reserveStatusClass: reserveStatusBadgeClass("예약마감"),
+    source: {
+      ...(reservation.source ?? { type: "direct" }),
+      closedAt: at,
+      closedBy: actor,
+      lastModifiedBy: actor.agency,
+    },
+  });
+  addReservationHistory(code, [
+    {
+      at,
+      actor,
+      type: "reservation_close",
+      summary: "예약마감 처리",
+      changes: [{ label: "예약상태", before: reservation.reserveStatus, after: "예약마감" }],
+    },
+  ]);
+}
+
+export function getReservationCancellationStatus(reservation: Pick<ReservationDetail, "cancellation">): ReservationCancellationStatus {
+  return reservation.cancellation?.type ?? "none";
+}
+
+/** 취소/환불 Mock 처리: 누적 환불금액·취소수수료를 기록하고, 전체취소면 예약상태를 취소완료로 변경합니다. */
+export function applyReservationCancellation(code: string, cancellation: ReservationCancellation) {
+  const reservation = getReservationDetail(code);
+  if (!reservation) return;
+  const isFull = cancellation.type === "full";
+  const nextReserveStatus = isFull ? "취소완료" : reservation.reserveStatus;
+  const nextPaymentStatus = isFull && cancellation.refundAmount > 0 ? "환불완료" : reservation.paymentStatus;
+  saveReservationEdits(code, {
+    cancellation,
+    reserveStatus: nextReserveStatus,
+    reserveStatusClass: reserveStatusBadgeClass(nextReserveStatus),
+    paymentStatus: nextPaymentStatus,
+    paymentStatusClass: paymentStatusBadgeClass(nextPaymentStatus),
+  });
+  const changes: ReservationHistoryChange[] = [
+    { label: "취소상태", before: RESERVATION_CANCELLATION_LABELS[getReservationCancellationStatus(reservation)], after: RESERVATION_CANCELLATION_LABELS[cancellation.type] },
+    { label: "환불금액", before: formatKrw(reservation.cancellation?.refundAmount ?? 0), after: formatKrw(cancellation.refundAmount) },
+    { label: "취소수수료", before: formatKrw(reservation.cancellation?.cancellationFee ?? 0), after: formatKrw(cancellation.cancellationFee) },
+  ];
+  if (nextReserveStatus !== reservation.reserveStatus) {
+    changes.push({ label: "예약상태", before: reservation.reserveStatus, after: nextReserveStatus });
+  }
+  if (nextPaymentStatus !== reservation.paymentStatus) {
+    changes.push({ label: "결제상태", before: reservation.paymentStatus, after: nextPaymentStatus });
+  }
+  addReservationHistory(code, [
+    {
+      at: cancellation.processedAt,
+      actor: cancellation.processedBy,
+      type: "reservation_cancel",
+      summary: `${RESERVATION_CANCELLATION_LABELS[cancellation.type]} · 사유: ${cancellation.reason}`,
+      changes: changes.filter((change) => change.before !== change.after),
+    },
+  ]);
+}
+
+/** 운영인계 업무 Action: 예약상태는 유지하고 운영관리 권한만 공급여행사로 넘깁니다. */
+export function handoverReservation(code: string, actor: ReservationActor, at: string) {
+  const reservation = getReservationDetail(code);
+  if (!reservation?.source) return;
+  saveReservationEdits(code, {
+    source: { ...reservation.source, handoverAt: at, handoverBy: actor, lastModifiedBy: actor.agency },
+  });
+  addReservationHistory(code, [
+    {
+      at,
+      actor,
+      type: "operation_handover",
+      summary: `${reservation.source.supplierAgencyName ?? "공급여행사"}로 운영관리 권한 인계`,
+    },
+  ]);
+}
 
 const RESERVATION_PAYMENTS: Record<string, ReservationPayment[]> = {
   R20260620001: [
@@ -433,11 +1313,12 @@ const RESERVATION_REFUNDS: Record<string, ReservationRefund[]> = {
 };
 
 export function getReservationList(): ReservationListItem[] {
-  return RESERVATION_DETAILS.map((item) => ({ ...item }));
+  return RESERVATION_DETAILS.map((item) => withSessionEdits(item));
 }
 
 export function getReservationDetail(id: string): ReservationDetail | undefined {
-  return RESERVATION_DETAILS.find((reservation) => reservation.code === id);
+  const reservation = RESERVATION_DETAILS.find((item) => item.code === id);
+  return reservation ? withSessionEdits(reservation) : undefined;
 }
 
 export function getReservationPayments(code: string): ReservationPayment[] {

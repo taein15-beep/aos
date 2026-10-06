@@ -37,15 +37,25 @@ export type ProductListItem = {
 
 /**
  * Next.js App Router 경로 (상품코드 기준)
- * - 제휴여행사 설정: /products/[code]/affiliate-setting
+ * - 상품공유 설정:   /products/[code]/share  (공식 상품공유 진입 경로)
+ * - 제휴여행사 설정: /products/[code]/affiliate-setting  (구 화면, 신규 UI에서 연결하지 않음)
  * - 판매점 설정:     /products/[code]/seller-setting  (운영 product_seller_setting.html 대응)
  */
+export function getProductSharePath(code: string) {
+  return `/products/${encodeURIComponent(code)}/share`;
+}
+
 export function getProductAffiliateSettingPath(code: string) {
   return `/products/${encodeURIComponent(code)}/affiliate-setting`;
 }
 
 export function getProductSellerSettingPath(code: string) {
   return `/products/${encodeURIComponent(code)}/seller-setting`;
+}
+
+/** 탑승지 설정: /products/[code]/boarding (상품별 탑승지 그룹 관리) */
+export function getProductBoardingPath(code: string) {
+  return `/products/${encodeURIComponent(code)}/boarding`;
 }
 
 export function isProductUnshared(product: ProductListItem) {
@@ -91,8 +101,42 @@ export function matchesProductSearch(
  * - HP0001: 공유 중 3 · 수락대기 2(+공유 중지 포함) · 판매점 6
  * - HP0001C: 공유 중 1 · 수락대기 1(+중지·종료·거절) · 판매점 0 (복사 상품, 별도 코드)
  * - share-jeju: 공유받은 상품 · 제휴 버튼 비활성 · 판매점 4
+ * - HT-DMZ01: 통합 시나리오 대표상품 (공급 행복투어 → 현담여행사·그래가자 공유 중, 예약·정산 샘플 연결)
+ * - GC-WINE01: 운영배정·탑승지 설정 시나리오 상품 (출발회차 GC-WINE-20261017)
  */
 export const SAMPLE_PRODUCTS: ProductListItem[] = [
+  {
+    no: "18347",
+    code: "GC-WINE01",
+    category: "기차여행 > 당일여행",
+    name: "국악와인열차 고창 당일여행",
+    price: "89,000",
+    period: ["2026-09-01", "2026-11-30"],
+    reservation: "13/32",
+    views: "0/0",
+    soldout: false,
+    visible: true,
+    affiliateActive: 0,
+    affiliatePending: 0,
+    sellerCount: 0,
+    isSupplier: true,
+  },
+  {
+    no: "18346",
+    code: "HT-DMZ01",
+    category: "국내여행 > 강원도",
+    name: "철원 DMZ · 소이산 모노레일 당일",
+    price: "69,000",
+    period: ["2026-09-01", "2026-12-20"],
+    reservation: "7/0",
+    views: "0/0",
+    soldout: false,
+    visible: true,
+    affiliateActive: 2,
+    affiliatePending: 1,
+    sellerCount: 0,
+    isSupplier: true,
+  },
   {
     no: "18345",
     code: "HP0001C",

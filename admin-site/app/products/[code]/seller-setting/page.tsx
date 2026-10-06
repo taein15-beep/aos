@@ -19,7 +19,8 @@ import {
   type SellerStore,
 } from "@/lib/admin/product-seller-data";
 import {
-  getProductAffiliateSettingPath,
+  getProductBoardingPath,
+  getProductSharePath,
   getProductForSellerSetting,
 } from "@/lib/admin/products-data";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
@@ -330,11 +331,14 @@ export default function ProductSellerSettingPage() {
             <button type="button" onClick={goBack}>
               상품목록
             </button>
-            <button type="button" onClick={() => router.push(getProductAffiliateSettingPath(productCode))}>
+            <button type="button" onClick={() => router.push(getProductSharePath(productCode))}>
               제휴여행사 공유
             </button>
             <button type="button" className="active">
               판매점 설정
+            </button>
+            <button type="button" onClick={() => router.push(getProductBoardingPath(productCode))}>
+              탑승지 설정
             </button>
           </nav>
 

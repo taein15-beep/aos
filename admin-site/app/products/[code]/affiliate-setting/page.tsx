@@ -84,6 +84,9 @@ import {
   getSupplierProductByCode,
 } from "@/lib/admin/products-data";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
+import { ProductAffiliateNotFound } from "@/components/products/ProductAffiliateNotFound";
+import { ShareConfirmDialog, type ShareConfirmDialogState } from "@/components/products/ShareConfirmDialog";
+import { ShareManageActions } from "@/components/products/ShareManageActions";
 
 type SearchDraft = {
   agencyName: string;
@@ -124,12 +127,7 @@ function FieldLabel({
 
 type DetailSectionId = "edit" | "sales" | "settlement" | "memo";
 type ShareModalMode = "create" | "edit" | "view" | "reshare";
-type ConfirmDialog = {
-  title: string;
-  message: string;
-  confirmLabel: string;
-  onConfirm: () => void;
-};
+type ConfirmDialog = ShareConfirmDialogState;
 
 const DEFAULT_DETAIL_OPEN: Record<DetailSectionId, boolean> = {
   edit: true,
@@ -140,79 +138,6 @@ const DEFAULT_DETAIL_OPEN: Record<DetailSectionId, boolean> = {
 
 function optionLabel<T extends { value: string; label: string }>(options: readonly T[], value: string) {
   return options.find((option) => option.value === value)?.label ?? value;
-}
-
-function ShareManageActions({
-  row,
-  onEdit,
-  onView,
-  onReshare,
-  onCancelRequest,
-  onPause,
-  onResume,
-  onRelease,
-}: {
-  row: AffiliateAgencyRow;
-  onEdit: (id: string) => void;
-  onView: (id: string) => void;
-  onReshare: (id: string) => void;
-  onCancelRequest: (id: string) => void;
-  onPause: (id: string) => void;
-  onResume: (id: string) => void;
-  onRelease: (id: string) => void;
-}) {
-  if (row.shareStatus === "수락대기") {
-    return (
-      <>
-        <button type="button" className="small-btn" onClick={() => onEdit(row.id)}>
-          조건 수정
-        </button>
-        <button type="button" className="small-btn" onClick={() => onCancelRequest(row.id)}>
-          공유 요청 취소
-        </button>
-      </>
-    );
-  }
-  if (row.shareStatus === "공유 중") {
-    return (
-      <>
-        <button type="button" className="small-btn" onClick={() => onEdit(row.id)}>
-          조건 수정
-        </button>
-        <button type="button" className="small-btn" onClick={() => onPause(row.id)}>
-          공유 중지
-        </button>
-      </>
-    );
-  }
-  if (row.shareStatus === "공유 중지") {
-    return (
-      <>
-        <button type="button" className="small-btn" onClick={() => onEdit(row.id)}>
-          조건 수정
-        </button>
-        <button type="button" className="small-btn" onClick={() => onResume(row.id)}>
-          공유 재개
-        </button>
-        <button type="button" className="small-btn" onClick={() => onRelease(row.id)}>
-          공유 해제
-        </button>
-      </>
-    );
-  }
-  if (row.shareStatus === "공유 종료" || row.shareStatus === "공유 거절") {
-    return (
-      <>
-        <button type="button" className="small-btn" onClick={() => onView(row.id)}>
-          상세보기
-        </button>
-        <button type="button" className="small-btn" onClick={() => onReshare(row.id)}>
-          다시 공유
-        </button>
-      </>
-    );
-  }
-  return null;
 }
 
 function DetailSection({
@@ -246,19 +171,6 @@ function DetailSection({
           {children}
         </div>
       ) : null}
-    </div>
-  );
-}
-
-function ProductAffiliateNotFound({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="panel product-affiliate-not-found">
-      <strong>제휴여행사 공유설정을 열 수 없습니다.</strong>
-      <p>상품공급여행사 상품이 아니거나, 공유설정 샘플 데이터가 없는 상품입니다.</p>
-      <button type="button" className="secondary" onClick={onBack}>
-        <ArrowLeft size={14} />
-        상품목록으로
-      </button>
     </div>
   );
 }
@@ -1826,37 +1738,7 @@ export default function ProductAffiliateSettingPage() {
         </div>
       )}
 
-      {confirmDialog && (
-        <div
-          className="modal-backdrop product-share-confirm-backdrop"
-          role="presentation"
-          onClick={() => setConfirmDialog(null)}
-        >
-          <div
-            className="modal product-share-confirm-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="share-confirm-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="modal-head">
-              <h3 id="share-confirm-title">{confirmDialog.title}</h3>
-              <button type="button" aria-label="닫기" onClick={() => setConfirmDialog(null)}>
-                <X size={18} />
-              </button>
-            </div>
-            <p>{confirmDialog.message}</p>
-            <div className="modal-actions">
-              <button type="button" className="secondary" onClick={() => setConfirmDialog(null)}>
-                취소
-              </button>
-              <button type="button" className="primary" onClick={confirmDialog.onConfirm}>
-                {confirmDialog.confirmLabel}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ShareConfirmDialog dialog={confirmDialog} onClose={() => setConfirmDialog(null)} />
 
       {toast && (
         <div className="toast product-affiliate-toast">

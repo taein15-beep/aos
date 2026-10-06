@@ -20,8 +20,8 @@ import {
   AFFILIATE_FILTER_OPTIONS,
   PRODUCT_SEARCH_FIELD_OPTIONS,
   SELLER_FILTER_OPTIONS,
-  getProductAffiliateSettingPath,
   getProductSellerSettingPath,
+  getProductSharePath,
   getSampleProducts,
   matchesAffiliateFilter,
   matchesProductSearch,
@@ -85,8 +85,8 @@ function ProductChannelCell({
         <button
           type="button"
           className={`product-channel-btn${product.isSupplier ? "" : " is-disabled"}`}
-          title={product.isSupplier ? "제휴여행사 공유설정" : "공급여행사만 제휴 설정이 가능합니다"}
-          aria-label={product.isSupplier ? `${product.name} 제휴여행사 공유설정` : "제휴여행사 공유설정 불가"}
+          title={product.isSupplier ? "상품공유 설정" : "공급여행사만 상품공유 설정이 가능합니다"}
+          aria-label={product.isSupplier ? `${product.name} 상품공유 설정` : "상품공유 설정 불가"}
           disabled={!product.isSupplier}
           onClick={onAffiliate}
         >
@@ -173,7 +173,7 @@ export default function ProductListPage() {
 
   const goAffiliateSetting = (product: ProductListItem) => {
     if (!product.isSupplier) return;
-    router.push(getProductAffiliateSettingPath(product.code));
+    router.push(getProductSharePath(product.code));
   };
 
   const goSellerSetting = (product: ProductListItem) => {

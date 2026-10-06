@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ClipboardList, Minus, Plus, QrCode, Save, X } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
@@ -13,8 +13,26 @@ import {
   parseKrw,
   paymentStatusBadgeClass,
   reserveStatusBadgeClass,
+  addReservationHistory,
+  buildReservationEditHistory,
+  formatReservationTimestamp,
+  saveReservationEdits,
   type ReservationDetail,
 } from "@/lib/admin/reservations-data";
+import {
+  ACTION_ONLY_STATUSES,
+  canEditReservation,
+  getViewerActor,
+  withReservationViewer,
+} from "@/lib/admin/reservation-permission";
+import { getSettlementRecordByReservation, syncSettlementAfterReservationChange } from "@/lib/admin/settlement-data";
+import {
+  ReservationPermissionBadges,
+  ReservationPermissionNotices,
+  ReservationSourceBadge,
+  ReservationViewerSwitch,
+  useReservationViewer,
+} from "@/components/reservations/ReservationSource";
 
 type EditFormState = {
   bookerName: string;
@@ -36,6 +54,7 @@ type EditFormState = {
   requestNote: string;
   adminMemo: string;
   internalNote: string;
+  boardingPoint?: string;
 };
 
 function buildFormState(reservation: ReservationDetail): EditFormState {
@@ -55,6 +74,7 @@ function buildFormState(reservation: ReservationDetail): EditFormState {
     requestNote: reservation.requestNote,
     adminMemo: reservation.adminMemo,
     internalNote: reservation.internalNote,
+    boardingPoint: reservation.boardingPoint,
   };
 }
 
@@ -130,14 +150,22 @@ function AmountField({
 
 function ReservationEditForm({
   reservation,
+  formRef,
+  disabled,
   onCancel,
   onSave,
 }: {
   reservation: ReservationDetail;
+  formRef: MutableRefObject<EditFormState | null>;
+  disabled: boolean;
   onCancel: () => void;
   onSave: () => void;
 }) {
   const [form, setForm] = useState<EditFormState>(() => buildFormState(reservation));
+
+  useEffect(() => {
+    formRef.current = form;
+  }, [form, formRef]);
 
   const update = <K extends keyof EditFormState>(key: K, value: EditFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -151,9 +179,14 @@ function ReservationEditForm({
   );
   const totalAmount = parseKrw(amounts.totalAmount);
   const unpaidAmount = parseKrw(amounts.unpaidAmount);
+  const statusOptions = RESERVE_EDIT_STATUS_OPTIONS.filter(
+    (option) =>
+      !(ACTION_ONLY_STATUSES as readonly string[]).includes(option) || option === reservation.reserveStatus,
+  );
 
   return (
     <div className="member-web-edit-stack">
+      <fieldset className="reservation-edit-fieldset" disabled={disabled}>
       <section className="panel member-web-detail-card">
         <div className="member-web-detail-card-head">
           <strong>예약 기본정보</strong>
@@ -182,10 +215,16 @@ function ReservationEditForm({
               <span>출발일</span>
               <input type="date" value={form.departureAt} onChange={(e) => update("departureAt", e.target.value)} />
             </label>
+            {form.boardingPoint !== undefined && (
+              <label className="member-web-edit-field">
+                <span>탑승지</span>
+                <input value={form.boardingPoint} onChange={(e) => update("boardingPoint", e.target.value)} />
+              </label>
+            )}
             <label className="member-web-edit-field">
               <span>예약상태</span>
               <select value={form.reserveStatus} onChange={(e) => update("reserveStatus", e.target.value)}>
-                {RESERVE_EDIT_STATUS_OPTIONS.map((option) => (
+                {statusOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
@@ -307,13 +346,14 @@ function ReservationEditForm({
           </div>
         </div>
       </section>
+      </fieldset>
 
       <div className="member-web-edit-footer">
         <button type="button" className="secondary" onClick={onCancel}>
           <X size={14} />
-          취소
+          {disabled ? "상세로 돌아가기" : "취소"}
         </button>
-        <button type="button" className="primary" onClick={onSave}>
+        <button type="button" className="primary" onClick={onSave} disabled={disabled}>
           <Save size={14} />
           변경사항 저장
         </button>
@@ -332,6 +372,10 @@ export default function ReservationEditPage() {
   const [toast, setToast] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
+  const router = useRouter();
+  const [viewer, changeViewer] = useReservationViewer();
+  const formRef = useRef<EditFormState | null>(null);
+  const canEdit = reservation ? canEditReservation({ reservation, viewer }) : false;
 
   const act = (message: string) => {
     setToast(message);
@@ -341,9 +385,59 @@ export default function ReservationEditPage() {
   const toggleMenu = (label: string) =>
     setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
 
-  const goDetail = () => window.location.assign(`/reservations/${reservation?.code ?? reservationId}`);
+  const goDetail = () =>
+    router.push(withReservationViewer(`/reservations/${reservation?.code ?? reservationId}`, viewer));
 
   const handleSave = () => {
+    const form = formRef.current;
+    if (!reservation || !form) return;
+    if (!canEdit) {
+      act("이 예약의 수정권한이 없습니다.");
+      return;
+    }
+    const amounts = calculateReservationAmounts(
+      form.productAmount,
+      form.optionAmount,
+      form.discountAmount,
+      form.paidAmount,
+    );
+    const source = reservation.source ? { ...reservation.source, lastModifiedBy: viewer.agencyName } : undefined;
+    const nextValues = {
+      ...form,
+      counts: { ...form.counts },
+      paidAmount: amounts.paidAmount,
+    };
+    const actor = getViewerActor(viewer);
+    const savedAt = formatReservationTimestamp(new Date());
+    const historyEntries = buildReservationEditHistory(reservation, nextValues, actor, savedAt);
+    if (historyEntries.length === 0) {
+      act("변경된 항목이 없습니다.");
+      return;
+    }
+    const settlementBefore = getSettlementRecordByReservation(reservation.code);
+    saveReservationEdits(reservation.code, {
+      boardingPoint: form.boardingPoint,
+      bookerName: form.bookerName,
+      phone: form.phone,
+      email: form.email,
+      productName: form.productName,
+      departureAt: form.departureAt,
+      reserveStatus: form.reserveStatus,
+      reserveStatusClass: reserveStatusBadgeClass(form.reserveStatus),
+      paymentStatus: form.paymentStatus,
+      paymentStatusClass: paymentStatusBadgeClass(form.paymentStatus),
+      counts: { ...form.counts },
+      productAmount: form.productAmount,
+      optionAmount: form.optionAmount,
+      discountAmount: form.discountAmount,
+      ...amounts,
+      requestNote: form.requestNote,
+      adminMemo: form.adminMemo,
+      internalNote: form.internalNote,
+      source,
+    });
+    addReservationHistory(reservation.code, historyEntries);
+    if (settlementBefore) syncSettlementAfterReservationChange(settlementBefore, actor, savedAt);
     act("예약 정보를 저장했습니다.");
     window.setTimeout(() => goDetail(), 900);
   };
@@ -496,15 +590,18 @@ export default function ReservationEditPage() {
                 <span className={`badge ${reserveStatusBadgeClass(reservation.reserveStatus)}`}>
                   {reservation.reserveStatus}
                 </span>
+                <ReservationSourceBadge reservation={reservation} />
+                <ReservationPermissionBadges reservation={reservation} viewer={viewer} />
               </div>
               <p className="member-web-detail-subtitle">{reservation.productName}</p>
             </div>
             <div className="member-web-detail-actions">
+              <ReservationViewerSwitch viewer={viewer} onChange={changeViewer} />
               <button type="button" className="secondary" onClick={goDetail}>
                 <X size={14} />
                 취소
               </button>
-              <button type="button" className="primary" onClick={handleSave}>
+              <button type="button" className="primary" onClick={handleSave} disabled={!canEdit}>
                 <Save size={14} />
                 변경사항 저장
               </button>
@@ -534,7 +631,15 @@ export default function ReservationEditPage() {
             </div>
           </section>
 
-          <ReservationEditForm reservation={reservation} onCancel={goDetail} onSave={handleSave} />
+          <ReservationPermissionNotices reservation={reservation} viewer={viewer} />
+
+          <ReservationEditForm
+            reservation={reservation}
+            formRef={formRef}
+            disabled={!canEdit}
+            onCancel={goDetail}
+            onSave={handleSave}
+          />
         </main>
       </div>
 

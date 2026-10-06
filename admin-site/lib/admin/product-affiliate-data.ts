@@ -148,6 +148,8 @@ export type ShareConditionForm = {
   recommendedPrice: number | null;
   minSellingPrice: number | null;
   sellingPricePermission: SellingPricePermission;
+  /** 판매금액 기준 판매 수수료율(%). 빈 값이면 미지정 */
+  commissionRate: string;
   inventoryMode: InventoryMode;
   editPermissions: Record<EditPermissionKey, boolean>;
   salesChannels: Record<SalesChannelKey, boolean>;
@@ -192,6 +194,13 @@ export type ProductAffiliateSummary = {
 };
 
 const SAMPLE_SUMMARIES: Record<string, ProductAffiliateSummary> = {
+  "HT-DMZ01": {
+    productCode: "HT-DMZ01",
+    productName: "철원 DMZ · 소이산 모노레일 당일",
+    supplierName: "행복투어",
+    salesStatus: "판매중",
+    lastModifiedAt: "2026-09-01 10:00",
+  },
   HP0001: {
     productCode: "HP0001",
     productName: "청도 바캉스~ 온천♨+워터파크 & 관광 &미식투어맥주박물관 5박6일",
@@ -212,6 +221,13 @@ const SAMPLE_SUMMARIES: Record<string, ProductAffiliateSummary> = {
     supplierName: "애비아넥스트",
     salesStatus: "비노출",
     lastModifiedAt: "2026-05-20 09:15",
+  },
+  "GC-WINE01": {
+    productCode: "GC-WINE01",
+    productName: "국악와인열차 고창 당일여행",
+    supplierName: "애비아넥스트",
+    salesStatus: "판매중",
+    lastModifiedAt: "2026-09-01 09:00",
   },
   boram01: {
     productCode: "boram01",
@@ -251,6 +267,8 @@ const AFFILIATE_AGENCY_PROFILES: Record<string, AffiliateAgencyProfile> = {
   "AFF-014": { id: "AFF-014", name: "레일투어코리아", groups: ["국내 기차 제휴"], region: "서울", partnershipStatus: "정상" },
   "AFF-015": { id: "AFF-015", name: "제주월드투어", groups: ["동북아 상품공유"], region: "제주", partnershipStatus: "정상" },
   "AFF-016": { id: "AFF-016", name: "그린트리여행", groups: ["수도권 판매 제휴"], region: "서울", partnershipStatus: "탈퇴" },
+  "AFF-017": { id: "AFF-017", name: "현담여행사", groups: ["수도권 판매 제휴"], region: "서울", partnershipStatus: "정상" },
+  "AFF-018": { id: "AFF-018", name: "그래가자", groups: ["수도권 판매 제휴"], region: "경기", partnershipStatus: "정상" },
 };
 
 function agencyShare(id: string, share: AffiliateShareFields): AffiliateAgencyRow {
@@ -262,6 +280,13 @@ function agencyShare(id: string, share: AffiliateShareFields): AffiliateAgencyRo
 }
 
 const SAMPLE_AGENCIES_BY_PRODUCT: Record<string, AffiliateAgencyRow[]> = {
+  "HT-DMZ01": [
+    agencyShare("AFF-017", { shareStatus: "공유 중", shareStartDate: "2026-09-01", shareEndDate: "2026-12-20" }),
+    agencyShare("AFF-018", { shareStatus: "공유 중", shareStartDate: "2026-09-01", shareEndDate: "2026-12-20" }),
+    agencyShare("AFF-002", { shareStatus: "수락대기", shareStartDate: "2026-10-01", shareEndDate: "2026-12-20" }),
+    agencyShare("AFF-012", UNSHARED),
+    agencyShare("AFF-013", UNSHARED),
+  ],
   HP0001: [
     agencyShare("AFF-001", { shareStatus: "공유 중", shareStartDate: "2026-04-01", shareEndDate: "2026-12-31" }),
     agencyShare("AFF-002", { shareStatus: "공유 중", shareStartDate: "2026-04-15", shareEndDate: "2026-11-30" }),
@@ -281,6 +306,7 @@ const SAMPLE_AGENCIES_BY_PRODUCT: Record<string, AffiliateAgencyRow[]> = {
     agencyShare("AFF-014", { shareStatus: "공유 중", shareStartDate: "2026-05-10", shareEndDate: "2026-10-31" }),
   ],
   boram01: [agencyShare("AFF-013", UNSHARED)],
+  "GC-WINE01": [agencyShare("AFF-011", UNSHARED), agencyShare("AFF-014", UNSHARED)],
   HP0001C: [
     agencyShare("AFF-015", UNSHARED),
     agencyShare("AFF-001", { shareStatus: "공유 중", shareStartDate: "2026-04-01", shareEndDate: "2026-12-31" }),
@@ -480,6 +506,7 @@ export function createShareConditionForm(customerListPrice: number): ShareCondit
     recommendedPrice: customerListPrice,
     minSellingPrice: null,
     sellingPricePermission,
+    commissionRate: "",
     inventoryMode: "shared",
     editPermissions: defaultEditPermissions(sellingPricePermission),
     salesChannels: defaultSalesChannels(),
@@ -501,6 +528,7 @@ export function storedConditionFromForm(form: ShareConditionForm): StoredShareCo
     recommendedPrice: form.recommendedPrice,
     minSellingPrice: form.minSellingPrice,
     sellingPricePermission: form.sellingPricePermission,
+    commissionRate: form.commissionRate,
     inventoryMode: form.inventoryMode,
     editPermissions: { ...form.editPermissions },
     salesChannels: { ...form.salesChannels },
