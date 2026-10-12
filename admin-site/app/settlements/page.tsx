@@ -20,6 +20,8 @@ import { SettlementAdjustmentStateBadge } from "@/components/settlements/Settlem
 import { SettlementDocumentStatusBadge } from "@/components/settlements/SettlementDocumentParts";
 import { SettlementDashboard } from "@/components/settlements/SettlementDashboard";
 import { SettlementDocumentList } from "@/components/settlements/SettlementDocumentList";
+import { SellerChannelSettlementPanel } from "@/components/settlements/SellerChannelSettlementPanel";
+import { SELLER_SETTLEMENT_SUPPLIER_NAME } from "@/lib/admin/seller-channel-settlements";
 import { formatReservationTimestamp } from "@/lib/admin/reservations-data";
 import {
   SETTLEMENT_DOCUMENT_FILTER_STATUSES,
@@ -142,7 +144,9 @@ export default function SettlementsPage() {
   );
   const isSellerView = viewer.type === "seller";
   const documentTabLabel = viewer.type === "sellingAgency" ? "받은 정산서" : "정산서";
-  const activeTab = tab === "document" && isSellerView ? "reservation" : tab;
+  const canViewSellerChannel =
+    viewer.type === "integrated" || (viewer.type === "supplierAgency" && viewer.agencyName === SELLER_SETTLEMENT_SUPPLIER_NAME);
+  const activeTab = (tab === "document" && isSellerView) || (tab === "seller" && !canViewSellerChannel) ? "reservation" : tab;
   const kpis = useMemo(() => getSettlementKpis(visibleRecords), [visibleRecords]);
   const groups = useMemo(() => getSettlementDepartureGroups(filtered), [filtered]);
 
@@ -302,9 +306,20 @@ export default function SettlementsPage() {
               {documentTabLabel}
             </button>
           )}
+          {canViewSellerChannel && (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "seller"}
+              className={activeTab === "seller" ? "active" : ""}
+              onClick={() => setTab("seller")}
+            >
+              판매점 수익 정산
+            </button>
+          )}
         </div>
 
-        {drill && activeTab !== "document" && (
+        {drill && activeTab !== "document" && activeTab !== "seller" && (
           <div className="settlement-drill-chip" role="status">
             <span>
               대시보드 조건 <b>{drill.label}</b> · {SETTLEMENT_DASHBOARD_MODE_LABELS[drill.mode]} 관점 · {drill.key === "paid" || drill.key === "status:지급완료" ? "지급일" : "정산예정일"}{" "}
@@ -321,7 +336,14 @@ export default function SettlementsPage() {
           </div>
         )}
 
-        {activeTab === "document" ? (
+        {activeTab === "seller" ? (
+          <SellerChannelSettlementPanel
+            audience="supplier"
+            canManage={viewer.type === "supplierAgency" && viewer.agencyName === SELLER_SETTLEMENT_SUPPLIER_NAME}
+            reservationHref={(code) => withReservationViewer(`/reservations/${encodeURIComponent(code)}`, viewer)}
+            onNotify={notify}
+          />
+        ) : activeTab === "document" ? (
           <SettlementDocumentList
             records={visibleRecords}
             viewer={viewer}

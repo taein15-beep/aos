@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ClipboardList, Minus, Pencil, Plus, QrCode, Receipt, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ClipboardList, Info, Minus, Pencil, Plus, QrCode, Receipt, Wallet } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   applySettlementCancellation,
@@ -11,7 +12,12 @@ import {
 } from "@/lib/admin/settlement-data";
 import {
   applyReservationCancellation,
+  approveSellerCancelRequest,
   calculatePaymentSummary,
+  completeSellerCancelWithoutRefund,
+  getSellerRefundMode,
+  getSellerRefundStage,
+  processSellerRefund,
   closeReservation,
   formatKrw,
   formatReservationTimestamp,
@@ -23,15 +29,36 @@ import {
   parseKrw,
   paymentRecordBadgeClass,
   refundRecordBadgeClass,
+  rejectSellerCancelRequest,
   type ReservationPayment,
   type ReservationRefund,
+  type ReservationSellerCancelStatus,
 } from "@/lib/admin/reservations-data";
+import {
+  isSellerRefundFailureScenario,
+  sellerCancelProcessedAt,
+  shouldSellerRefundFail,
+} from "@/lib/admin/seller-channel-reservations";
+import {
+  SellerCancelReviewModal,
+  type SellerCancelApproveInput,
+  type SellerCancelRejectInput,
+} from "@/components/reservations/SellerCancelReviewModal";
+import { SellerRefundModal, type SellerRefundInput } from "@/components/reservations/SellerRefundModal";
+import {
+  formatSellerSettlementSigned,
+  getSellerSettlementByReservation,
+  sellerSettlementReflectionLabel,
+  sellerSettlementStatusBadgeClass,
+} from "@/lib/admin/seller-channel-settlements";
 import { getOperationAssignmentPath, getReservationOperationView } from "@/lib/admin/operation-assignment-data";
 import {
   canEditReservation,
   getReservationCloseAction,
   getReservationHandoverAction,
   getReservationSourceType,
+  getSellerCancelReviewAction,
+  getSellerRefundAction,
   getViewerActor,
   withReservationViewer,
 } from "@/lib/admin/reservation-permission";
@@ -98,8 +125,21 @@ function reserveDisplayClass(status: string) {
   if (status === "취소" || status === "취소완료") return "gray";
   if (status === "취소요청") return "danger";
   if (status === "예약확정") return "success";
-  if (status === "대기") return "warn";
+  if (status === "대기" || status === "취소승인") return "warn";
   return "info";
+}
+
+const SELLER_CANCEL_STATUS_BADGE: Record<ReservationSellerCancelStatus, string> = {
+  검토대기: "danger",
+  취소승인: "warn",
+  취소거절: "gray",
+  취소완료: "gray",
+};
+
+const SELLER_REFUND_STAGE_BADGE = { 환불대기: "warn", 환불실패: "danger", 환불완료: "gray", 환불없음: "gray" } as const;
+
+function dottedDateTime(value: string) {
+  return value.replace(/-/g, ".");
 }
 
 function paymentDisplayClass(status: string) {
@@ -166,6 +206,11 @@ export default function ReservationDetailPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(["예약관리"]);
   const [toast, setToast] = useState("");
+  const [toastDetail, setToastDetail] = useState("");
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [refundProcessing, setRefundProcessing] = useState(false);
+  const [toastTone, setToastTone] = useState<"" | "warn">("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [displayReserveStatus, setDisplayReserveStatus] = useState(() => reservation?.reserveStatus ?? "");
@@ -185,19 +230,24 @@ export default function ReservationDetailPage() {
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [reasonError, setReasonError] = useState(false);
   const [statusHistory, setStatusHistory] = useState<ReservationStatusHistory[]>([]);
-  const [payments, setPayments] = useState<ReservationPayment[]>([]);
-  const [refunds, setRefunds] = useState<ReservationRefund[]>([]);
-
-  useEffect(() => {
+  const [payments, setPayments] = useState<ReservationPayment[]>(() => getReservationPayments(reservationId));
+  const [refunds, setRefunds] = useState<ReservationRefund[]>(() => getReservationRefunds(reservationId));
+  const [loadedReservationId, setLoadedReservationId] = useState(reservationId);
+  if (loadedReservationId !== reservationId) {
+    setLoadedReservationId(reservationId);
     setPayments(getReservationPayments(reservationId));
     setRefunds(getReservationRefunds(reservationId));
-  }, [reservationId]);
+  }
 
   const paymentSummary = useMemo(() => {
     if (!reservation) {
       return calculatePaymentSummary(0, [], []);
     }
-    return calculatePaymentSummary(parseKrw(reservation.totalAmount), payments, refunds);
+    const summary = calculatePaymentSummary(parseKrw(reservation.totalAmount), payments, refunds);
+    if (reservation.sellerCancelRequest?.status === "취소완료") {
+      return { ...summary, unpaid: 0, unpaidLabel: formatKrw(0) };
+    }
+    return summary;
   }, [reservation, payments, refunds]);
 
   const isCancelled = isCancelledReservation(displayReserveStatus);
@@ -220,9 +270,167 @@ export default function ReservationDetailPage() {
       : Math.round(paidAmountValue * (cancelPeople / totalPeople));
   const expectedRefundAmount = Math.max(0, cancelTargetAmount - cancelFee);
 
-  const act = (message: string) => {
+  const act = (message: string, detail = "", tone: "" | "warn" = "") => {
     setToast(message);
-    window.setTimeout(() => setToast(""), 2200);
+    setToastDetail(detail);
+    setToastTone(tone);
+    window.setTimeout(() => setToast(""), detail ? 3200 : 2200);
+  };
+
+  const sellerCancelRequest = reservation?.sellerCancelRequest;
+  const bookingTerms = reservation?.bookingTerms;
+  const isSellerChannel = Boolean(reservation?.source?.sellerCode);
+  const sellerSettlement = useMemo(
+    () => (isSellerChannel ? getSellerSettlementByReservation(reservationId) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isSellerChannel, reservationId, reservationVersion],
+  );
+  const reviewAction = getSellerCancelReviewAction(reservation ?? {}, viewer);
+
+  const openReview = () => {
+    if (!reviewAction.allowed) return;
+    setReviewOpen(true);
+  };
+
+  const requestApprove = (input: SellerCancelApproveInput) => {
+    if (!reservation || !sellerCancelRequest) return;
+    setActionDialog({
+      title: "예약 취소를 승인하시겠습니까?",
+      details: [
+        { label: "예약번호", value: reservation.code },
+        { label: "취소수수료", value: formatKrw(input.cancellationFee) },
+        { label: "환불예정금액", value: formatKrw(input.refundAmount) },
+      ],
+      notes: ["승인 후 예약은 취소처리 단계로 이동합니다."],
+      cancelLabel: "닫기",
+      confirmLabel: "취소 승인",
+      onConfirm: () => {
+        const actor = { name: `${viewer.agencyName} 관리자`, agency: viewer.agencyName };
+        const done = approveSellerCancelRequest(
+          reservation.code,
+          input,
+          actor,
+          sellerCancelProcessedAt(sellerCancelRequest.requestedAt),
+        );
+        setActionDialog(null);
+        if (!done) return;
+        setReviewOpen(false);
+        setDisplayReserveStatus("취소승인");
+        setReservationVersion((value) => value + 1);
+        act("취소요청을 승인했습니다.", "환불 및 최종 취소처리는 다음 단계에서 진행됩니다.");
+      },
+    });
+  };
+
+  const requestReject = (input: SellerCancelRejectInput) => {
+    if (!reservation || !sellerCancelRequest) return;
+    setActionDialog({
+      title: "취소요청을 거절하시겠습니까?",
+      details: [
+        { label: "예약번호", value: reservation.code },
+        { label: "거절사유", value: input.reasonDetail ? `${input.reason} · ${input.reasonDetail}` : input.reason },
+      ],
+      notes: [`판매점 ${sellerCancelRequest.sellerName}의 취소요청을 거절합니다.`],
+      cancelLabel: "닫기",
+      confirmLabel: "거절",
+      confirmTone: "danger",
+      onConfirm: () => {
+        const actor = { name: `${viewer.agencyName} 관리자`, agency: viewer.agencyName };
+        const done = rejectSellerCancelRequest(
+          reservation.code,
+          input,
+          actor,
+          sellerCancelProcessedAt(sellerCancelRequest.requestedAt),
+        );
+        setActionDialog(null);
+        if (!done) return;
+        setReviewOpen(false);
+        setDisplayReserveStatus(sellerCancelRequest.previousReservationStatus);
+        setReservationVersion((value) => value + 1);
+        act("취소요청을 거절했습니다.", "예약은 기존 상태로 유지됩니다.");
+      },
+    });
+  };
+
+  const refundMode = reservation ? getSellerRefundMode(reservation) : null;
+  const refundStage = getSellerRefundStage(sellerCancelRequest);
+  const refundAction = getSellerRefundAction(reservation ?? {}, viewer);
+  const sellerRefund = sellerCancelRequest?.refund;
+  const timelineEntries = reservation?.statusTimeline ?? [];
+  const lastTimelineAt = timelineEntries[timelineEntries.length - 1]?.at ?? sellerCancelRequest?.requestedAt ?? "";
+  const supplierActor = () => ({ name: `${viewer.agencyName} 관리자`, agency: viewer.agencyName });
+
+  const openRefundAction = () => {
+    if (!reservation || !sellerCancelRequest?.approval || !refundAction.allowed || !refundMode) return;
+    if (refundMode === "refund" || refundMode === "retry") {
+      setRefundOpen(true);
+      return;
+    }
+    const unpaid = refundMode === "completeUnpaid";
+    setActionDialog({
+      title: "예약을 취소완료 처리하시겠습니까?",
+      details: unpaid
+        ? [
+            { label: "예약번호", value: reservation.code },
+            { label: "결제금액", value: reservation.paidAmount },
+          ]
+        : [
+            { label: "예약번호", value: reservation.code },
+            { label: "취소수수료", value: formatKrw(sellerCancelRequest.approval.cancellationFee) },
+            { label: "환불금액", value: formatKrw(0) },
+          ],
+      notes: [
+        unpaid
+          ? "결제된 금액이 없어 환불처리 없이 예약을 취소완료로 변경합니다."
+          : "환불예정금액이 0원으로 별도 환불 없이 취소완료 처리됩니다.",
+      ],
+      cancelLabel: "닫기",
+      confirmLabel: "취소완료 처리",
+      onConfirm: () => {
+        const done = completeSellerCancelWithoutRefund(reservation.code, supplierActor(), sellerCancelProcessedAt(lastTimelineAt));
+        setActionDialog(null);
+        if (!done) return;
+        setDisplayReserveStatus("취소완료");
+        setReservationVersion((value) => value + 1);
+        act("예약을 취소완료 처리했습니다.", unpaid ? "결제된 금액이 없어 환불 없이 처리되었습니다." : "별도 환불 없이 처리되었습니다.");
+      },
+    });
+  };
+
+  const requestRefund = (input: SellerRefundInput) => {
+    if (!reservation || !sellerCancelRequest?.approval) return;
+    setActionDialog({
+      title: "환불을 처리하시겠습니까?",
+      details: [
+        { label: "예약번호", value: reservation.code },
+        { label: "환불금액", value: formatKrw(sellerCancelRequest.approval.refundAmount) },
+        { label: "환불방법", value: input.method },
+      ],
+      notes: ["이번 Prototype에서는 실제 PG 환불 없이 Mock 상태만 변경됩니다."],
+      cancelLabel: "닫기",
+      confirmLabel: refundMode === "retry" ? "환불 재시도" : "환불처리",
+      onConfirm: () => {
+        setActionDialog(null);
+        if (refundProcessing) return;
+        setRefundProcessing(true);
+        const fail = shouldSellerRefundFail(reservation.code, sellerRefund?.attempts.length ?? 0);
+        const attemptAt = sellerCancelProcessedAt(lastTimelineAt);
+        window.setTimeout(() => {
+          const result = processSellerRefund(reservation.code, { ...input, fail }, supplierActor(), attemptAt);
+          setRefundProcessing(false);
+          setRefundOpen(false);
+          setReservationVersion((value) => value + 1);
+          if (result === "완료") {
+            setDisplayReserveStatus("취소완료");
+            setDisplayPaymentStatus("환불완료");
+            setRefunds(getReservationRefunds(reservation.code));
+            act("환불처리가 완료되었습니다.", "예약이 취소완료 상태로 변경되었습니다.");
+          } else if (result === "실패") {
+            act("환불처리에 실패했습니다.", "환불정보를 확인한 후 다시 처리해주세요.", "warn");
+          }
+        }, 700);
+      },
+    });
   };
 
   const resetCancelForm = () => {
@@ -601,16 +809,34 @@ export default function ReservationDetailPage() {
                   정산 상세
                 </button>
               )}
-              <button
-                type="button"
-                className={isCancelled || !canEdit ? "secondary" : "primary"}
-                onClick={openCancelModal}
-                disabled={isCancelled || !canEdit}
-                title={!canEdit ? "예약 수정권한이 없습니다." : undefined}
-              >
-                <Receipt size={14} />
-                {isCancelled ? "취소완료" : "취소/환불"}
-              </button>
+              {refundMode && (
+                <button
+                  type="button"
+                  className={refundAction.allowed ? "primary" : "secondary"}
+                  onClick={openRefundAction}
+                  disabled={!refundAction.allowed || refundProcessing}
+                  title={!refundAction.allowed ? refundAction.reason : undefined}
+                >
+                  <Wallet size={14} />
+                  {refundMode === "refund"
+                    ? "환불처리"
+                    : refundMode === "retry"
+                      ? "환불 재시도"
+                      : "취소완료 처리"}
+                </button>
+              )}
+              {!isSellerChannel && (
+                <button
+                  type="button"
+                  className={isCancelled || !canEdit ? "secondary" : "primary"}
+                  onClick={openCancelModal}
+                  disabled={isCancelled || !canEdit}
+                  title={!canEdit ? "예약 수정권한이 없습니다." : undefined}
+                >
+                  <Receipt size={14} />
+                  {isCancelled ? "취소완료" : "취소/환불"}
+                </button>
+              )}
             </div>
           </section>
 
@@ -632,6 +858,79 @@ export default function ReservationDetailPage() {
               </div>
             </div>
           </section>
+
+          {sellerCancelRequest?.status === "검토대기" && (
+            <div className="product-share-setting-alert reservation-permission-alert seller-cancel-alert" role="alert">
+              <AlertTriangle size={14} />
+              <div>
+                <strong>판매점 취소요청</strong>
+                <p>{sellerCancelRequest.sellerName}에서 고객의 예약 취소를 요청했습니다.</p>
+                <dl>
+                  <div>
+                    <dt>요청일시</dt>
+                    <dd>{dottedDateTime(sellerCancelRequest.requestedAt)}</dd>
+                  </div>
+                  <div>
+                    <dt>취소사유</dt>
+                    <dd>{sellerCancelRequest.reason}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div className="seller-cancel-alert-action">
+                <button type="button" className="primary" onClick={openReview} disabled={!reviewAction.allowed}>
+                  취소요청 검토
+                </button>
+                {!reviewAction.allowed && reviewAction.reason && <small>{reviewAction.reason}</small>}
+              </div>
+            </div>
+          )}
+          {sellerCancelRequest?.status === "취소승인" && refundStage === "환불실패" && (
+            <div className="product-share-setting-alert reservation-permission-alert seller-cancel-alert" role="alert">
+              <AlertTriangle size={14} />
+              <div>
+                <strong>환불처리에 실패했습니다.</strong>
+                <p>환불정보를 확인한 후 다시 처리해주세요. 예약은 취소승인 상태로 유지됩니다.</p>
+              </div>
+            </div>
+          )}
+          {sellerCancelRequest?.status === "취소승인" && refundStage !== "환불실패" && (
+            <div className="product-share-setting-alert reservation-permission-alert is-info seller-cancel-alert" role="status">
+              <Info size={14} />
+              <div>
+                <strong>취소승인 · 환불대기</strong>
+                <p>
+                  {refundMode === "completeUnpaid"
+                    ? "결제된 금액이 없어 환불처리 없이 취소완료 처리할 수 있습니다."
+                    : refundMode === "completeNoRefund"
+                      ? "환불예정금액이 0원으로 별도 환불 없이 취소완료 처리할 수 있습니다."
+                      : `환불예정금액 ${formatKrw(sellerCancelRequest.approval?.refundAmount ?? 0)}을 환불처리하면 예약이 취소완료됩니다.`}
+                </p>
+                {!refundAction.allowed && refundAction.reason && <p>{refundAction.reason}</p>}
+              </div>
+            </div>
+          )}
+          {sellerCancelRequest?.status === "취소완료" && (
+            <div className="product-share-setting-alert reservation-permission-alert is-info seller-cancel-alert" role="status">
+              <Info size={14} />
+              <div>
+                <strong>예약 취소가 완료되었습니다.</strong>
+                <p>
+                  {sellerRefund?.status === "환불완료"
+                    ? `환불완료 · ${formatKrw(sellerRefund.amount)} · 환불금액과 취소수수료는 조회만 가능합니다.`
+                    : "별도 환불 없이 취소완료되었습니다. 처리내역은 조회만 가능합니다."}
+                </p>
+              </div>
+            </div>
+          )}
+          {sellerCancelRequest?.status === "취소거절" && (
+            <div className="product-share-setting-alert reservation-permission-alert is-info seller-cancel-alert" role="status">
+              <Info size={14} />
+              <div>
+                <strong>판매점 취소요청을 거절했습니다.</strong>
+                <p>예약은 기존 상태({sellerCancelRequest.previousReservationStatus})로 유지됩니다.</p>
+              </div>
+            </div>
+          )}
 
           <ReservationOperationCard
             reservation={permissionTarget}
@@ -656,6 +955,176 @@ export default function ReservationDetailPage() {
 
           <div className="member-web-detail-stack">
             <ReservationSourceCards reservation={permissionTarget} viewer={viewer} />
+
+            {sellerCancelRequest && (
+              <section className="panel member-web-detail-card seller-cancel-info-card">
+                <div className="member-web-detail-card-head">
+                  <strong>취소요청 정보</strong>
+                  <span className={`badge ${SELLER_CANCEL_STATUS_BADGE[sellerCancelRequest.status]}`}>
+                    {sellerCancelRequest.status}
+                  </span>
+                </div>
+                <div className="member-web-detail-info-grid">
+                  <InfoField label="요청 판매점" value={sellerCancelRequest.sellerName} />
+                  <InfoField label="판매점코드" value={sellerCancelRequest.sellerCode} />
+                  <InfoField label="요청일시" value={dottedDateTime(sellerCancelRequest.requestedAt)} />
+                  <InfoField label="고객명" value={sellerCancelRequest.customerName} />
+                  <InfoField label="취소사유" value={sellerCancelRequest.reason} />
+                  <InfoField label="고객 요청내용" value={sellerCancelRequest.customerNote ?? "-"} />
+                  <InfoField label="현재 처리상태" value={sellerCancelRequest.status} />
+                  <InfoField label="취소요청 전 예약상태" value={sellerCancelRequest.previousReservationStatus} />
+                  {sellerCancelRequest.approval && (
+                    <>
+                      <InfoField label="처리자" value={sellerCancelRequest.approval.processedBy.name} />
+                      <InfoField label="처리일시" value={dottedDateTime(sellerCancelRequest.approval.processedAt)} />
+                      <InfoField label="정책 기준 수수료" value={formatKrw(sellerCancelRequest.approval.recommendedFee)} />
+                      <InfoField label="적용 취소수수료" value={formatKrw(sellerCancelRequest.approval.cancellationFee)} />
+                      <InfoField label="환불예정금액" value={formatKrw(sellerCancelRequest.approval.refundAmount)} />
+                      <InfoField label="처리메모" value={sellerCancelRequest.approval.memo || "-"} />
+                    </>
+                  )}
+                  {sellerCancelRequest.rejection && (
+                    <>
+                      <InfoField label="처리자" value={sellerCancelRequest.rejection.processedBy.name} />
+                      <InfoField label="처리일시" value={dottedDateTime(sellerCancelRequest.rejection.processedAt)} />
+                      <InfoField
+                        label="거절사유"
+                        value={
+                          sellerCancelRequest.rejection.reasonDetail
+                            ? `${sellerCancelRequest.rejection.reason} · ${sellerCancelRequest.rejection.reasonDetail}`
+                            : sellerCancelRequest.rejection.reason
+                        }
+                      />
+                    </>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {refundStage && sellerCancelRequest?.approval && (
+              <section className="panel member-web-detail-card seller-refund-info-card">
+                <div className="member-web-detail-card-head">
+                  <strong>환불정보</strong>
+                  <span className={`badge ${SELLER_REFUND_STAGE_BADGE[refundStage]}`}>{refundStage}</span>
+                </div>
+                <div className="member-web-detail-info-grid">
+                  <InfoField label="환불상태" value={refundStage} />
+                  <InfoField label="환불방법" value={sellerRefund?.method ?? "-"} />
+                  <InfoField
+                    label="환불금액"
+                    value={formatKrw(sellerRefund?.status === "환불없음" ? 0 : sellerCancelRequest.approval.refundAmount)}
+                  />
+                  <InfoField label="취소수수료" value={formatKrw(sellerCancelRequest.approval.cancellationFee)} />
+                  <InfoField label="환불일시" value={sellerRefund?.refundedAt ? dottedDateTime(sellerRefund.refundedAt) : "-"} />
+                  <InfoField label="처리자" value={sellerRefund?.processedBy.name ?? "-"} />
+                  <InfoField
+                    label="취소완료일시"
+                    value={sellerRefund?.completedAt ? dottedDateTime(sellerRefund.completedAt) : "-"}
+                  />
+                  <InfoField label="환불메모" value={sellerRefund?.memo || "-"} />
+                  {sellerRefund?.bankAccount && (
+                    <InfoField
+                      label="환불계좌"
+                      value={`${sellerRefund.bankAccount.bank} ${sellerRefund.bankAccount.accountMasked} · ${sellerRefund.bankAccount.holder}`}
+                    />
+                  )}
+                </div>
+                {sellerRefund && sellerRefund.attempts.length > 0 && (
+                  <ol className="seller-cancel-timeline seller-refund-attempts" aria-label="환불처리 이력">
+                    {sellerRefund.attempts.map((attempt, index) => (
+                      <li key={`${attempt.at}-${index}`}>
+                        <time>{dottedDateTime(attempt.at)}</time>
+                        <span className={`badge ${attempt.result === "완료" ? "gray" : "danger"}`}>
+                          {attempt.result === "완료" ? "환불완료" : "환불실패"}
+                        </span>
+                        <b>{attempt.processedBy.name}</b>
+                        <small>
+                          {attempt.method} · {formatKrw(attempt.amount)}
+                        </small>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </section>
+            )}
+
+            {sellerSettlement && (
+              <section className="panel member-web-detail-card">
+                <div className="member-web-detail-card-head">
+                  <strong>정산반영</strong>
+                  <span className={`badge ${sellerSettlementStatusBadgeClass(sellerSettlement.settlement.status)}`}>
+                    {sellerSettlement.settlement.status}
+                  </span>
+                </div>
+                <div className="member-web-detail-info-grid">
+                  <InfoField label="정산건" value={`${sellerSettlement.settlement.label} · ${sellerSettlement.settlement.code}`} />
+                  <InfoField label="반영상태" value={sellerSettlementReflectionLabel(sellerSettlement)} />
+                  <InfoField label="판매점 수익 (예약 당시)" value={formatKrw(sellerSettlement.line.originalProfit)} />
+                  <InfoField
+                    label="정산조정"
+                    value={
+                      sellerSettlement.line.reflection === "취소처리중"
+                        ? "미반영 (취소완료 후 반영)"
+                        : formatSellerSettlementSigned(
+                            sellerSettlement.line.adjustment ||
+                              sellerSettlement.line.pendingAdjustment ||
+                              (sellerSettlement.nextAdjustment?.amount ?? 0),
+                          )
+                    }
+                  />
+                  {sellerSettlement.nextAdjustment && (
+                    <InfoField label="차기정산" value={`${sellerSettlement.nextAdjustment.targetSettlementCode} · ${sellerSettlement.nextAdjustment.status}`} />
+                  )}
+                  {sellerSettlement.line.refundAmount !== null && (
+                    <InfoField label="고객 환불금액 (별도)" value={formatKrw(sellerSettlement.line.refundAmount)} />
+                  )}
+                </div>
+                <p className="seller-cancel-terms-note">
+                  정산 차감액은 예약 당시 판매점 수익 기준이며 환불금액과 다릅니다. 취소수수료의 정산 배분은 별도 정책으로 처리됩니다.{" "}
+                  {(viewer.type === "integrated" || viewer.agencyName === sellerSettlement.settlement.supplierName) && (
+                    <Link
+                      href={withReservationViewer(`/settlements?tab=seller&period=${sellerSettlement.settlement.code}`, viewer)}
+                      className="reservation-code-link"
+                    >
+                      판매점 수익 정산 보기
+                    </Link>
+                  )}
+                </p>
+              </section>
+            )}
+
+            {bookingTerms && (
+              <section className="panel member-web-detail-card seller-cancel-terms-card">
+                <div className="member-web-detail-card-head">
+                  <strong>예약 당시 판매조건</strong>
+                  <span className="badge gray">Snapshot</span>
+                </div>
+                <div className="member-web-detail-info-grid">
+                  <InfoField label="판매방식" value={bookingTerms.saleMode} />
+                  {bookingTerms.saleMode === "수수료형" ? (
+                    <InfoField label="수수료율" value={`${bookingTerms.commissionRate ?? 0}%`} />
+                  ) : (
+                    <InfoField label="입금가 (1인)" value={formatKrw(bookingTerms.depositPrice ?? 0)} />
+                  )}
+                  <InfoField label="판매점 판매가 (1인)" value={formatKrw(bookingTerms.unitPrice)} />
+                  <InfoField label="인원" value={`${bookingTerms.pax}명`} />
+                  <InfoField label="총 예약금액" value={formatKrw(bookingTerms.amount)} />
+                  <InfoField
+                    label="판매점 예상수익"
+                    value={
+                      displayReserveStatus === "취소완료"
+                        ? `0원 (취소완료 · 예약 당시 ${formatKrw(bookingTerms.sellerProfit)})`
+                        : sellerCancelRequest?.status === "취소승인"
+                          ? `${formatKrw(bookingTerms.sellerProfit)} → 0원 (취소승인 · 정산 반영 대기)`
+                          : formatKrw(bookingTerms.sellerProfit)
+                    }
+                  />
+                </div>
+                <p className="seller-cancel-terms-note">
+                  예약 접수 시점의 판매조건입니다. 이후 상품 판매가 · 입금가가 변경되어도 이 예약에는 반영되지 않습니다.
+                </p>
+              </section>
+            )}
 
             <section className="panel member-web-detail-card">
               <div className="member-web-detail-card-head">
@@ -878,10 +1347,55 @@ export default function ReservationDetailPage() {
               </section>
             )}
 
+            {reservation.statusTimeline && reservation.statusTimeline.length > 0 && (
+              <section className="panel member-web-detail-card">
+                <div className="member-web-detail-card-head">
+                  <strong>예약 상태 Timeline</strong>
+                  <span className="member-web-status-history-count">{reservation.statusTimeline.length}건</span>
+                </div>
+                <ol className="seller-cancel-timeline">
+                  {reservation.statusTimeline.map((entry, index) => (
+                    <li key={`${entry.at}-${entry.label}-${index}`}>
+                      <time>{dottedDateTime(entry.at)}</time>
+                      <span className={`badge ${entry.tone}`}>{entry.label}</span>
+                      <b>{entry.actor}</b>
+                      {entry.note && <small>{entry.note}</small>}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
             <ReservationHistorySection history={reservationHistory} />
           </div>
         </main>
       </div>
+
+      {reviewOpen && sellerCancelRequest?.status === "검토대기" && bookingTerms && (
+        <SellerCancelReviewModal
+          reservation={{ ...reservation, reserveStatus: displayReserveStatus }}
+          terms={bookingTerms}
+          request={sellerCancelRequest}
+          suspended={actionDialog !== null}
+          onClose={() => setReviewOpen(false)}
+          onApprove={requestApprove}
+          onReject={requestReject}
+        />
+      )}
+
+      {refundOpen && (refundMode === "refund" || refundMode === "retry") && sellerCancelRequest?.approval && (
+        <SellerRefundModal
+          reservation={{ ...reservation, reserveStatus: displayReserveStatus, paymentStatus: displayPaymentStatus }}
+          request={{ ...sellerCancelRequest, approval: sellerCancelRequest.approval }}
+          approvalNumber={payments[0]?.approvalNumber ?? "-"}
+          retry={refundMode === "retry"}
+          processing={refundProcessing}
+          failureScenario={isSellerRefundFailureScenario(reservation.code)}
+          suspended={actionDialog !== null}
+          onClose={() => setRefundOpen(false)}
+          onSubmit={requestRefund}
+        />
+      )}
 
       <ReservationActionDialog dialog={actionDialog} onClose={() => setActionDialog(null)} />
 
@@ -1125,7 +1639,18 @@ export default function ReservationDetailPage() {
         </div>
       )}
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && (
+        <div className={`toast${toastTone === "warn" ? " toast-warn" : ""}`} role="status">
+          {toastDetail ? (
+            <span className="seller-prod-toast-text">
+              <b>{toast}</b>
+              <small>{toastDetail}</small>
+            </span>
+          ) : (
+            toast
+          )}
+        </div>
+      )}
     </div>
   );
 }

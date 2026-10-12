@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { SellerLogo } from "@/components/seller/SellerLogo";
 import { clearSellerSessionCookieValue, isSellerLoginPath, type SellerSession } from "@/lib/seller/auth";
 import { SELLER_ADMIN_DEMO_PROFILE } from "@/lib/seller/seller-admin-profile";
-import { SELLER_LOGIN_PATH, SELLER_MENU, SELLER_SUB_PAGES, sellerMenuIsActive } from "@/lib/seller/navigation";
+import { SELLER_LOGIN_PATH, SELLER_MENU, findSellerSubPage, sellerMenuIsActive } from "@/lib/seller/navigation";
 import { useSellerSession } from "@/lib/seller/use-seller-session";
 
 type SellerAdminShellProps = {
@@ -43,7 +43,7 @@ export function SellerAdminShell({ children }: SellerAdminShellProps) {
     (item) => item.href && sellerMenuIsActive(pathname, item.href),
   );
   const pageTitle = activeMenu?.label ?? "판매점 관리";
-  const subPage = SELLER_SUB_PAGES.find((item) => item.href === pathname);
+  const subPage = findSellerSubPage(pathname);
 
   useEffect(() => {
     if (!profileOpen) return;

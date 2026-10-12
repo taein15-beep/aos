@@ -74,7 +74,35 @@ export function isOperatorManagedStatus(status: string) {
 export const ACTION_ONLY_STATUSES = ["예약마감", "운영인계"] as const;
 
 export function isCancelledReservationStatus(status: string) {
-  return status === "취소" || status === "취소요청" || status === "취소완료";
+  return status === "취소" || status === "취소요청" || status === "취소승인" || status === "취소완료";
+}
+
+/** 판매점 취소요청 검토 권한: 예약 상품의 공급여행사 관리자만 처리합니다. (판매점 이용상태 · 상품 판매상태와 무관) */
+export function getSellerCancelReviewAction(
+  reservation: Pick<ReservationDetail, "source" | "sellerCancelRequest">,
+  viewer: ReservationViewer,
+): ReservationActionPermission {
+  const request = reservation.sellerCancelRequest;
+  if (!request || request.status !== "검토대기") return { allowed: false, reason: "검토대기 중인 취소요청이 없습니다." };
+  const supplierName = reservation.source?.supplierAgencyName ?? "공급여행사";
+  if (viewer.type !== "supplierAgency" || viewer.agencyName !== reservation.source?.supplierAgencyName) {
+    return { allowed: false, reason: `공급여행사(${supplierName}) 관리자 관점에서 처리할 수 있습니다.` };
+  }
+  return { allowed: true };
+}
+
+/** 취소승인 예약의 환불 · 취소완료 처리 권한: 공급여행사 관리자만 (판매점은 환불 불가) */
+export function getSellerRefundAction(
+  reservation: Pick<ReservationDetail, "source" | "sellerCancelRequest">,
+  viewer: ReservationViewer,
+): ReservationActionPermission {
+  const request = reservation.sellerCancelRequest;
+  if (!request?.approval || request.status !== "취소승인") return { allowed: false, reason: "환불처리 대상이 아닙니다." };
+  const supplierName = reservation.source?.supplierAgencyName ?? "공급여행사";
+  if (viewer.type !== "supplierAgency" || viewer.agencyName !== reservation.source?.supplierAgencyName) {
+    return { allowed: false, reason: `환불처리는 공급여행사(${supplierName}) 관리자 관점에서 진행할 수 있습니다.` };
+  }
+  return { allowed: true };
 }
 
 export function isReservationClosed(reservation: PermissionTarget) {

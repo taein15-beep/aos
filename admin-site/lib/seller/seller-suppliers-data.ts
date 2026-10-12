@@ -12,6 +12,7 @@ import {
   type SellerDashboardProductStats,
   type SellerDashboardSettlement,
 } from "@/lib/seller/seller-dashboard-data";
+import { listSellerAdminProducts } from "@/lib/seller/seller-admin-products-data";
 import { summarizeSupplierTrades, type SupplierTradeStatus } from "@/lib/seller/seller-login-mock";
 
 export type SellerSupplierRelationStatus = SupplierTradeStatus | "승인거절";
@@ -238,37 +239,23 @@ type SupplierRelationProfile = {
   joinedAt: string | null;
   appliedAt: string;
   processedAt: string | null;
-  productPreview: SellerSupplierProductPreview[];
 };
 
 const SUPPLIER_RELATION_PROFILES: Record<string, SupplierRelationProfile> = {
-  행복투어: {
-    joinedAt: "2026-08-01",
-    appliedAt: "2026-07-29",
-    processedAt: "2026-08-01",
-    productPreview: [
-      { productName: "철원 DMZ 평화관광", mode: "수수료형", status: "판매중" },
-      { productName: "국악와인열차", mode: "입금가형", status: "판매중" },
-      { productName: "고창 당일여행", mode: "입금가형", status: "설정대기" },
-    ],
-  },
-  현담여행사: {
-    joinedAt: "2026-09-05",
-    appliedAt: "2026-09-02",
-    processedAt: "2026-09-05",
-    productPreview: [
-      { productName: "남해 독일마을 당일투어", mode: "수수료형", status: "판매중" },
-      { productName: "통영 케이블카·동피랑 1박 2일", mode: "입금가형", status: "판매중" },
-      { productName: "거제 외도 보타니아", mode: "수수료형", status: "판매중지" },
-    ],
-  },
-  A투어: {
-    joinedAt: null,
-    appliedAt: "2026-10-10",
-    processedAt: null,
-    productPreview: [],
-  },
+  행복투어: { joinedAt: "2026-08-01", appliedAt: "2026-07-29", processedAt: "2026-08-01" },
+  현담여행사: { joinedAt: "2026-09-05", appliedAt: "2026-09-02", processedAt: "2026-09-05" },
+  A투어: { joinedAt: null, appliedAt: "2026-10-10", processedAt: null },
 };
+
+const PRODUCT_PREVIEW_LIMIT = 3;
+
+/** 판매상품 목록 Mock에서 공급여행사별 최근 판매허용 상품 Preview */
+function buildProductPreview(sellerId: string, supplierId: string): SellerSupplierProductPreview[] {
+  return listSellerAdminProducts(sellerId)
+    .filter((product) => product.supplierTravelAgencyId === supplierId)
+    .slice(0, PRODUCT_PREVIEW_LIMIT)
+    .map((product) => ({ productName: product.productName, mode: product.saleMode, status: product.salesStatus }));
+}
 
 function buildRejectedRelation(): SellerSupplierRelation[] {
   const entry = getSupplierDirectoryEntry("B투어");
@@ -330,7 +317,9 @@ export function getSellerSupplierRelations(
         settlement: supplier.settlement,
         productPreview: supplier.status === "승인대기"
           ? []
-          : profile.productPreview.map((product) => (suspended ? { ...product, status: "판매중지" } : product)),
+          : buildProductPreview(sellerId, supplier.supplierId).map((product) =>
+              suspended ? { ...product, status: "판매중지" } : product,
+            ),
       },
     ];
   });

@@ -15,6 +15,7 @@ import {
 import {
   RESERVATION_SOURCE_LABELS,
   getReservationSourceType,
+  getSellerCancelReviewAction,
   isReservationVisibleTo,
   withReservationViewer,
   type ReservationViewer,
@@ -97,13 +98,22 @@ function matchesKeyword(reservation: ReservationListItem, keyword: string) {
 
 function partyColumnTitle(viewer: ReservationViewer) {
   if (viewer.type === "sellingAgency" || viewer.type === "seller") return "공급여행사";
-  if (viewer.type === "supplierAgency") return "판매여행사";
+  if (viewer.type === "supplierAgency") return "판매여행사 / 판매점";
   return "공급 / 판매여행사";
 }
 
 function PartyCell({ reservation, viewer }: { reservation: ReservationListItem; viewer: ReservationViewer }) {
   const source = reservation.source;
   if (!source || source.type === "direct") return <span className="reservation-party-muted">자사</span>;
+  if (source.sellerCode) {
+    return (
+      <span className="reservation-party">
+        {viewer.type !== "supplierAgency" && <b>공급: {source.supplierAgencyName}</b>}
+        <b>판매점: {source.sellerName}</b>
+        <small>{source.sellerCode}</small>
+      </span>
+    );
+  }
   const seller = source.sellerName ? <small>판매점: {source.sellerName}</small> : null;
   if (viewer.type === "seller") {
     return (
@@ -253,7 +263,7 @@ export default function ReservationsPage() {
   const [viewer, changeViewer] = useReservationViewer();
   const [linkedKeyword, setLinkedKeyword] = useQueryParam("keyword", "");
   const [linkedDeparture, setLinkedDeparture] = useQueryParam("departure", "");
-  const reservationList = useMemo(() => getReservationList(), []);
+  const reservationList = useMemo(() => getReservationList({ includeSellerChannel: true }), []);
   const operationViews = useMemo(() => getReservationOperationViews(reservationList), [reservationList]);
   const upcomingDepartures = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -748,6 +758,14 @@ export default function ReservationsPage() {
                           <span className="reservation-status-stack">
                             <span className={`badge ${reservation.reserveStatusClass}`}>{reservation.reserveStatus}</span>
                             <ReservationOperationStageBadge reservation={reservation} compact />
+                            {getSellerCancelReviewAction(reservation, viewer).allowed && (
+                              <Link
+                                href={withReservationViewer(`/reservations/${reservation.code}`, viewer)}
+                                className="small-btn reservation-cancel-review-link"
+                              >
+                                취소검토
+                              </Link>
+                            )}
                           </span>
                         </td>
                         <td>

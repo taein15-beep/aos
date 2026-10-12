@@ -240,6 +240,7 @@ export function ReservationSourceCards({
           <SourceField label="공급여행사" value={source?.supplierAgencyName} />
           <SourceField label="판매여행사" value={source?.sellingAgencyName} />
           <SourceField label="판매점" value={source?.sellerName} />
+          <SourceField label="판매점코드" value={source?.sellerCode} />
           <SourceField label="원본 상품코드" value={source?.originalProductCode} />
           <SourceField label="판매 상품코드" value={source?.sharedProductCode} />
         </div>
@@ -448,6 +449,9 @@ export type ReservationActionDialogState = {
   details: { label: string; value?: string }[];
   confirmLabel: string;
   onConfirm: () => void;
+  /** 닫기 버튼 문구 (기본: 취소) */
+  cancelLabel?: string;
+  confirmTone?: "danger";
 };
 
 export function ReservationActionDialog({
@@ -490,9 +494,13 @@ export function ReservationActionDialog({
         </ul>
         <div className="modal-actions">
           <button type="button" className="secondary" onClick={onClose}>
-            취소
+            {dialog.cancelLabel ?? "취소"}
           </button>
-          <button type="button" className="primary" onClick={dialog.onConfirm}>
+          <button
+            type="button"
+            className={dialog.confirmTone === "danger" ? "danger-button" : "primary"}
+            onClick={dialog.onConfirm}
+          >
             {dialog.confirmLabel}
           </button>
         </div>

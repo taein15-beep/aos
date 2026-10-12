@@ -11,6 +11,8 @@ import {
   summarizeSupplierTrades,
   type SupplierTradeStatus,
 } from "@/lib/seller/seller-login-mock";
+import { countSellerProductsBySupplier } from "@/lib/seller/seller-admin-products-data";
+import { listSellerReservations, sellerReservationAmount } from "@/lib/seller/seller-reservations-data";
 
 export type SellerDashboardPeriodKey = "today" | "week" | "month";
 
@@ -97,12 +99,14 @@ export const SELLER_DASHBOARD_SCENARIOS: { key: SellerDashboardScenarioKey; labe
 
 type SupplierRecord = Omit<SellerDashboardSupplier, "status">;
 
-/** SEL00032(그래가자) 공급여행사별 Mock 실적 */
+const DASHBOARD_SELLER_ID = "SEL00032";
+
+/** SEL00032(그래가자) 공급여행사별 Mock 실적 — 판매상품 수는 판매상품 목록 Mock에서 계산 */
 const SUPPLIER_RECORDS: Record<string, SupplierRecord> = {
   행복투어: {
     supplierId: "AGENCY-HAPPY",
     supplierName: "행복투어",
-    productStats: { onSale: 10, setupPending: 2, stopped: 0 },
+    productStats: countSellerProductsBySupplier(DASHBOARD_SELLER_ID, "AGENCY-HAPPY"),
     performance: {
       today: { reservationCount: 2, previousReservationCount: 1, salesAmount: 276000, expectedProfit: 36000 },
       week: { reservationCount: 6, previousReservationCount: 5, salesAmount: 1380000, expectedProfit: 182000 },
@@ -113,7 +117,7 @@ const SUPPLIER_RECORDS: Record<string, SupplierRecord> = {
   현담여행사: {
     supplierId: "AGENCY-HYUNDAM",
     supplierName: "현담여행사",
-    productStats: { onSale: 7, setupPending: 0, stopped: 1 },
+    productStats: countSellerProductsBySupplier(DASHBOARD_SELLER_ID, "AGENCY-HYUNDAM"),
     performance: {
       today: { reservationCount: 1, previousReservationCount: 1, salesAmount: 180000, expectedProfit: 24000 },
       week: { reservationCount: 4, previousReservationCount: 3, salesAmount: 860000, expectedProfit: 114000 },
@@ -130,58 +134,19 @@ const SUPPLIER_RECORDS: Record<string, SupplierRecord> = {
   },
 };
 
-const RECENT_RESERVATIONS: SellerDashboardReservation[] = [
-  {
-    reservationCode: "AOS-RSV-260101",
-    reservedAt: "2026-10-12",
-    supplierName: "행복투어",
-    productName: "철원 DMZ 평화관광",
-    customerName: "김민수",
-    pax: 2,
-    salesAmount: 138000,
-    status: "예약확정",
-  },
-  {
-    reservationCode: "AOS-RSV-260100",
-    reservedAt: "2026-10-12",
-    supplierName: "현담여행사",
-    productName: "남해 독일마을 당일투어",
-    customerName: "이서연",
-    pax: 3,
-    salesAmount: 237000,
-    status: "예약접수",
-  },
-  {
-    reservationCode: "AOS-RSV-260099",
-    reservedAt: "2026-10-11",
-    supplierName: "행복투어",
-    productName: "단양 패러글라이딩 체험",
-    customerName: "박지훈",
-    pax: 2,
-    salesAmount: 198000,
-    status: "취소요청",
-  },
-  {
-    reservationCode: "AOS-RSV-260098",
-    reservedAt: "2026-10-10",
-    supplierName: "현담여행사",
-    productName: "통영 케이블카·동피랑 1박 2일",
-    customerName: "최유진",
-    pax: 4,
-    salesAmount: 596000,
-    status: "예약확정",
-  },
-  {
-    reservationCode: "AOS-RSV-260097",
-    reservedAt: "2026-10-09",
-    supplierName: "행복투어",
-    productName: "가평 와인 클래스",
-    customerName: "정하늘",
-    pax: 2,
-    salesAmount: 158000,
-    status: "취소완료",
-  },
-];
+/** 예약관리 목록 Mock과 동일한 예약 — 최근 5건 · 취소요청 건수는 이번 달 전체 기준 */
+const DASHBOARD_RESERVATIONS = listSellerReservations(DASHBOARD_SELLER_ID);
+const RECENT_RESERVATIONS: SellerDashboardReservation[] = DASHBOARD_RESERVATIONS.slice(0, 5).map((row) => ({
+  reservationCode: row.reservationCode,
+  reservedAt: row.reservedAt.slice(0, 10),
+  supplierName: row.supplierName,
+  productName: row.productName,
+  customerName: row.customerName,
+  pax: row.pax,
+  salesAmount: sellerReservationAmount(row),
+  status: row.status,
+}));
+const CANCEL_REQUEST_COUNT = DASHBOARD_RESERVATIONS.filter((row) => row.status === "취소요청").length;
 
 const SUPPORTED_SELLER_IDS = ["SEL00032"];
 
@@ -272,7 +237,7 @@ function buildCheckItems(
 ): SellerDashboardCheckItem[] {
   const summary = summarizeSupplierTrades(suppliers);
   const products = sumSellerDashboardProducts(suppliers);
-  const cancelRequests = reservations.filter((row) => row.status === "취소요청").length;
+  const cancelRequests = reservations.length > 0 ? CANCEL_REQUEST_COUNT : 0;
   const items: SellerDashboardCheckItem[] = [
     { key: "price", label: "판매가 설정이 필요한 상품", count: products.setupPending, unit: "건", tone: "warn" },
     { key: "pending", label: "승인대기 공급여행사", count: summary.pending, unit: "곳", tone: "info" },

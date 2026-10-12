@@ -1,5 +1,7 @@
 import type { ReservationSettlement } from "@/lib/admin/settlement-data";
 import { getGuideTourReservationSeeds } from "@/lib/admin/guide-operation-data";
+import { findSellerChannelRecord, listSellerChannelRecords } from "@/lib/admin/seller-channel-reservations";
+import type { SellerCancelPolicyRule } from "@/lib/seller/seller-product-detail-data";
 
 export type ReservationDetail = {
   code: string;
@@ -36,6 +38,102 @@ export type ReservationDetail = {
   settlement?: ReservationSettlement;
   /** 취소/환불 Mock 입력값. 예약상태와 별도로 부분취소/전체취소를 기록합니다. */
   cancellation?: ReservationCancellation;
+  /** 결제수단 / 최초 결제일시 (판매점 예약 연동) */
+  paymentMethod?: string;
+  paidAt?: string;
+  /** 예약 당시 판매조건 Snapshot (판매점 예약) — 현재 상품 판매가 변경은 반영하지 않습니다. */
+  bookingTerms?: ReservationBookingTerms;
+  /** 판매점 취소요청 · 공급여행사 처리결과 */
+  sellerCancelRequest?: ReservationSellerCancelRequest;
+  /** 처리자를 포함한 예약상태 Timeline (판매점 예약) */
+  statusTimeline?: ReservationStatusTimelineEntry[];
+};
+
+export type ReservationBookingTerms = {
+  productCode: string;
+  saleMode: "입금가형" | "수수료형";
+  /** 판매점 판매가 (1인) */
+  unitPrice: number;
+  /** 입금가 (1인, 입금가형) */
+  depositPrice: number | null;
+  /** 수수료율 % (수수료형) */
+  commissionRate: number | null;
+  pax: number;
+  amount: number;
+  /** 판매점 예상수익 (예약 당시 조건 기준) */
+  sellerProfit: number;
+  /** 공급여행사 원본 취소정책 구간 */
+  cancelPolicy: SellerCancelPolicyRule[];
+};
+
+export type ReservationSellerCancelStatus = "검토대기" | "취소승인" | "취소거절" | "취소완료";
+
+export const SELLER_REFUND_METHODS = ["원결제수단 환불", "계좌환불"] as const;
+export type ReservationSellerRefundMethod = (typeof SELLER_REFUND_METHODS)[number];
+
+/** 환불 처리 시도 이력 (Mock) */
+export type ReservationSellerRefundAttempt = {
+  at: string;
+  result: "실패" | "완료";
+  method: ReservationSellerRefundMethod;
+  amount: number;
+  processedBy: ReservationActor;
+};
+
+/**
+ * 취소승인 이후 환불 · 취소완료 처리 결과 (SAMPLE · 실제 PG 환불 없음)
+ * - 환불실패: 예약상태 취소승인 · 결제상태 유지
+ * - 환불완료: 결제상태 환불완료 → 예약상태 취소완료
+ * - 환불없음: 결제금액 0원 또는 환불예정금액 0원 → 환불 없이 취소완료
+ */
+export type ReservationSellerRefund = {
+  status: "환불실패" | "환불완료" | "환불없음";
+  method: ReservationSellerRefundMethod | null;
+  amount: number;
+  refundedAt: string | null;
+  processedBy: ReservationActor;
+  memo: string;
+  /** 계좌환불 Mock 입력 — 계좌번호는 마스킹 값만 보관 */
+  bankAccount: { holder: string; bank: string; accountMasked: string } | null;
+  attempts: ReservationSellerRefundAttempt[];
+  /** 예약 취소완료 일시 */
+  completedAt: string | null;
+};
+
+export type ReservationSellerCancelDecision = {
+  processedAt: string;
+  processedBy: ReservationActor;
+};
+
+export type ReservationSellerCancelRequest = {
+  sellerName: string;
+  sellerCode: string;
+  /** YYYY-MM-DD HH:mm */
+  requestedAt: string;
+  registeredBy: string;
+  customerName: string;
+  reason: string;
+  customerNote: string | null;
+  /** 취소요청 전 예약상태 — 거절 시 이 상태로 복원 */
+  previousReservationStatus: string;
+  status: ReservationSellerCancelStatus;
+  approval?: ReservationSellerCancelDecision & {
+    recommendedFee: number;
+    cancellationFee: number;
+    refundAmount: number;
+    memo: string;
+  };
+  rejection?: ReservationSellerCancelDecision & { reason: string; reasonDetail: string | null };
+  refund?: ReservationSellerRefund;
+};
+
+export type ReservationStatusTimelineEntry = {
+  /** YYYY-MM-DD HH:mm */
+  at: string;
+  label: string;
+  actor: string;
+  tone: ReservationDetail["reserveStatusClass"];
+  note?: string;
 };
 
 export type ReservationCancellationType = "partial" | "full";
@@ -70,6 +168,8 @@ export type ReservationSource = {
   supplierAgencyName?: string;
   sellingAgencyName?: string;
   sellerName?: string;
+  /** 판매점 관리자에서 직접 접수된 예약의 판매점코드 */
+  sellerCode?: string;
   /** 판매여행사에서 사용하는 판매 상품코드 */
   sharedProductCode?: string;
   /** 공급여행사 원본 상품코드 */
@@ -197,6 +297,7 @@ export const RESERVE_STATUS_FILTER_OPTIONS = [
   "운영인계",
   "행사완료",
   "취소요청",
+  "취소승인",
   "취소완료",
 ] as const;
 
@@ -249,7 +350,7 @@ export function calculateReservationAmounts(productAmount: number, optionAmount:
 
 export function reserveStatusBadgeClass(status: string): ReservationDetail["reserveStatusClass"] {
   if (status === "예약확정") return "success";
-  if (status === "대기" || status === "부분결제" || status === "예약마감") return "warn";
+  if (status === "대기" || status === "부분결제" || status === "예약마감" || status === "취소승인") return "warn";
   if (status === "취소요청") return "danger";
   if (status === "취소완료" || status === "환불완료" || status === "행사완료") return "gray";
   if (status === "예약접수") return "info";
@@ -1067,9 +1168,10 @@ export function addReservationHistory(code: string, entries: Omit<ReservationHis
 
 /** 최신순 변경이력 */
 export function getReservationHistory(code: string): ReservationHistoryEntry[] {
-  const reservation = RESERVATION_DETAILS.find((item) => item.code === code);
+  const sellerChannel = findSellerChannelRecord(code);
+  const reservation = sellerChannel?.reservation ?? RESERVATION_DETAILS.find((item) => item.code === code);
   if (!reservation) return [];
-  const base = RESERVATION_HISTORY[code] ?? [
+  const base = sellerChannel?.history ?? RESERVATION_HISTORY[code] ?? [
     {
       id: `h-${code}-0`,
       at: reservation.reservedAt,
@@ -1312,21 +1414,315 @@ const RESERVATION_REFUNDS: Record<string, ReservationRefund[]> = {
   ],
 };
 
-export function getReservationList(): ReservationListItem[] {
-  return RESERVATION_DETAILS.map((item) => withSessionEdits(item));
+function withStatusClasses(
+  item: Omit<ReservationListItem, "reserveStatusClass" | "paymentStatusClass">,
+): ReservationListItem {
+  return {
+    ...item,
+    reserveStatusClass: reserveStatusBadgeClass(item.reserveStatus),
+    paymentStatusClass: paymentStatusBadgeClass(item.paymentStatus),
+  };
+}
+
+/**
+ * 예약목록.
+ * includeSellerChannel: 판매점 관리자에서 접수된 공급여행사 상품 예약(판매점 예약 Mock 연동) 포함 여부.
+ * 운영배정 · 정산 · 탑승지 데이터는 기존 예약 기준을 유지하기 위해 기본값은 제외합니다.
+ */
+export function getReservationList({ includeSellerChannel = false }: { includeSellerChannel?: boolean } = {}): ReservationListItem[] {
+  const sellerChannel = includeSellerChannel
+    ? listSellerChannelRecords().map((record) => withSessionEdits(withStatusClasses(record.reservation)))
+    : [];
+  return [...sellerChannel, ...RESERVATION_DETAILS.map((item) => withSessionEdits(item))];
 }
 
 export function getReservationDetail(id: string): ReservationDetail | undefined {
+  const sellerChannel = findSellerChannelRecord(id);
+  if (sellerChannel) return withSessionEdits(withStatusClasses(sellerChannel.reservation));
   const reservation = RESERVATION_DETAILS.find((item) => item.code === id);
   return reservation ? withSessionEdits(reservation) : undefined;
 }
 
 export function getReservationPayments(code: string): ReservationPayment[] {
-  return (RESERVATION_PAYMENTS[code] ?? []).map((item) => ({ ...item }));
+  const list = findSellerChannelRecord(code)?.payments ?? RESERVATION_PAYMENTS[code] ?? [];
+  return list.map((item) => ({ ...item }));
 }
 
+/** 세션 내 추가된 환불내역 (SAMPLE · 새로고침 시 초기화) */
+const sessionReservationRefunds: Record<string, ReservationRefund[]> = {};
+
 export function getReservationRefunds(code: string): ReservationRefund[] {
-  return (RESERVATION_REFUNDS[code] ?? []).map((item) => ({ ...item }));
+  const list = findSellerChannelRecord(code)?.refunds ?? RESERVATION_REFUNDS[code] ?? [];
+  return [...(sessionReservationRefunds[code] ?? []), ...list].map((item) => ({ ...item }));
+}
+
+/** 판매점 예약 환불단계: 취소승인 후 환불대기 → (환불실패) → 환불완료 / 환불없음 */
+export type SellerRefundStage = "환불대기" | "환불실패" | "환불완료" | "환불없음";
+
+export function getSellerRefundStage(request: ReservationSellerCancelRequest | undefined): SellerRefundStage | null {
+  if (!request || !request.approval) return null;
+  if (request.refund) return request.refund.status;
+  return request.status === "취소승인" ? "환불대기" : null;
+}
+
+/** 취소승인 예약의 다음 처리: 환불처리 · 환불 재시도 · 환불 없이 취소완료 (결제 0원 / 환불예정 0원) */
+export type SellerRefundMode = "refund" | "retry" | "completeUnpaid" | "completeNoRefund";
+
+export function getSellerRefundMode(reservation: Pick<ReservationDetail, "paidAmount" | "sellerCancelRequest">): SellerRefundMode | null {
+  const request = reservation.sellerCancelRequest;
+  if (!request?.approval || request.status !== "취소승인") return null;
+  if (parseKrw(reservation.paidAmount) === 0) return "completeUnpaid";
+  if (request.approval.refundAmount === 0) return "completeNoRefund";
+  return request.refund?.status === "환불실패" ? "retry" : "refund";
+}
+
+function addMinutesToTimestamp(value: string, minutes: number) {
+  const [date, time = "00:00"] = value.split(" ");
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, hour, minute + minutes)).toISOString().slice(0, 16).replace("T", " ");
+}
+
+/**
+ * 환불처리 Mock — 확정된 환불예정금액 전체를 한 번에 처리합니다. (부분환불 없음)
+ * 성공: 결제상태 환불완료 → 예약상태 취소완료 / 실패: 예약상태 취소승인 · 결제상태 유지
+ */
+export function processSellerRefund(
+  code: string,
+  input: {
+    method: ReservationSellerRefundMethod;
+    memo: string;
+    bankAccount: ReservationSellerRefund["bankAccount"];
+    fail: boolean;
+  },
+  actor: ReservationActor,
+  attemptAt: string,
+): "완료" | "실패" | null {
+  const reservation = getReservationDetail(code);
+  const request = reservation?.sellerCancelRequest;
+  if (!reservation || !request?.approval) return null;
+  const mode = getSellerRefundMode(reservation);
+  if (mode !== "refund" && mode !== "retry") return null;
+
+  const amount = request.approval.refundAmount;
+  const previousAttempts = request.refund?.attempts ?? [];
+  const timeline = reservation.statusTimeline ?? [];
+  const attemptEntry: ReservationStatusTimelineEntry = {
+    at: attemptAt,
+    label: mode === "retry" ? "환불 재시도" : "환불처리 시도",
+    actor: actor.name,
+    tone: "info",
+    note: `${input.method} · ${formatKrw(amount)}`,
+  };
+
+  if (input.fail) {
+    saveReservationEdits(code, {
+      sellerCancelRequest: {
+        ...request,
+        refund: {
+          status: "환불실패",
+          method: input.method,
+          amount,
+          refundedAt: null,
+          processedBy: actor,
+          memo: input.memo,
+          bankAccount: input.bankAccount,
+          attempts: [...previousAttempts, { at: attemptAt, result: "실패", method: input.method, amount, processedBy: actor }],
+          completedAt: null,
+        },
+      },
+      statusTimeline: [
+        ...timeline,
+        attemptEntry,
+        { at: attemptAt, label: "환불실패", actor: actor.name, tone: "danger", note: "환불정보 확인 후 재처리 필요" },
+      ],
+    });
+    addReservationHistory(code, [
+      { at: attemptAt, actor, type: "reservation_cancel", summary: `환불처리 실패 · ${input.method} · ${formatKrw(amount)}` },
+    ]);
+    return "실패";
+  }
+
+  const refundedAt = addMinutesToTimestamp(attemptAt, 1);
+  saveReservationEdits(code, {
+    reserveStatus: "취소완료",
+    reserveStatusClass: reserveStatusBadgeClass("취소완료"),
+    paymentStatus: "환불완료",
+    paymentStatusClass: paymentStatusBadgeClass("환불완료"),
+    unpaidAmount: formatKrw(0),
+    sellerCancelRequest: {
+      ...request,
+      status: "취소완료",
+      refund: {
+        status: "환불완료",
+        method: input.method,
+        amount,
+        refundedAt,
+        processedBy: actor,
+        memo: input.memo,
+        bankAccount: input.bankAccount,
+        attempts: [...previousAttempts, { at: refundedAt, result: "완료", method: input.method, amount, processedBy: actor }],
+        completedAt: refundedAt,
+      },
+    },
+    statusTimeline: [
+      ...timeline,
+      attemptEntry,
+      { at: refundedAt, label: `${actor.agency} 환불완료`, actor: actor.name, tone: "gray", note: `${input.method} · ${formatKrw(amount)}` },
+      { at: refundedAt, label: "예약 취소완료", actor: actor.name, tone: "gray" },
+    ],
+  });
+  const payments = getReservationPayments(code);
+  sessionReservationRefunds[code] = [
+    {
+      id: `ref-${code}-s${(sessionReservationRefunds[code]?.length ?? 0) + 1}`,
+      refundedAt: refundedAt.replace(/-/g, "."),
+      refundNumber: `REF-${code.replace(/^RSV-/, "")}-S1`,
+      paymentNumber: payments[0]?.paymentNumber ?? "-",
+      method: input.method === "계좌환불" ? "계좌환불" : "원결제 취소",
+      amount,
+      status: "환불완료",
+      reason: `예약 취소승인 · ${request.reason}`,
+      processedBy: actor.name,
+    },
+    ...(sessionReservationRefunds[code] ?? []),
+  ];
+  addReservationHistory(code, [
+    {
+      at: refundedAt,
+      actor,
+      type: "payment_status_change",
+      summary: `환불완료 · ${input.method} · ${formatKrw(amount)}${input.memo ? ` · ${input.memo}` : ""}`,
+      changes: [{ label: "결제상태", before: reservation.paymentStatus, after: "환불완료" }],
+    },
+    {
+      at: refundedAt,
+      actor,
+      type: "reservation_status_change",
+      summary: "환불완료에 따라 예약 취소완료",
+      changes: [{ label: "예약상태", before: reservation.reserveStatus, after: "취소완료" }],
+    },
+  ]);
+  return "완료";
+}
+
+/** 결제금액 0원 또는 환불예정금액 0원 — 환불 없이 취소완료 (결제상태는 유지) */
+export function completeSellerCancelWithoutRefund(code: string, actor: ReservationActor, completedAt: string) {
+  const reservation = getReservationDetail(code);
+  const request = reservation?.sellerCancelRequest;
+  if (!reservation || !request?.approval) return false;
+  const mode = getSellerRefundMode(reservation);
+  if (mode !== "completeUnpaid" && mode !== "completeNoRefund") return false;
+  const note = mode === "completeUnpaid" ? "결제금액 없음 · 환불 없이 취소완료" : "환불예정금액 0원 · 별도 환불 없음";
+  saveReservationEdits(code, {
+    reserveStatus: "취소완료",
+    reserveStatusClass: reserveStatusBadgeClass("취소완료"),
+    unpaidAmount: formatKrw(0),
+    sellerCancelRequest: {
+      ...request,
+      status: "취소완료",
+      refund: {
+        status: "환불없음",
+        method: null,
+        amount: 0,
+        refundedAt: null,
+        processedBy: actor,
+        memo: "",
+        bankAccount: null,
+        attempts: request.refund?.attempts ?? [],
+        completedAt,
+      },
+    },
+    statusTimeline: [
+      ...(reservation.statusTimeline ?? []),
+      { at: completedAt, label: "예약 취소완료", actor: actor.name, tone: "gray", note },
+    ],
+  });
+  addReservationHistory(code, [
+    {
+      at: completedAt,
+      actor,
+      type: "reservation_status_change",
+      summary: note,
+      changes: [{ label: "예약상태", before: reservation.reserveStatus, after: "취소완료" }],
+    },
+  ]);
+  return true;
+}
+
+/**
+ * 판매점 취소요청 승인 (SAMPLE).
+ * 예약상태만 취소승인으로 변경 — 결제상태 · 결제금액은 유지하고 환불 · 정산 반영은 다음 단계에서 처리합니다.
+ */
+export function approveSellerCancelRequest(
+  code: string,
+  input: { recommendedFee: number; cancellationFee: number; refundAmount: number; memo: string },
+  actor: ReservationActor,
+  processedAt: string,
+) {
+  const reservation = getReservationDetail(code);
+  const request = reservation?.sellerCancelRequest;
+  if (!reservation || !request || request.status !== "검토대기") return false;
+  const actorLabel = actor.name;
+  saveReservationEdits(code, {
+    reserveStatus: "취소승인",
+    reserveStatusClass: reserveStatusBadgeClass("취소승인"),
+    sellerCancelRequest: { ...request, status: "취소승인", approval: { ...input, processedAt, processedBy: actor } },
+    statusTimeline: [
+      ...(reservation.statusTimeline ?? []),
+      {
+        at: processedAt,
+        label: `${actor.agency} 취소승인`,
+        actor: actorLabel,
+        tone: "warn",
+        note: `취소수수료 ${formatKrw(input.cancellationFee)} · 환불예정 ${formatKrw(input.refundAmount)}`,
+      },
+    ],
+  });
+  addReservationHistory(code, [
+    {
+      at: processedAt,
+      actor,
+      type: "reservation_status_change",
+      summary: `${request.sellerName} 취소요청 승인 · 취소수수료 ${formatKrw(input.cancellationFee)} · 환불예정 ${formatKrw(input.refundAmount)}${input.memo ? ` · ${input.memo}` : ""}`,
+      changes: [{ label: "예약상태", before: reservation.reserveStatus, after: "취소승인" }],
+    },
+  ]);
+  return true;
+}
+
+/** 판매점 취소요청 거절 (SAMPLE) — 취소요청 전 예약상태로 복원하고 처리이력은 유지합니다. */
+export function rejectSellerCancelRequest(
+  code: string,
+  input: { reason: string; reasonDetail: string | null },
+  actor: ReservationActor,
+  processedAt: string,
+) {
+  const reservation = getReservationDetail(code);
+  const request = reservation?.sellerCancelRequest;
+  if (!reservation || !request || request.status !== "검토대기") return false;
+  const restored = request.previousReservationStatus;
+  const reasonText = input.reasonDetail ? `${input.reason} · ${input.reasonDetail}` : input.reason;
+  saveReservationEdits(code, {
+    reserveStatus: restored,
+    reserveStatusClass: reserveStatusBadgeClass(restored),
+    sellerCancelRequest: { ...request, status: "취소거절", rejection: { ...input, processedAt, processedBy: actor } },
+    statusTimeline: [
+      ...(reservation.statusTimeline ?? []),
+      { at: processedAt, label: `${actor.agency} 취소거절`, actor: actor.name, tone: "danger", note: reasonText },
+      { at: processedAt, label: `${restored} 유지`, actor: actor.name, tone: reserveStatusBadgeClass(restored) },
+    ],
+  });
+  addReservationHistory(code, [
+    {
+      at: processedAt,
+      actor,
+      type: "reservation_status_change",
+      summary: `${request.sellerName} 취소요청 거절 · ${reasonText}`,
+      changes: [{ label: "예약상태", before: reservation.reserveStatus, after: restored }],
+    },
+  ]);
+  return true;
 }
 
 export function formatReservationPeople(reservation: ReservationDetail) {

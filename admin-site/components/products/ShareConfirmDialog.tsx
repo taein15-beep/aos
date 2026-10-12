@@ -9,6 +9,8 @@ export type ShareConfirmDialogState = {
   onConfirm: () => void;
   /** 확인 전 함께 보여줄 요약 항목 (선택) */
   details?: { label: string; value: string }[];
+  /** 위험 동작(판매중지 등) 확인 버튼 강조 */
+  confirmTone?: "danger";
 };
 
 export function ShareConfirmDialog({
@@ -49,7 +51,11 @@ export function ShareConfirmDialog({
           <button type="button" className="secondary" onClick={onClose}>
             취소
           </button>
-          <button type="button" className="primary" onClick={dialog.onConfirm}>
+          <button
+            type="button"
+            className={dialog.confirmTone === "danger" ? "primary is-danger" : "primary"}
+            onClick={dialog.onConfirm}
+          >
             {dialog.confirmLabel}
           </button>
         </div>

@@ -27,9 +27,17 @@ export const SELLER_MENU: SellerMenuItem[] = [
 ];
 
 /** 메뉴 하위 화면 — Breadcrumb `상위 메뉴 / 하위 화면` 표시용 */
-export const SELLER_SUB_PAGES: { href: string; label: string }[] = [
+export const SELLER_SUB_PAGES: { href: string; label: string; prefix?: boolean }[] = [
   { href: `${SELLER_ADMIN_BASE_PATH}/suppliers/add`, label: "공급여행사 추가" },
+  { href: `${SELLER_ADMIN_BASE_PATH}/products/`, label: "상품상세", prefix: true },
+  { href: `${SELLER_ADMIN_BASE_PATH}/reservations/`, label: "예약상세", prefix: true },
 ];
+
+export function findSellerSubPage(pathname: string) {
+  return SELLER_SUB_PAGES.find((item) =>
+    item.prefix ? pathname.startsWith(item.href) && pathname.length > item.href.length : item.href === pathname,
+  );
+}
 
 /** 향후 로그인 라우트 (STEP 2+에서 구현) */
 export const SELLER_LOGIN_PATH = `${SELLER_ADMIN_BASE_PATH}/login`;
