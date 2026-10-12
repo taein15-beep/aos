@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft, ChevronDown, Phone, Search, X } from "lucide-react";
 import { ProductAdminShell } from "@/components/products/ProductAdminShell";
+import { GuideOperationPhaseBadge } from "@/components/guide/GuideOperationPhaseBadge";
 import { ShareConfirmDialog, type ShareConfirmDialogState } from "@/components/products/ShareConfirmDialog";
 import { useQueryParam } from "@/components/settlements/SettlementParts";
 import {
@@ -22,11 +23,12 @@ import {
 } from "@/components/guide/GuideVehicleParts";
 import {
   GUIDE_BOARDING_STATUS_META,
-  GUIDE_DEPARTURE_STATUS_BADGE,
   GUIDE_STAFF_ROLE_LABEL,
   formatGuideDepartureDate,
   formatGuideSeat,
   getGuideAssignment,
+  getGuidePassengerPoint,
+  getGuidePassengerPointOptions,
   getGuideBoardingRecord,
   getGuideDefaultVehicleFilter,
   getGuideLeadStaff,
@@ -36,6 +38,7 @@ import {
   getGuideSegmentVehicles,
   getGuideStaff,
   maskGuidePhone,
+  saveGuideBoardingSession,
   summarizeGuideBoarding,
   type GuideBoardingDisplayStatus,
   type GuideBoardingFilter,
@@ -79,7 +82,8 @@ function toStatusFilter(value: string): GuideBoardingFilter {
 
 function formatRecordDetail(record: GuideBoardingRecord, status: GuideBoardingDisplayStatus) {
   if (status === "excluded") return "이전 구간 미탑승";
-  if (status === "no_show") return record.reason === "기타" && record.memo ? `기타 · ${record.memo}` : record.reason ?? "";
+  if (status === "no_show")
+    return record.reason === "기타" && record.memo ? `기타 · ${record.memo}` : (record.reason ?? "");
   return "";
 }
 
@@ -100,12 +104,10 @@ export default function GuideCustomersPage() {
   return (
     <ProductAdminShell
       activeMenu="예약관리"
-      currentChild=""
+      currentChild="가이드 운영"
       breadcrumb={
         <>
           <span>예약관리</span>
-          <b>/</b>
-          <span>출발상품</span>
           <b>/</b>
           <span>가이드 운영</span>
           <b>/</b>
@@ -154,13 +156,18 @@ function GuideCustomersBody({
   const [statusParam, setStatusParam] = useQueryParam("status", "all");
   const [segmentParam, setSegmentParam] = useQueryParam("segment", segments[0]?.key ?? "");
   const status = toStatusFilter(statusParam);
-  const segmentIndex = Math.max(0, segments.findIndex((item) => item.key === segmentParam));
+  const segmentIndex = Math.max(
+    0,
+    segments.findIndex((item) => item.key === segmentParam),
+  );
   const segment = segments[segmentIndex];
   const [selected, setSelected] = useState<string[]>([]);
   const [expanded, setExpanded] = useState<string[]>([]);
   const [activePassenger, setActivePassenger] = useState<string | null>(null);
   const [dialog, setDialog] = useState<ShareConfirmDialogState | null>(null);
-  const [noShowTarget, setNoShowTarget] = useState<{ passenger: GuidePassenger; group: GuideReservationGroup } | null>(null);
+  const [noShowTarget, setNoShowTarget] = useState<{ passenger: GuidePassenger; group: GuideReservationGroup } | null>(
+    null,
+  );
   const [vehicleTarget, setVehicleTarget] = useState<GuidePassenger | null>(null);
   const leadStaff = getGuideLeadStaff(departure);
   const [viewerId, setViewerId] = useState(leadStaff?.id ?? departure.staff[0]?.id ?? "");
@@ -171,7 +178,8 @@ function GuideCustomersBody({
 
   const passengers = useMemo(() => groups.flatMap((group) => group.passengers), [groups]);
   const statusOf = (passenger: GuidePassenger) => getGuideSegmentStatus(passenger, segments, segmentIndex);
-  const assignmentOf = (passenger: GuidePassenger, segmentKey = segment.key) => getGuideAssignment(passenger, segmentKey);
+  const assignmentOf = (passenger: GuidePassenger, segmentKey = segment.key) =>
+    getGuideAssignment(passenger, segmentKey);
   const inVehicle = (passenger: GuidePassenger, segmentKey = segment.key) =>
     vehicleFilter === "all" || assignmentOf(passenger, segmentKey).vehicleId === vehicleFilter;
   const scopePassengers = passengers.filter((item) => inVehicle(item));
@@ -207,18 +215,22 @@ function GuideCustomersBody({
     return statusOf(passenger) === filter;
   };
 
+  /** 탑승지 필터는 탑승객별 지정 탑승지 기준입니다. (한 예약 안에서 탑승지가 다를 수 있음) */
+  const inPoint = (passenger: GuidePassenger) => point === "all" || getGuidePassengerPoint(passenger) === point;
+  const inScope = (passenger: GuidePassenger) => inVehicle(passenger) && inPoint(passenger);
   const pointCounts = Object.fromEntries(
     departure.boardingPoints.map((item) => [
       item.name,
-      groups
-        .filter((group) => group.boardingPoint === item.name)
-        .reduce((sum, group) => sum + group.passengers.filter((passenger) => inVehicle(passenger)).length, 0),
+      passengers.filter((passenger) => inVehicle(passenger) && getGuidePassengerPoint(passenger) === item.name).length,
     ]),
   ) as Record<string, number>;
-  const pointGroups = point === "all" ? groups : groups.filter((group) => group.boardingPoint === point);
-  const pointPassengers = pointGroups.flatMap((group) => group.passengers).filter((item) => inVehicle(item));
+  const pointGroups = point === "all" ? groups : groups.filter((group) => group.passengers.some(inPoint));
+  const pointPassengers = pointGroups.flatMap((group) => group.passengers).filter(inScope);
   const statusCounts = Object.fromEntries(
-    STATUS_FILTERS.map((item) => [item.key, pointPassengers.filter((passenger) => matchesStatus(passenger, item.key)).length]),
+    STATUS_FILTERS.map((item) => [
+      item.key,
+      pointPassengers.filter((passenger) => matchesStatus(passenger, item.key)).length,
+    ]),
   ) as Record<GuideBoardingFilter, number>;
 
   const trimmedKeyword = keyword.trim();
@@ -231,14 +243,14 @@ function GuideCustomersBody({
 
   const groupViews: GroupView[] = pointGroups
     .map((group) => {
-      const inScope = group.passengers.filter((item) => inVehicle(item));
-      /** 예약 일부만 선택 차량에 있으면 해당 탑승객만 단독 행으로 표시합니다. */
-      const standaloneMode = filterActive || inScope.length !== group.passengers.length;
+      const scoped = group.passengers.filter(inScope);
+      /** 예약 일부만 선택 차량·탑승지에 있으면 해당 탑승객만 단독 행으로 표시합니다. */
+      const standaloneMode = filterActive || scoped.length !== group.passengers.length;
       return {
         group,
         standaloneMode,
         visible: standaloneMode
-          ? inScope.filter((item) => matchesStatus(item, status) && keywordMatches(group, item))
+          ? scoped.filter((item) => matchesStatus(item, status) && keywordMatches(group, item))
           : group.passengers,
       };
     })
@@ -255,7 +267,10 @@ function GuideCustomersBody({
       standalone,
     });
     if (!standaloneMode) {
-      return [toRow(leader, false), ...(expanded.includes(group.id) ? companions.map((item) => toRow(item, false)) : [])];
+      return [
+        toRow(leader, false),
+        ...(expanded.includes(group.id) ? companions.map((item) => toRow(item, false)) : []),
+      ];
     }
     return visible.map((item) => toRow(item, true));
   });
@@ -309,7 +324,10 @@ function GuideCustomersBody({
         confirmLabel: "변경 적용",
         details: [
           { label: "탑승객", value: passenger.name },
-          { label: "변경", value: `${before} ${formatGuideSeat(current.seat)} → ${after} ${formatGuideSeat(next.seat)}` },
+          {
+            label: "변경",
+            value: `${before} ${formatGuideSeat(current.seat)} → ${after} ${formatGuideSeat(next.seat)}`,
+          },
         ],
         onConfirm: () => applyAssignment(passenger, next),
       });
@@ -330,14 +348,14 @@ function GuideCustomersBody({
   };
 
   const setRecord = (ids: string[], record: GuideBoardingRecord) => {
-    setGroups((current) =>
-      current.map((group) => ({
-        ...group,
-        passengers: group.passengers.map((item) =>
-          ids.includes(item.id) ? { ...item, boarding: { ...item.boarding, [segment.key]: record } } : item,
-        ),
-      })),
-    );
+    const next = groups.map((group) => ({
+      ...group,
+      passengers: group.passengers.map((item) =>
+        ids.includes(item.id) ? { ...item, boarding: { ...item.boarding, [segment.key]: record } } : item,
+      ),
+    }));
+    setGroups(next);
+    saveGuideBoardingSession(departure.key, next);
     if (record.status !== "unchecked") setSelected((current) => current.filter((id) => !ids.includes(id)));
   };
 
@@ -357,7 +375,8 @@ function GuideCustomersBody({
     onUndoBoarding: (passenger) =>
       setDialog({
         title: "탑승확인 취소",
-        message: "탑승확인을 취소하면 '미확인' 상태로 되돌아갑니다.\n미탑승 처리가 아니며, 예약인원과 예약상태는 변경되지 않습니다.",
+        message:
+          "탑승확인을 취소하면 '미확인' 상태로 되돌아갑니다.\n미탑승 처리가 아니며, 예약인원과 예약상태는 변경되지 않습니다.",
         confirmLabel: "탑승확인 취소",
         details: [
           { label: "탑승객", value: passenger.name },
@@ -438,9 +457,9 @@ function GuideCustomersBody({
       <main className="content member-web-detail-content guide-ops-content guide-customers-content">
         <section className="panel guide-ops-hero guide-customers-hero" aria-labelledby="guide-customers-title">
           <div className="guide-ops-hero-main">
-            <p className="member-web-breadcrumb">예약관리 &gt; 출발상품 &gt; 가이드 운영 &gt; 고객명단</p>
+            <p className="member-web-breadcrumb">예약관리 &gt; 가이드 운영 &gt; 고객명단</p>
             <div className="guide-ops-hero-status">
-              <span className={`badge ${GUIDE_DEPARTURE_STATUS_BADGE[departure.status]}`}>{departure.status}</span>
+              <GuideOperationPhaseBadge departure={departure} />
               <span className="guide-ops-code">{departure.productCode}</span>
             </div>
             <h1 id="guide-customers-title">{departure.productName}</h1>
@@ -467,17 +486,19 @@ function GuideCustomersBody({
             <label className="guide-viewer-select">
               <span>화면 기준 (SAMPLE)</span>
               <select value={viewerId} onChange={(event) => changeViewer(event.target.value)}>
-                {departure.staff.filter((staff) => staff.roles.length > 0).map((staff) => {
-                  const ownVehicle = departure.vehicles.find((item) => item.guideId === staff.id);
-                  const role = staff.roles.includes("lead")
-                    ? GUIDE_STAFF_ROLE_LABEL.lead
-                    : `${ownVehicle?.name ?? ""} 담당`;
-                  return (
-                    <option key={staff.id} value={staff.id}>
-                      {staff.name} · {role}
-                    </option>
-                  );
-                })}
+                {departure.staff
+                  .filter((staff) => staff.roles.length > 0)
+                  .map((staff) => {
+                    const ownVehicle = departure.vehicles.find((item) => item.guideId === staff.id);
+                    const role = staff.roles.includes("lead")
+                      ? GUIDE_STAFF_ROLE_LABEL.lead
+                      : `${ownVehicle?.name ?? ""} 담당`;
+                    return (
+                      <option key={staff.id} value={staff.id}>
+                        {staff.name} · {role}
+                      </option>
+                    );
+                  })}
               </select>
             </label>
             <button type="button" className="secondary" onClick={onBack}>
@@ -494,16 +515,28 @@ function GuideCustomersBody({
           onChange={changeSegment}
         />
 
-        <GuideVehicleTabs stats={vehicleStats} total={passengers.length} active={vehicleFilter} onChange={changeVehicle} />
+        <GuideVehicleTabs
+          stats={vehicleStats}
+          total={passengers.length}
+          active={vehicleFilter}
+          onChange={changeVehicle}
+        />
 
         {selectedVehicleStat ? (
           <GuideVehicleInfo stat={selectedVehicleStat} segmentLabel={segment.label} />
         ) : (
-          <GuideFleetOverview stats={vehicleStats} total={passengers.length} segmentLabel={segment.label} onSelect={changeVehicle} />
+          <GuideFleetOverview
+            stats={vehicleStats}
+            total={passengers.length}
+            segmentLabel={segment.label}
+            onSelect={changeVehicle}
+          />
         )}
 
         <section className="guide-ops-kpis guide-customers-kpis" aria-label={`${scopeLabel} ${segment.label} 탑승현황`}>
-          <article className={`member-web-detail-kpi guide-ops-kpi guide-customers-rate ${summary.complete ? "is-success" : "is-warn"}`}>
+          <article
+            className={`member-web-detail-kpi guide-ops-kpi guide-customers-rate ${summary.complete ? "is-success" : "is-warn"}`}
+          >
             <span>
               <span className={`badge ${summary.complete ? "success" : "warn"} guide-customers-progress-state`}>
                 {summary.complete ? "✓ 전체 탑승 확인 완료" : "탑승 확인 진행중"}
@@ -561,13 +594,20 @@ function GuideCustomersBody({
           </button>
         </section>
 
-        <section className="panel guide-customers-panel" id={LIST_SECTION_ID} aria-labelledby="guide-customers-list-title">
+        <section
+          className="panel guide-customers-panel"
+          id={LIST_SECTION_ID}
+          aria-labelledby="guide-customers-list-title"
+        >
           <div className="guide-customers-toolbar">
             <div className="guide-ops-section-head">
               <h2 id="guide-customers-list-title">
                 고객명단 · {segment.label} · {selectedVehicle ? selectedVehicle.name : "전체 차량"}
               </h2>
-              <span>탑승상태는 예약상태와 별도로 구간별·탑승객별로 관리됩니다. 연락처는 대표예약자 기준이며 마스킹되어 표시됩니다.</span>
+              <span>
+                탑승상태는 예약상태와 별도로 구간별·탑승객별로 관리됩니다. 연락처는 대표예약자 기준이며 마스킹되어
+                표시됩니다.
+              </span>
             </div>
             <label className="guide-customers-search">
               <Search size={16} aria-hidden="true" />
@@ -749,10 +789,14 @@ function GuideCustomersBody({
           key={`${noShowTarget.passenger.id}-${segment.key}`}
           target={{
             passengerName: noShowTarget.passenger.name,
-            reservationPoint: noShowTarget.group.boardingPoint,
+            reservationPoint: getGuidePassengerPoint(noShowTarget.passenger) || noShowTarget.group.boardingPoint,
             segment,
           }}
-          boardingPoints={departure.boardingPoints.map((item) => item.name)}
+          boardingPoints={
+            getGuidePassengerPointOptions(departure, noShowTarget.passenger).length
+              ? getGuidePassengerPointOptions(departure, noShowTarget.passenger)
+              : departure.boardingPoints.map((item) => item.name)
+          }
           onClose={() => setNoShowTarget(null)}
           onSubmit={submitNoShow}
         />
@@ -778,7 +822,13 @@ type PassengerHandlers = {
 function summarizeGroup(group: GuideReservationGroup, statusOf: PassengerHandlers["statusOf"]) {
   const statuses = group.passengers.map(statusOf);
   const count = (status: GuideBoardingDisplayStatus) => statuses.filter((item) => item === status).length;
-  return { total: group.passengers.length, boarded: count("boarded"), unchecked: count("unchecked"), noShow: count("no_show"), excluded: count("excluded") };
+  return {
+    total: group.passengers.length,
+    boarded: count("boarded"),
+    unchecked: count("unchecked"),
+    noShow: count("no_show"),
+    excluded: count("excluded"),
+  };
 }
 
 function GroupStats({ group, statusOf }: { group: GuideReservationGroup; statusOf: PassengerHandlers["statusOf"] }) {
@@ -812,7 +862,17 @@ function PassengerNotes({ notes }: { notes?: string[] }) {
   );
 }
 
-function CallLink({ group, leader, label = "전화", compact }: { group: GuideReservationGroup; leader: GuidePassenger; label?: string; compact?: boolean }) {
+function CallLink({
+  group,
+  leader,
+  label = "전화",
+  compact,
+}: {
+  group: GuideReservationGroup;
+  leader: GuidePassenger;
+  label?: string;
+  compact?: boolean;
+}) {
   return (
     <a
       className={`guide-customers-call ${compact ? "is-compact" : ""}`}
@@ -828,7 +888,10 @@ function CallLink({ group, leader, label = "전화", compact }: { group: GuideRe
 function SelectBox({ passenger, handlers }: { passenger: GuidePassenger; handlers: PassengerHandlers }) {
   const selectable = handlers.statusOf(passenger) === "unchecked";
   return (
-    <label className="guide-customers-check" title={selectable ? undefined : "미확인 상태의 탑승객만 선택할 수 있습니다."}>
+    <label
+      className="guide-customers-check"
+      title={selectable ? undefined : "미확인 상태의 탑승객만 선택할 수 있습니다."}
+    >
       <input
         type="checkbox"
         checked={handlers.selected.includes(passenger.id)}
@@ -853,14 +916,22 @@ function BoardingActions({
   if (status === "excluded") return <span className="guide-customers-muted">대상 제외</span>;
   if (status === "boarded") {
     return (
-      <button type="button" className="secondary guide-customers-undo" onClick={() => handlers.onUndoBoarding(passenger)}>
+      <button
+        type="button"
+        className="secondary guide-customers-undo"
+        onClick={() => handlers.onUndoBoarding(passenger)}
+      >
         탑승확인 취소
       </button>
     );
   }
   if (status === "no_show") {
     return (
-      <button type="button" className="secondary guide-customers-undo" onClick={() => handlers.onRevertNoShow(passenger)}>
+      <button
+        type="button"
+        className="secondary guide-customers-undo"
+        onClick={() => handlers.onRevertNoShow(passenger)}
+      >
         미확인으로 변경
       </button>
     );
@@ -870,7 +941,11 @@ function BoardingActions({
       <button type="button" className="primary guide-customers-confirm" onClick={() => handlers.onConfirm(passenger)}>
         탑승확인
       </button>
-      <button type="button" className="secondary guide-customers-noshow" onClick={() => handlers.onNoShow(passenger, group)}>
+      <button
+        type="button"
+        className="secondary guide-customers-noshow"
+        onClick={() => handlers.onNoShow(passenger, group)}
+      >
         미탑승 처리
       </button>
     </>
@@ -888,12 +963,21 @@ function StatusCell({ passenger, handlers }: { passenger: GuidePassenger; handle
   );
 }
 
-function PointCell({ passenger, group, handlers }: { passenger: GuidePassenger; group: GuideReservationGroup; handlers: PassengerHandlers }) {
+function PointCell({
+  passenger,
+  group,
+  handlers,
+}: {
+  passenger: GuidePassenger;
+  group: GuideReservationGroup;
+  handlers: PassengerHandlers;
+}) {
   const record = getGuideBoardingRecord(passenger, handlers.segment.key);
   const changed = handlers.statusOf(passenger) === "boarded" && record.actualPoint;
+  const assignedPoint = getGuidePassengerPoint(passenger) || group.boardingPoint;
   return (
     <div className="guide-customers-point">
-      <span>{changed ? `예약 ${group.boardingPoint}` : group.boardingPoint}</span>
+      <span>{changed ? `예약 ${assignedPoint}` : assignedPoint}</span>
       {changed && <span className="badge info">실제 {record.actualPoint}</span>}
     </div>
   );
@@ -1047,7 +1131,7 @@ function GroupCard({
         <div className="guide-customers-card-title">
           <strong>{leader.name}</strong>
           <span>
-            대표예약자 · {group.boardingPoint} · {maskGuidePhone(group.phone)}
+            대표예약자 · {getGuidePassengerPoint(leader) || group.boardingPoint} · {maskGuidePhone(group.phone)}
           </span>
         </div>
       </div>
@@ -1094,17 +1178,17 @@ function GroupCard({
                   )}
                 </div>
                 <div className="guide-pax-extra">
-                    <span className="guide-pax-seat">
-                      <span className="badge gray">{handlers.vehicleOf(passenger)?.name ?? "미배정"}</span>
-                      <span>좌석 {formatGuideSeat(handlers.assignmentOf(passenger).seat)}</span>
-                    </span>
-                    {detail && <small>{detail}</small>}
-                    {status === "boarded" && record.actualPoint && (
-                      <small>
-                        예약 {group.boardingPoint} → <b>실제 {record.actualPoint}</b>
-                      </small>
-                    )}
-                    {hasNotes(passenger) && <PassengerNotes notes={passenger.notes} />}
+                  <span className="guide-pax-seat">
+                    <span className="badge gray">{handlers.vehicleOf(passenger)?.name ?? "미배정"}</span>
+                    <span>좌석 {formatGuideSeat(handlers.assignmentOf(passenger).seat)}</span>
+                  </span>
+                  {detail && <small>{detail}</small>}
+                  {status === "boarded" && record.actualPoint && (
+                    <small>
+                      예약 {getGuidePassengerPoint(passenger) || group.boardingPoint} → <b>실제 {record.actualPoint}</b>
+                    </small>
+                  )}
+                  {hasNotes(passenger) && <PassengerNotes notes={passenger.notes} />}
                 </div>
                 {open && status !== "excluded" && (
                   <div className="guide-pax-actions">

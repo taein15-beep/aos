@@ -904,7 +904,7 @@ function buildGuideTourReservations(): ReservationListItem[] {
       unpaidAmount: "0원",
       requestNote: seed.notes.join(" / "),
       adminMemo: "",
-      internalNote: "",
+      internalNote: seed.code.startsWith("QA-") ? "운영현황 통합관리 QA SAMPLE 예약 (실제 예약 아님)" : "",
       agency: "자사",
       boardingPoint: seed.boardingPoint,
     };

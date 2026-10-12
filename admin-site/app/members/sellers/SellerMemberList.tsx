@@ -1,45 +1,43 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { Plus, QrCode, RotateCcw, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { QrCode, RotateCcw, Search, Store } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
-  EMPTY_SELLER_LIST_FILTERS,
-  SELLER_APPROVAL_STATUS_FILTER_OPTIONS,
-  SELLER_APPROVAL_STATUS_LABELS,
-  SELLER_LIST_PAGE_SIZE,
-  SELLER_SALES_STATUS_FILTER_OPTIONS,
-  SELLER_SALES_STATUS_LABELS,
-  SELLER_TYPE_BADGE_LABELS,
-  SELLER_TYPE_FILTER_OPTIONS,
-  SELLER_TYPE_LABELS,
-  filterSellerApplications,
-  formatSellerAppliedDate,
-  formatSellerListDisplayName,
-  formatSellerListTypeSubtext,
-  formatSellerMobilePhone,
-  formatSellerPersonName,
-  getSellerListTotals,
-  loadPrototypeSellerApplications,
-  paginateSellerApplications,
-  sellerApplicationSourceShortLabel,
-  sellerApplicationStatusBadgeClass,
-  sellerApprovalStatusLabel,
-  sellerSalesSetupStatusBadgeClass,
-  sellerSalesSetupStatusLabel,
-  resolveSellerSalesStatus,
-  sellerSalesStatusBadgeClass,
-  sellerSalesStatusLabel,
-  sellerTypeBadgeClass,
-  type SellerApplication,
-  type SellerApprovalStatusCode,
-  type SellerListFilters,
-} from "@/lib/admin/members-seller-data";
+  CURRENT_SUPPLIER_NAME,
+  SELLER_RELATION_PAGE_SIZE,
+  SELLER_RELATION_STATUS_FILTERS,
+  countSellerRelations,
+  filterSellerRelations,
+  formatSellerRelationDate,
+  loadSupplierSellerRelations,
+  sellerRelationLogoText,
+  sellerRelationStatusBadgeClass,
+  type SellerRelation,
+  type SellerRelationStatus,
+  type SellerRelationStatusFilter,
+} from "@/lib/admin/members-seller-relation-data";
+import { SellerApplicationModal, SellerRelationConfirmModal, SellerRelationDrawer } from "./SellerRelationDialogs";
 
 function isMembersChildCurrent(child: string) {
   return child === "판매점관리";
 }
+
+function todayIso() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
+type DrawerConfirm = "suspend" | "resume" | null;
+
+const SUMMARY_CARDS: { filter: SellerRelationStatusFilter; label: string; tone: string }[] = [
+  { filter: "가입 판매점", label: "전체 판매점", tone: "is-total" },
+  { filter: "승인대기", label: "승인대기", tone: "is-pending" },
+  { filter: "정상", label: "정상", tone: "is-active-status" },
+  { filter: "이용중지", label: "이용중지", tone: "is-suspended" },
+];
 
 export function SellerMemberList() {
   const [collapsed, setCollapsed] = useState(false);
@@ -47,18 +45,20 @@ export function SellerMemberList() {
   const [toast, setToast] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
-  const [page, setPage] = useState(1);
   const [ready, setReady] = useState(false);
-  const [rowsAll, setRowsAll] = useState<SellerApplication[]>([]);
-  const [draft, setDraft] = useState<SellerListFilters>(EMPTY_SELLER_LIST_FILTERS);
-  const [applied, setApplied] = useState<SellerListFilters>(EMPTY_SELLER_LIST_FILTERS);
-  const [dateError, setDateError] = useState("");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [rowsAll, setRowsAll] = useState<SellerRelation[]>([]);
+  const [keyword, setKeyword] = useState("");
+  const [statusFilter, setStatusFilter] = useState<SellerRelationStatusFilter>("가입 판매점");
+  const [page, setPage] = useState(1);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false);
+  const [drawerId, setDrawerId] = useState<string | null>(null);
+  const [drawerConfirm, setDrawerConfirm] = useState<DrawerConfirm>(null);
 
-  const act = (message: string) => {
+  const act = useCallback((message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2200);
-  };
+  }, []);
 
   const toggleMenu = (label: string) =>
     setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
@@ -67,7 +67,8 @@ export function SellerMemberList() {
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
-      setRowsAll(loadPrototypeSellerApplications());
+      const emptySample = new URLSearchParams(window.location.search).get("mock") === "empty";
+      setRowsAll(emptySample ? [] : loadSupplierSellerRelations());
       setReady(true);
     });
     return () => {
@@ -75,87 +76,105 @@ export function SellerMemberList() {
     };
   }, []);
 
-  const totals = useMemo(() => getSellerListTotals(rowsAll), [rowsAll]);
-
-  const filterResult = useMemo(() => filterSellerApplications(rowsAll, applied), [rowsAll, applied]);
-
-  const filteredRows = useMemo(() => (filterResult.ok ? filterResult.rows : []), [filterResult]);
-  const pagination = useMemo(
-    () => paginateSellerApplications(filteredRows, page, SELLER_LIST_PAGE_SIZE),
-    [filteredRows, page],
+  const counts = useMemo(() => countSellerRelations(rowsAll), [rowsAll]);
+  const filteredRows = useMemo(
+    () => filterSellerRelations(rowsAll, keyword, statusFilter),
+    [rowsAll, keyword, statusFilter],
+  );
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / SELLER_RELATION_PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageRows = filteredRows.slice(
+    (currentPage - 1) * SELLER_RELATION_PAGE_SIZE,
+    currentPage * SELLER_RELATION_PAGE_SIZE,
   );
 
-  if (page !== pagination.page) {
-    setPage(pagination.page);
-  }
+  const applicationSeller = rowsAll.find((row) => row.id === applicationId) ?? null;
+  const drawerSeller = rowsAll.find((row) => row.id === drawerId) ?? null;
 
-  const search = () => {
-    const from = draft.appliedFrom.trim();
-    const to = draft.appliedTo.trim();
-    if (from && to && from > to) {
-      setDateError("가입 시작일이 종료일보다 늦을 수 없습니다.");
-      return;
-    }
-    setDateError("");
-    setApplied({ ...draft });
+  const changeStatusFilter = (next: SellerRelationStatusFilter) => {
+    setStatusFilter(next);
     setPage(1);
-    setSelectedIds([]);
-    act("검색 조건을 적용했습니다.");
   };
 
   const resetFilters = () => {
-    setDraft(EMPTY_SELLER_LIST_FILTERS);
-    setApplied(EMPTY_SELLER_LIST_FILTERS);
-    setDateError("");
+    setKeyword("");
+    setStatusFilter("가입 판매점");
     setPage(1);
-    setSelectedIds([]);
-    act("검색 조건을 초기화했습니다.");
   };
 
-  const applyApprovalQuickFilter = (approvalStatus: SellerListFilters["approvalStatus"]) => {
-    const next: SellerListFilters = { ...draft, approvalStatus };
-    setDraft(next);
-    setApplied(next);
-    setDateError("");
-    setPage(1);
-    setSelectedIds([]);
-    act(
-      approvalStatus === "전체"
-        ? "전체 판매점을 표시합니다."
-        : `${SELLER_APPROVAL_STATUS_LABELS[approvalStatus]} 신청만 표시합니다.`,
-    );
+  const updateStatus = (id: string, status: SellerRelationStatus, patch: Partial<SellerRelation> = {}) =>
+    setRowsAll((current) => current.map((row) => (row.id === id ? { ...row, ...patch, status } : row)));
+
+  const closeApplication = useCallback(() => {
+    setApplicationId(null);
+    setRejectConfirmOpen(false);
+  }, []);
+
+  const approveApplication = () => {
+    if (!applicationSeller) return;
+    updateStatus(applicationSeller.id, "정상", { joinedAt: todayIso() });
+    closeApplication();
+    act("판매점 가입이 승인되었습니다.");
   };
 
-  const applySellerTypeQuickFilter = (sellerType: SellerListFilters["sellerType"]) => {
-    const next: SellerListFilters = { ...draft, sellerType };
-    setDraft(next);
-    setApplied(next);
-    setDateError("");
-    setPage(1);
-    setSelectedIds([]);
-    act(
-      sellerType === "전체"
-        ? "전체 유형 판매점을 표시합니다."
-        : sellerType === "individual"
-          ? "개인 판매점만 표시합니다."
-          : "법인(사업자) 판매점만 표시합니다.",
-    );
+  const rejectApplication = () => {
+    if (!applicationSeller) return;
+    updateStatus(applicationSeller.id, "승인거절");
+    closeApplication();
+    act("판매점 가입신청이 거절되었습니다.");
   };
 
-  const pageIds = pagination.rows.map((row) => row.applicationId);
-  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+  const closeDrawer = useCallback(() => {
+    setDrawerId(null);
+    setDrawerConfirm(null);
+  }, []);
 
-  const togglePageSelected = (checked: boolean) => {
-    setSelectedIds((current) => {
-      if (checked) return [...new Set([...current, ...pageIds])];
-      return current.filter((id) => !pageIds.includes(id));
-    });
+  const cancelDrawerConfirm = useCallback(() => setDrawerConfirm(null), []);
+  const cancelRejectConfirm = useCallback(() => setRejectConfirmOpen(false), []);
+
+  const confirmDrawerAction = () => {
+    if (!drawerSeller || !drawerConfirm) return;
+    if (drawerConfirm === "suspend") {
+      updateStatus(drawerSeller.id, "이용중지");
+      act("판매점 이용이 중지되었습니다.");
+    } else {
+      updateStatus(drawerSeller.id, "정상");
+      act("판매점 이용이 재개되었습니다.");
+    }
+    setDrawerConfirm(null);
   };
 
-  const toggleRowSelected = (applicationId: string, checked: boolean) => {
-    setSelectedIds((current) =>
-      checked ? [...new Set([...current, applicationId])] : current.filter((id) => id !== applicationId),
-    );
+  const openRow = (row: SellerRelation) => {
+    if (row.status === "승인대기" || row.status === "승인거절") setApplicationId(row.id);
+    else setDrawerId(row.id);
+  };
+
+  const emptyMessage = () => {
+    if (rowsAll.length === 0) {
+      return {
+        title: "가입된 판매점이 없습니다.",
+        description: "판매점이 가입을 신청하면 이곳에서 확인하고 승인할 수 있습니다.",
+        reset: false,
+      };
+    }
+    if (keyword.trim()) {
+      return {
+        title: "검색조건에 맞는 판매점이 없습니다.",
+        description: "검색어 또는 상태 필터를 변경해 주세요.",
+        reset: true,
+      };
+    }
+    if (statusFilter === "가입 판매점") {
+      return {
+        title: "가입된 판매점이 없습니다.",
+        description: "판매점이 가입을 신청하면 이곳에서 확인하고 승인할 수 있습니다.",
+        reset: false,
+      };
+    }
+    if (statusFilter === "승인대기") {
+      return { title: "승인 대기 중인 판매점이 없습니다.", description: "", reset: false };
+    }
+    return { title: `${statusFilter} 상태의 판매점이 없습니다.`, description: "", reset: true };
   };
 
   return (
@@ -291,161 +310,66 @@ export function SellerMemberList() {
           <section className="page-head member-affiliate-page-head">
             <div>
               <p className="member-affiliate-breadcrumb">회원관리 &gt; 판매점관리</p>
-              <h1>판매점관리</h1>
-              <p>가입된 판매점과 가입 신청 현황을 관리하고 판매 권한 및 수수료 설정 상태를 확인합니다.</p>
-              <p className="member-affiliate-totals" aria-live="polite">
-                전체 판매점 <b>{ready ? totals.total : "—"}</b>건 · 승인대기{" "}
-                <b>{ready ? totals.pending : "—"}</b>건 · 검토중 <b>{ready ? totals.reviewing : "—"}</b>건 ·
-                보완요청 <b>{ready ? totals.supplement : "—"}</b>건 · 승인완료{" "}
-                <b>{ready ? totals.approved : "—"}</b>건
-              </p>
-              <div className="member-seller-quick-filters" role="group" aria-label="승인상태 빠른 필터">
-                {(
-                  [
-                    { value: "전체" as const, label: "전체", count: totals.total },
-                    { value: "pending" as const, label: "승인대기", count: totals.pending },
-                    { value: "reviewing" as const, label: "검토중", count: totals.reviewing },
-                    { value: "supplement_requested" as const, label: "보완요청", count: totals.supplement },
-                    { value: "approved" as const, label: "승인완료", count: totals.approved },
-                    { value: "rejected" as const, label: "승인거절", count: totals.rejected },
-                  ] satisfies {
-                    value: "전체" | SellerApprovalStatusCode;
-                    label: string;
-                    count: number;
-                  }[]
-                ).map((item) => {
-                  const active = applied.approvalStatus === item.value;
-                  return (
-                    <button
-                      key={item.value}
-                      type="button"
-                      className={`member-seller-quick-filter${active ? " is-active" : ""}`}
-                      aria-pressed={active}
-                      onClick={() => applyApprovalQuickFilter(item.value)}
-                    >
-                      {item.label}
-                      <em>{ready ? item.count : "—"}</em>
-                    </button>
-                  );
-                })}
-              </div>
+              <h1>판매점 관리</h1>
+              <p>우리 여행사에 가입한 판매점과 가입 신청 현황을 관리합니다.</p>
             </div>
           </section>
 
+          <div className="seller-relation-summary" role="group" aria-label="판매점 현황">
+            {SUMMARY_CARDS.map((card) => {
+              const active = statusFilter === card.filter;
+              const value = card.filter === "가입 판매점" ? counts.total : counts[card.filter];
+              return (
+                <button
+                  key={card.filter}
+                  type="button"
+                  className={`seller-relation-summary-card ${card.tone}${active ? " is-active" : ""}`}
+                  aria-pressed={active}
+                  onClick={() => changeStatusFilter(card.filter)}
+                >
+                  <span>{card.label}</span>
+                  <strong>{ready ? value : "—"}</strong>
+                </button>
+              );
+            })}
+          </div>
+
           <p className="member-affiliate-proto-note" role="note">
-            현재 화면은 샘플 데이터로 동작하며 홈페이지 판매점 가입신청, 이메일 및 실제 회원 데이터와 연결되지
-            않습니다.
+            {CURRENT_SUPPLIER_NAME}와 판매점 사이의 가입 및 거래 관계를 관리합니다. 판매점이 다른 공급여행사에 가입한
+            정보는 표시하지 않으며, 거래상태가 정상인 판매점만 상품공유의 판매점 추가 대상이 됩니다. (샘플 데이터 기준
+            공급여행사)
           </p>
 
-          <section className="panel member-affiliate-filter" aria-label="판매점 검색">
-            <div className="member-affiliate-filter-grid member-seller-filter-grid">
-              <label className="member-affiliate-keyword" htmlFor="seller-keyword">
-                <span>통합검색</span>
+          <section className="panel member-affiliate-filter seller-relation-filter" aria-label="판매점 검색">
+            <div className="seller-relation-filter-grid">
+              <label className="member-affiliate-keyword" htmlFor="seller-relation-keyword">
+                <span>검색</span>
                 <div>
                   <Search size={15} aria-hidden="true" />
                   <input
-                    id="seller-keyword"
-                    value={draft.keyword}
-                    onChange={(event) => setDraft((current) => ({ ...current, keyword: event.target.value }))}
-                    onKeyDown={(event) => event.key === "Enter" && search()}
-                    placeholder="판매점명, 대표자명, 신청자명, 연락처, 이메일 검색"
+                    id="seller-relation-keyword"
+                    value={keyword}
+                    onChange={(event) => {
+                      setKeyword(event.target.value);
+                      setPage(1);
+                    }}
+                    placeholder="판매점명, 판매점코드 또는 담당자 검색"
                   />
                 </div>
               </label>
-
-              <label htmlFor="seller-type">
-                <span>판매점 유형</span>
+              <label htmlFor="seller-relation-status">
+                <span>거래상태</span>
                 <select
-                  id="seller-type"
-                  value={draft.sellerType}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      sellerType: event.target.value as SellerListFilters["sellerType"],
-                    }))
-                  }
+                  id="seller-relation-status"
+                  value={statusFilter}
+                  onChange={(event) => changeStatusFilter(event.target.value as SellerRelationStatusFilter)}
                 >
-                  {SELLER_TYPE_FILTER_OPTIONS.map((option) => (
+                  {SELLER_RELATION_STATUS_FILTERS.map((option) => (
                     <option key={option} value={option}>
-                      {option === "전체"
-                        ? "전체"
-                        : option === "business"
-                          ? "사업자 판매점"
-                          : "개인 판매점"}
+                      {option}
                     </option>
                   ))}
                 </select>
-              </label>
-
-              <label htmlFor="seller-approval-status">
-                <span>승인상태</span>
-                <select
-                  id="seller-approval-status"
-                  value={draft.approvalStatus}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      approvalStatus: event.target.value as SellerListFilters["approvalStatus"],
-                    }))
-                  }
-                >
-                  {SELLER_APPROVAL_STATUS_FILTER_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option === "전체" ? "전체" : SELLER_APPROVAL_STATUS_LABELS[option]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label htmlFor="seller-sales-status">
-                <span>판매상태</span>
-                <select
-                  id="seller-sales-status"
-                  value={draft.salesStatus}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      salesStatus: event.target.value as SellerListFilters["salesStatus"],
-                    }))
-                  }
-                >
-                  {SELLER_SALES_STATUS_FILTER_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option === "전체" ? "전체" : SELLER_SALES_STATUS_LABELS[option]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="member-affiliate-period" htmlFor="seller-from">
-                <span>가입일</span>
-                <div>
-                  <input
-                    id="seller-from"
-                    type="date"
-                    value={draft.appliedFrom}
-                    aria-label="가입 시작일"
-                    aria-invalid={Boolean(dateError)}
-                    aria-describedby={dateError ? "seller-date-error" : undefined}
-                    onChange={(event) => {
-                      setDateError("");
-                      setDraft((current) => ({ ...current, appliedFrom: event.target.value }));
-                    }}
-                  />
-                  <em>~</em>
-                  <input
-                    id="seller-to"
-                    type="date"
-                    value={draft.appliedTo}
-                    aria-label="가입 종료일"
-                    aria-invalid={Boolean(dateError)}
-                    aria-describedby={dateError ? "seller-date-error" : undefined}
-                    onChange={(event) => {
-                      setDateError("");
-                      setDraft((current) => ({ ...current, appliedTo: event.target.value }));
-                    }}
-                  />
-                </div>
               </label>
             </div>
             <div className="member-affiliate-filter-actions">
@@ -453,16 +377,7 @@ export function SellerMemberList() {
                 <RotateCcw size={14} />
                 조건 초기화
               </button>
-              <button type="button" className="primary" onClick={search}>
-                <Search size={15} />
-                검색
-              </button>
             </div>
-            {dateError ? (
-              <p className="member-affiliate-date-error" id="seller-date-error" role="alert">
-                {dateError}
-              </p>
-            ) : null}
           </section>
 
           <section className="panel member-affiliate-list-panel">
@@ -471,34 +386,10 @@ export function SellerMemberList() {
                 <strong>
                   검색결과 <b aria-live="polite">{ready ? filteredRows.length : "—"}</b>건
                 </strong>
-                <div className="member-seller-type-quick" role="group" aria-label="판매점 유형 빠른 필터">
-                  {(
-                    [
-                      { value: "전체" as const, label: "전체" },
-                      { value: "individual" as const, label: "개인" },
-                      { value: "business" as const, label: "법인" },
-                    ] as const
-                  ).map((item) => {
-                    const active = applied.sellerType === item.value;
-                    return (
-                      <button
-                        key={item.value}
-                        type="button"
-                        className={`member-seller-type-quick-btn${active ? " is-active" : ""}`}
-                        aria-pressed={active}
-                        onClick={() => applySellerTypeQuickFilter(item.value)}
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <span>샘플 데이터 기준</span>
+                <span>
+                  {statusFilter === "가입 판매점" ? "승인거절 건은 승인거절 필터에서 확인할 수 있습니다." : "샘플 데이터 기준"}
+                </span>
               </div>
-              <Link href="/members/sellers/new" className="primary member-seller-register-btn">
-                <Plus size={14} aria-hidden="true" />
-                판매점등록
-              </Link>
             </div>
 
             {!ready ? (
@@ -508,177 +399,82 @@ export function SellerMemberList() {
             ) : (
               <>
                 <div className="member-affiliate-table-wrap">
-                  <table className="member-affiliate-table member-seller-table">
+                  <table className="member-affiliate-table seller-relation-table">
                     <thead>
                       <tr>
-                        <th className="member-seller-check">
-                          <input
-                            type="checkbox"
-                            aria-label="현재 페이지 전체 선택"
-                            checked={allPageSelected}
-                            disabled={pageIds.length === 0}
-                            onChange={(event) => togglePageSelected(event.target.checked)}
-                          />
-                        </th>
-                        {[
-                          "판매점명",
-                          "유형",
-                          "대표자 / 신청자",
-                          "연락처",
-                          "신청경로",
-                          "신청일",
-                          "승인상태",
-                          "판매설정",
-                          "판매상태",
-                          "관리",
-                        ].map((title) => (
+                        {["판매점", "담당자", "연락처", "가입일", "판매상품", "예약", "거래상태", "관리"].map((title) => (
                           <th key={title}>{title}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {pagination.rows.length > 0 ? (
-                        pagination.rows.map((row) => {
-                          const displayName = formatSellerListDisplayName(row);
-                          const typeSubtext = formatSellerListTypeSubtext(row);
-                          const personName = formatSellerPersonName(row);
-                          const salesStatus = resolveSellerSalesStatus(row);
-                          const canConfigureSales = row.applicationStatus === "approved";
+                      {pageRows.length > 0 ? (
+                        pageRows.map((row) => {
+                          const beforeJoin = row.status === "승인대기" || row.status === "승인거절";
                           return (
-                            <tr key={row.applicationId}>
-                              <td className="member-seller-check">
-                                <input
-                                  type="checkbox"
-                                  aria-label={`${displayName} 선택`}
-                                  checked={selectedIds.includes(row.applicationId)}
-                                  onChange={(event) =>
-                                    toggleRowSelected(row.applicationId, event.target.checked)
-                                  }
-                                />
-                              </td>
-                              <td className="member-affiliate-name">
-                                <Link
-                                  href={`/members/sellers/${row.applicationId}`}
-                                  title={displayName}
-                                  aria-label={`${displayName} 상세보기`}
-                                >
-                                  <b>{displayName}</b>
-                                </Link>
-                              </td>
-                              <td className="member-seller-status-cell member-seller-type-cell">
-                                <div className="member-seller-type-stack">
-                                  <span
-                                    className={`badge ${sellerTypeBadgeClass(row.sellerType)}`}
-                                    title={SELLER_TYPE_LABELS[row.sellerType]}
-                                  >
-                                    {SELLER_TYPE_BADGE_LABELS[row.sellerType]}
+                            <tr key={row.id}>
+                              <td>
+                                <div className="seller-relation-name-cell">
+                                  <span className="seller-relation-logo" aria-hidden="true">
+                                    {sellerRelationLogoText(row.sellerName)}
                                   </span>
-                                  {typeSubtext ? (
-                                    <small className="member-seller-type-bizno" title={typeSubtext}>
-                                      {typeSubtext}
-                                    </small>
-                                  ) : null}
-                                </div>
-                              </td>
-                              <td className="member-seller-person">{personName}</td>
-                              <td className="member-affiliate-contact member-seller-contact">
-                                <strong>{formatSellerMobilePhone(row.contactPhone)}</strong>
-                                {row.contactEmail.trim() ? (
-                                  <small className="member-seller-email" title={row.contactEmail}>
-                                    {row.contactEmail}
-                                  </small>
-                                ) : null}
-                              </td>
-                              <td className="member-seller-status-cell member-seller-source">
-                                <span
-                                  className={`badge ${row.applicationSource === "homepage" ? "info" : "gray"}`}
-                                  title={sellerApplicationSourceShortLabel(row.applicationSource)}
-                                >
-                                  {sellerApplicationSourceShortLabel(row.applicationSource)}
-                                </span>
-                              </td>
-                              <td className="date-cell" title="가입 신청일">
-                                {formatSellerAppliedDate(row.appliedAt)}
-                              </td>
-                              <td className="member-seller-status-cell">
-                                <span
-                                  className={`badge ${sellerApplicationStatusBadgeClass(row.applicationStatus)}`}
-                                  title={`승인상태: ${sellerApprovalStatusLabel(row.applicationStatus)}`}
-                                >
-                                  {sellerApprovalStatusLabel(row.applicationStatus)}
-                                </span>
-                              </td>
-                              <td className="member-seller-status-cell">
-                                <span
-                                  className={`badge ${sellerSalesSetupStatusBadgeClass(row.salesSetupStatus)}`}
-                                  title={`판매설정: ${sellerSalesSetupStatusLabel(row.salesSetupStatus)}`}
-                                >
-                                  {sellerSalesSetupStatusLabel(row.salesSetupStatus)}
-                                </span>
-                              </td>
-                              <td className="member-seller-status-cell member-seller-sales-status">
-                                <span
-                                  className={`badge ${sellerSalesStatusBadgeClass(salesStatus)}`}
-                                  title={
-                                    salesStatus === "active"
-                                      ? "현재 실제 판매가 가능한 상태입니다."
-                                      : salesStatus === "suspended"
-                                        ? "관리자가 판매를 중지한 상태입니다."
-                                        : "판매상품·수수료 설정 전 또는 판매 개시 전 상태입니다."
-                                  }
-                                >
-                                  {sellerSalesStatusLabel(salesStatus)}
-                                </span>
-                              </td>
-                              <td className="member-seller-manage">
-                                <div className="member-seller-action-group">
                                   <button
                                     type="button"
-                                    className="member-detail-button member-seller-setting-btn"
-                                    disabled={!canConfigureSales}
-                                    title={
-                                      canConfigureSales
-                                        ? "판매상품·수수료 등 판매설정"
-                                        : "승인완료 후 판매설정이 가능합니다."
-                                    }
-                                    onClick={() =>
-                                      window.location.assign(
-                                        `/members/sellers/${row.applicationId}?tab=products`,
-                                      )
-                                    }
-                                    aria-label={`${displayName} 판매설정`}
+                                    className="seller-relation-name"
+                                    onClick={() => openRow(row)}
+                                    aria-label={`${row.sellerName} ${beforeJoin ? "가입신청 확인" : "상세보기"}`}
                                   >
-                                    판매설정
+                                    <b>{row.sellerName}</b>
+                                    <small>{row.sellerCode}</small>
                                   </button>
                                 </div>
+                              </td>
+                              <td>{row.managerName}</td>
+                              <td className="seller-relation-num">{row.phone}</td>
+                              <td className="seller-relation-num">
+                                {beforeJoin ? (
+                                  <span title="가입 신청일">{formatSellerRelationDate(row.appliedAt)}</span>
+                                ) : (
+                                  formatSellerRelationDate(row.joinedAt)
+                                )}
+                                {beforeJoin ? <small className="seller-relation-date-sub">신청일</small> : null}
+                              </td>
+                              <td className="seller-relation-count">{beforeJoin ? "-" : row.productCount}</td>
+                              <td className="seller-relation-count">{beforeJoin ? "-" : row.reservationCount}</td>
+                              <td>
+                                <span className={`badge ${sellerRelationStatusBadgeClass(row.status)}`}>{row.status}</span>
+                              </td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className={`small-btn seller-relation-action${row.status === "승인대기" ? " is-pending" : ""}`}
+                                  onClick={() => openRow(row)}
+                                >
+                                  {beforeJoin ? "신청확인" : "상세"}
+                                </button>
                               </td>
                             </tr>
                           );
                         })
                       ) : (
                         <tr>
-                          <td colSpan={11}>
-                            <div className="member-affiliate-empty">
-                              {rowsAll.length === 0 ? (
-                                <>
-                                  <strong>등록된 판매점이 없습니다.</strong>
-                                  <p>판매점등록 버튼으로 관리자가 직접 등록할 수 있습니다.</p>
-                                  <Link href="/members/sellers/new" className="primary member-seller-register-btn">
-                                    <Plus size={14} aria-hidden="true" />
-                                    판매점등록
-                                  </Link>
-                                </>
-                              ) : (
-                                <>
-                                  <strong>검색조건에 맞는 판매점이 없습니다.</strong>
-                                  <p>검색어 또는 필터 조건을 변경해 주세요.</p>
-                                  <button type="button" className="secondary" onClick={resetFilters}>
-                                    <RotateCcw size={13} />
-                                    조건 초기화
-                                  </button>
-                                </>
-                              )}
-                            </div>
+                          <td colSpan={8}>
+                            {(() => {
+                              const empty = emptyMessage();
+                              return (
+                                <div className="member-affiliate-empty seller-relation-empty">
+                                  {rowsAll.length === 0 ? <Store size={28} aria-hidden="true" /> : null}
+                                  <strong>{empty.title}</strong>
+                                  {empty.description ? <p>{empty.description}</p> : null}
+                                  {empty.reset ? (
+                                    <button type="button" className="secondary" onClick={resetFilters}>
+                                      <RotateCcw size={13} />
+                                      조건 초기화
+                                    </button>
+                                  ) : null}
+                                </div>
+                              );
+                            })()}
                           </td>
                         </tr>
                       )}
@@ -689,23 +485,23 @@ export function SellerMemberList() {
                 {filteredRows.length > 0 ? (
                   <div className="member-affiliate-footer">
                     <span>
-                      총 {filteredRows.length}건 중 {pagination.rows.length}건 표시
+                      총 {filteredRows.length}건 중 {pageRows.length}건 표시
                     </span>
                     <div className="pagination" aria-label="페이지네이션">
                       <button
                         type="button"
-                        disabled={pagination.page === 1}
-                        onClick={() => setPage((value) => Math.max(1, value - 1))}
+                        disabled={currentPage === 1}
+                        onClick={() => setPage(Math.max(1, currentPage - 1))}
                         aria-label="이전 페이지"
                       >
                         ‹
                       </button>
-                      {Array.from({ length: pagination.totalPages }, (_, index) => (
+                      {Array.from({ length: totalPages }, (_, index) => (
                         <button
                           type="button"
                           key={index + 1}
-                          className={pagination.page === index + 1 ? "active" : ""}
-                          aria-current={pagination.page === index + 1 ? "page" : undefined}
+                          className={currentPage === index + 1 ? "active" : ""}
+                          aria-current={currentPage === index + 1 ? "page" : undefined}
                           onClick={() => setPage(index + 1)}
                         >
                           {index + 1}
@@ -713,8 +509,8 @@ export function SellerMemberList() {
                       ))}
                       <button
                         type="button"
-                        disabled={pagination.page === pagination.totalPages}
-                        onClick={() => setPage((value) => Math.min(pagination.totalPages, value + 1))}
+                        disabled={currentPage === totalPages}
+                        onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
                         aria-label="다음 페이지"
                       >
                         ›
@@ -731,8 +527,65 @@ export function SellerMemberList() {
         </main>
       </div>
 
+      {applicationSeller ? (
+        <SellerApplicationModal
+          seller={applicationSeller}
+          blocked={rejectConfirmOpen}
+          onClose={closeApplication}
+          onApprove={approveApplication}
+          onReject={() => setRejectConfirmOpen(true)}
+        />
+      ) : null}
+
+      {applicationSeller && rejectConfirmOpen ? (
+        <SellerRelationConfirmModal
+          title="가입신청 거절"
+          message="판매점 가입신청을 거절하시겠습니까?"
+          notice={`${applicationSeller.sellerName}(${applicationSeller.sellerCode})의 거래상태가 승인거절로 변경됩니다.`}
+          confirmLabel="가입거절"
+          tone="danger"
+          onCancel={cancelRejectConfirm}
+          onConfirm={rejectApplication}
+        />
+      ) : null}
+
+      {drawerSeller ? (
+        <SellerRelationDrawer
+          seller={drawerSeller}
+          blocked={drawerConfirm !== null}
+          onClose={closeDrawer}
+          onSuspend={() => setDrawerConfirm("suspend")}
+          onResume={() => setDrawerConfirm("resume")}
+          onProductMock={(productName) => act(`${productName} 상품 화면은 샘플 상품이라 연결되지 않습니다.`)}
+        />
+      ) : null}
+
+      {drawerSeller && drawerConfirm === "suspend" ? (
+        <SellerRelationConfirmModal
+          title="판매점 이용중지"
+          message="이 판매점의 이용을 중지하시겠습니까?"
+          notice="이용중지 시 이 공급여행사에서 제공하는 상품의 신규 판매가 제한됩니다."
+          confirmLabel="이용중지"
+          tone="danger"
+          onCancel={cancelDrawerConfirm}
+          onConfirm={confirmDrawerAction}
+        />
+      ) : null}
+
+      {drawerSeller && drawerConfirm === "resume" ? (
+        <SellerRelationConfirmModal
+          title="판매점 이용 재개"
+          message="이 판매점의 이용을 재개하시겠습니까?"
+          notice="이용을 재개하면 거래상태가 정상으로 변경되고, 이 공급여행사 상품의 판매가 다시 가능해집니다."
+          confirmLabel="이용 재개"
+          tone="primary"
+          onCancel={cancelDrawerConfirm}
+          onConfirm={confirmDrawerAction}
+        />
+      ) : null}
+
       {toast ? (
-        <div className="toast">
+        <div className="toast seller-relation-toast">
           <span>✓</span>
           {toast}
         </div>

@@ -4,6 +4,7 @@
  * - DB/API 연동 전까지 새로고침 시 초기화되는 프론트 Mock 저장소를 사용합니다.
  */
 import { getSampleProducts } from "@/lib/admin/products-data";
+import { getGuideSampleProducts } from "@/lib/admin/guide-operation-data";
 import { getReservationList } from "@/lib/admin/reservations-data";
 
 /**
@@ -40,6 +41,13 @@ const SAMPLE_BOARDING_GROUPS: Record<string, ProductBoardingGroup[]> = {
     group("BG-B", "탑승지B", ["서울역", "영등포역", "수원역", "탄현역", "서대전역"]),
     group("BG-C", "탑승지C", ["서울역", "신길역", "잠실역"]),
   ],
+  /* 운영현황 통합관리 SAMPLE 출발상품 */
+  "OPS-NAMWON01": [group("BG-N1", "탑승지A", ["서울역", "사당역"])],
+  "OPS-DAMYANG01": [group("BG-D1", "탑승지A", ["서울역", "수원역"])],
+  "OPS-JEJU01": [group("BG-J1", "탑승지A", ["김포공항"])],
+  "OPS-DANYANG01": [group("BG-Y1", "탑승지A", ["잠실역", "동서울터미널"])],
+  "OPS-JEONJU01": [group("BG-E1", "탑승지A", ["서울역", "영등포역"])],
+  "OPS-ANDONG01": [group("BG-A1", "탑승지A", ["서울역", "양재역"])],
 };
 
 const sessionBoardingGroups: Record<string, ProductBoardingGroup[]> = {};
@@ -62,7 +70,8 @@ export function formatBoardingRoute(item: ProductBoardingGroup) {
 
 /**
  * 탑승지를 관리할 수 있는 상품 목록.
- * 상품목록 SAMPLE에 없는 예약 상품은 상품명 기준 임시 코드(PRD-RSV-NN)로 관리합니다.
+ * - 상품목록 SAMPLE → 출발회차(가이드 운영) SAMPLE의 상품코드 → 그 외 예약 상품 순으로 코드를 정합니다.
+ * - 어디에도 상품코드가 없는 예약 상품만 상품명 기준 임시 코드(PRD-RSV-NN)로 관리합니다.
  */
 export function listBoardingProducts(): BoardingProduct[] {
   const products = new Map<string, BoardingProduct>();
@@ -73,6 +82,15 @@ export function listBoardingProducts(): BoardingProduct[] {
       name: product.name,
       category: product.category,
       inProductList: true,
+    });
+  });
+  getGuideSampleProducts().forEach((product) => {
+    if (products.has(product.code)) return;
+    products.set(product.code, {
+      code: product.code,
+      name: product.name,
+      category: "운영현황 QA SAMPLE (상품목록 미등록)",
+      inProductList: false,
     });
   });
   const knownNames = new Set(Array.from(products.values()).map((product) => product.name));

@@ -7,6 +7,7 @@ import {
   buildGuideDepartureFromSeed,
   findGuideSampleDepartureKey,
   getGuideAssignmentPath,
+  applyGuideBoardingSession,
   getGuideDeparture,
   getGuideOperationPlan,
   getGuideOperationPlanForSeed,
@@ -113,7 +114,12 @@ function buildReservationSeed(entry: OperationDepartureEntry): GuideDepartureSee
     boardingTimes: points.map((name) => ({ name, time: "-" })),
     itinerary: [],
     segments: [
-      { key: "outbound", label: "출발 탑승", route: `${points.join("/")} → ${entry.productName}`, usesReservationPoint: true },
+      {
+        key: "outbound",
+        label: "출발 탑승",
+        route: `${points.join("/")} → ${entry.productName}`,
+        usesReservationPoint: true,
+      },
     ],
     staff: GUIDE_SAMPLE_STAFF_POOL.map((item) => ({ ...item })),
     leadStaffId: "",
@@ -149,20 +155,30 @@ function departureOf(entry: OperationDepartureEntry) {
 
 export function getOperationDeparture(key: string): GuideDeparture | null {
   const entry = findEntry(key);
-  return entry ? departureOf(entry) : null;
+  const departure = entry ? departureOf(entry) : null;
+  return departure ? applyGuideBoardingSession(departure) : null;
+}
+
+/** 출발회차(상품 + 출발일)에 접수된 전체 예약. 취소 · 대기 예약을 포함합니다. */
+export function getOperationDepartureReservations(key: string): ReservationListItem[] {
+  return findEntry(key)?.reservations ?? [];
 }
 
 export function getOperationPlan(key: string): GuideOperationPlan | null {
   const entry = findEntry(key);
   if (!entry) return null;
-  return entry.sampleKey ? getGuideOperationPlan(entry.sampleKey) : getGuideOperationPlanForSeed(buildReservationSeed(entry));
+  return entry.sampleKey
+    ? getGuideOperationPlan(entry.sampleKey)
+    : getGuideOperationPlanForSeed(buildReservationSeed(entry));
 }
 
 export function previewOperationDeparture(key: string, plan: GuideOperationPlan): GuideDeparture | null {
   const entry = findEntry(key);
   if (!entry) return null;
   return withBoardingGroups(
-    entry.sampleKey ? previewGuideDeparture(entry.sampleKey, plan) : buildGuideDepartureFromSeed(buildReservationSeed(entry), plan),
+    entry.sampleKey
+      ? previewGuideDeparture(entry.sampleKey, plan)
+      : buildGuideDepartureFromSeed(buildReservationSeed(entry), plan),
   );
 }
 
@@ -196,6 +212,7 @@ export type OperationDepartureOverview = {
   departureDate: string;
   summary: ReturnType<typeof getGuideOperationSummary>;
   handedOver: boolean;
+  departure: GuideDeparture;
 };
 
 export function getOperationDepartureOverviews(): OperationDepartureOverview[] {
@@ -209,6 +226,7 @@ export function getOperationDepartureOverviews(): OperationDepartureOverview[] {
         departureDate: entry.departureDate,
         summary: getGuideOperationSummary(departure),
         handedOver: Boolean(departure.handover),
+        departure,
       };
     })
     .filter((item): item is OperationDepartureOverview => item !== null);
@@ -239,7 +257,12 @@ function toView(entry: OperationDepartureEntry, departure: GuideDeparture | null
   }
   const operation = departure ? getGuideReservationOperation(departure, reservation.code) : null;
   if (!operation) {
-    return { ...base, ...empty, statusLabel: "미배정", badge: GUIDE_ASSIGNMENT_STATUS_BADGE.미배정 } as ReservationOperationView;
+    return {
+      ...base,
+      ...empty,
+      statusLabel: "미배정",
+      badge: GUIDE_ASSIGNMENT_STATUS_BADGE.미배정,
+    } as ReservationOperationView;
   }
   const { vehicleCounts } = operation;
   return {
@@ -247,8 +270,7 @@ function toView(entry: OperationDepartureEntry, departure: GuideDeparture | null
     statusLabel: operation.status,
     badge: GUIDE_ASSIGNMENT_STATUS_BADGE[operation.status],
     vehicleCount: vehicleCounts.length,
-    vehicleShort:
-      vehicleCounts.length > 1 ? `${vehicleCounts.length}개 호차` : (vehicleCounts[0]?.vehicle.name ?? ""),
+    vehicleShort: vehicleCounts.length > 1 ? `${vehicleCounts.length}개 호차` : (vehicleCounts[0]?.vehicle.name ?? ""),
     vehicleDetail:
       vehicleCounts.length > 1
         ? vehicleCounts.map(({ vehicle, count }) => `${vehicle.name} ${count}명`).join(" / ")
@@ -267,11 +289,15 @@ export function getReservationOperationViews(reservations: ReservationListItem[]
       views[reservation.code] = toView(entry, departure, reservation);
     });
   });
-  return Object.fromEntries(reservations.filter((item) => views[item.code]).map((item) => [item.code, views[item.code]]));
+  return Object.fromEntries(
+    reservations.filter((item) => views[item.code]).map((item) => [item.code, views[item.code]]),
+  );
 }
 
 export function getReservationOperationView(reservation: ReservationListItem): ReservationOperationView | null {
-  const entry = listDepartureEntries().find((item) => item.reservations.some((value) => value.code === reservation.code));
+  const entry = listDepartureEntries().find((item) =>
+    item.reservations.some((value) => value.code === reservation.code),
+  );
   if (!entry) return null;
   const current = entry.reservations.find((value) => value.code === reservation.code) ?? reservation;
   return toView(entry, departureOf(entry), { ...current, reserveStatus: reservation.reserveStatus });

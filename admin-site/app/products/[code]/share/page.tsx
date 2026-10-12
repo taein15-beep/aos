@@ -77,6 +77,7 @@ import { ShareConfirmDialog, type ShareConfirmDialogState } from "@/components/p
 import { ShareDetailModal } from "@/components/products/ShareDetailModal";
 import { ShareManageActions } from "@/components/products/ShareManageActions";
 import { SharePreviewModal, type SharePreviewOption } from "@/components/products/SharePreviewModal";
+import { SellerSalesSection } from "@/components/products/SellerSalesSection";
 
 type ShareDraft = {
   settings: ShareDefaultSettings;
@@ -195,6 +196,14 @@ export default function ProductShareSettingPage() {
   const salesStatusLabel = product.soldout ? "품절" : product.visible ? summary.salesStatus : "비노출";
   const salesStatusBadge = salesStatusLabel === "판매중" ? "success" : salesStatusLabel === "품절" ? "danger" : "gray";
   const newShareStatus = shareStatusForRequestMode(settings.requestMode);
+  const shareStateLabel = !settings.shareEnabled
+    ? "공유 안 함"
+    : counts.active > 0
+      ? "공유중"
+      : counts.pending > 0
+        ? "수락대기"
+        : "공유 대상 없음";
+  const shareStateBadge = shareStateLabel === "공유중" ? "success" : shareStateLabel === "수락대기" ? "warn" : "gray";
 
   const updateSettings = <K extends keyof ShareDefaultSettings>(key: K, value: ShareDefaultSettings[K]) => {
     setDraft((current) => ({ ...current, settings: { ...current.settings, [key]: value } }));
@@ -574,15 +583,23 @@ export default function ProductShareSettingPage() {
             </article>
             <article className="member-web-detail-kpi">
               <span>
-                <small>공급여행사</small>
+                <small>운영여행사</small>
                 <strong>{summary.supplierName}</strong>
               </span>
             </article>
             <article className="member-web-detail-kpi">
               <span>
-                <small>판매상태</small>
+                <small>상품상태</small>
                 <strong>
                   <span className={`badge ${salesStatusBadge}`}>{salesStatusLabel}</span>
+                </strong>
+              </span>
+            </article>
+            <article className="member-web-detail-kpi">
+              <span>
+                <small>공유상태</small>
+                <strong>
+                  <span className={`badge ${shareStateBadge}`}>{shareStateLabel}</span>
                 </strong>
               </span>
             </article>
@@ -651,6 +668,15 @@ export default function ProductShareSettingPage() {
                 상품공유 사용 안 함 상태입니다. 아래 설정은 사용 선택 시 적용됩니다.
               </p>
             )}
+
+            <div className="product-share-channel-head">
+              <span className="product-share-channel-no">1</span>
+              <div>
+                <h2>제휴여행사 상품공유</h2>
+                <p>AOS를 사용하는 제휴여행사에 상품을 공유하여 판매할 수 있습니다.</p>
+              </div>
+              <span className="product-share-channel-flow">AOS 사용 여행사 ↔ AOS 사용 여행사</span>
+            </div>
 
             <section className="panel member-web-detail-card product-share-setting-card">
               <div className="member-web-detail-card-head">
@@ -1134,6 +1160,33 @@ export default function ProductShareSettingPage() {
               </div>
             </div>
           </section>
+
+          <fieldset
+            className={`product-share-setting-fields${settings.shareEnabled ? "" : " is-disabled"}`}
+            disabled={!settings.shareEnabled}
+            aria-disabled={!settings.shareEnabled}
+          >
+            <div className="product-share-channel-head is-seller">
+              <span className="product-share-channel-no">2</span>
+              <div>
+                <h2>판매점 판매</h2>
+                <p>우리 여행사에 가입된 판매점 중 이 상품을 판매할 판매점을 지정하고 판매조건을 설정할 수 있습니다.</p>
+              </div>
+              <span className="product-share-channel-flow">공급여행사 → 가입 판매점 → 고객 판매</span>
+            </div>
+            {!settings.shareEnabled && (
+              <p className="product-share-setting-disabled-note">
+                상품공유를 사용으로 변경하면 판매점 판매설정을 사용할 수 있습니다.
+              </p>
+            )}
+
+            <SellerSalesSection
+              productCode={product.code}
+              supplierName={summary.supplierName}
+              supplyPrice={listPrice}
+              onNotify={act}
+            />
+          </fieldset>
 
           <section className="product-affiliate-sticky-actions">
             <div>

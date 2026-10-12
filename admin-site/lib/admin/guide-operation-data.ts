@@ -6,6 +6,20 @@
  */
 import type { ProductBoardingGroup } from "@/lib/admin/product-boarding-data";
 
+/**
+ * QA 테스트 기준일 (프로토타입 전용 · 실제 현재일이 아님)
+ * 운영현황 D-Day 계산, 관리자 처리일, 후속조치 기한 계산이 모두 이 값을 기준으로 합니다.
+ * 실제 서비스에서는 서버 현재일로 대체합니다.
+ */
+export const TEST_REFERENCE_DATE = "2026-10-17";
+
+/** 운영 Workflow 처리시각 (운영인계 · 발송 · 운영종료 · 관리자 확인): TEST_REFERENCE_DATE + 현재 시:분 */
+export function formatTestReferenceNow() {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${TEST_REFERENCE_DATE} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
 export type GuideDepartureStatus = "출발예정" | "운행중" | "행사완료" | "출발취소";
 
 export type GuideBoardingPoint = { name: string; time: string; count: number };
@@ -23,7 +37,13 @@ export type GuideBoardingStatus = "unchecked" | "boarded" | "no_show";
 /** 이전 구간 미탑승으로 해당 구간 탑승 대상에서 제외된 경우를 포함한 화면 표시용 상태 */
 export type GuideBoardingDisplayStatus = GuideBoardingStatus | "excluded";
 
-export const GUIDE_NO_SHOW_REASONS = ["고객 연락됨 · 불참", "연락두절", "출발시간 미도착", "다른 탑승지 탑승", "기타"] as const;
+export const GUIDE_NO_SHOW_REASONS = [
+  "고객 연락됨 · 불참",
+  "연락두절",
+  "출발시간 미도착",
+  "다른 탑승지 탑승",
+  "기타",
+] as const;
 
 export type GuideNoShowReason = (typeof GUIDE_NO_SHOW_REASONS)[number];
 
@@ -198,6 +218,47 @@ const passenger = (
   assignment: {},
 });
 
+/* 운영현황 통합관리 SAMPLE 출발상품용 짧은 표기 */
+const samplePassengers = (prefix: string, names: string[], outbound: GuideBoardingStatus | GuideBoardingRecord) =>
+  names.map((name, index) => passenger(`${prefix}-${String(index + 1).padStart(2, "0")}`, name, outbound));
+
+const sampleGroup = (
+  id: string,
+  reservationCode: string,
+  reservedAt: string,
+  boardingPoint: string,
+  passengers: GuidePassenger[],
+): GuideReservationGroup => ({
+  id,
+  reservationCode,
+  reservedAt,
+  boardingPoint,
+  phone: `010-0000-${reservationCode.slice(-4)}`,
+  passengers,
+});
+
+const sampleVehicle = (
+  id: string,
+  name: string,
+  guideId: string,
+  boardingGroupId: string,
+  plateNo = "",
+  driverName = "",
+): GuideVehicle => ({
+  id,
+  name,
+  plateNo,
+  driverName,
+  driverPhone: driverName ? "010-0000-2100" : "",
+  guideId,
+  capacity: 28,
+  boardingGroupId,
+});
+
+const outboundSegment = (route: string): GuideBoardingSegment[] => [
+  { key: "outbound", label: "출발 탑승", route, usesReservationPoint: true },
+];
+
 const SAMPLE_GUIDE_DEPARTURE_SEEDS: GuideDepartureSeed[] = [
   {
     key: "GC-WINE-20261017",
@@ -283,7 +344,10 @@ const SAMPLE_GUIDE_DEPARTURE_SEEDS: GuideDepartureSeed[] = [
         boardingPoint: "서울역",
         phone: "010-0000-1234",
         passengers: [
-          passenger("P-05", "김민준", "unchecked", ["앞좌석 요청", "휠체어 이용 (접이식 휠체어 지참, 승하차 보조 필요)"]),
+          passenger("P-05", "김민준", "unchecked", [
+            "앞좌석 요청",
+            "휠체어 이용 (접이식 휠체어 지참, 승하차 보조 필요)",
+          ]),
           passenger("P-06", "김순자", "boarded"),
         ],
       },
@@ -301,7 +365,11 @@ const SAMPLE_GUIDE_DEPARTURE_SEEDS: GuideDepartureSeed[] = [
         reservedAt: "2026-09-08",
         boardingPoint: "서울역",
         phone: "010-0000-2207",
-        passengers: [passenger("P-08", "정다은", "boarded"), passenger("P-09", "정민재", "boarded"), passenger("P-10", "정서윤", "boarded")],
+        passengers: [
+          passenger("P-08", "정다은", "boarded"),
+          passenger("P-09", "정민재", "boarded"),
+          passenger("P-10", "정서윤", "boarded"),
+        ],
       },
       {
         id: "GR-05",
@@ -332,7 +400,11 @@ const SAMPLE_GUIDE_DEPARTURE_SEEDS: GuideDepartureSeed[] = [
         reservedAt: "2026-09-13",
         boardingPoint: "서울역",
         phone: "010-0000-6153",
-        passengers: [passenger("P-16", "윤성호", "boarded"), passenger("P-17", "윤미경", "boarded"), passenger("P-18", "윤재희", "boarded")],
+        passengers: [
+          passenger("P-16", "윤성호", "boarded"),
+          passenger("P-17", "윤미경", "boarded"),
+          passenger("P-18", "윤재희", "boarded"),
+        ],
       },
       {
         id: "GR-08",
@@ -369,7 +441,11 @@ const SAMPLE_GUIDE_DEPARTURE_SEEDS: GuideDepartureSeed[] = [
         reservedAt: "2026-09-24",
         boardingPoint: "수원역",
         phone: "010-0000-1968",
-        passengers: [passenger("P-27", "임채원", "boarded"), passenger("P-28", "임재현", "unchecked"), passenger("P-29", "문소희", "boarded")],
+        passengers: [
+          passenger("P-27", "임채원", "boarded"),
+          passenger("P-28", "임재현", "unchecked"),
+          passenger("P-29", "문소희", "boarded"),
+        ],
       },
       {
         id: "GR-12",
@@ -387,6 +463,300 @@ const SAMPLE_GUIDE_DEPARTURE_SEEDS: GuideDepartureSeed[] = [
         phone: "010-0000-7731",
         passengers: [passenger("P-31", "서예린", "boarded"), passenger("P-32", "서지우", "boarded")],
       },
+    ],
+  },
+  /* ---- 운영현황 통합관리 QA SAMPLE (TEST_REFERENCE_DATE 기준 · 예약번호 QA-RSV-*) ---- */
+  {
+    key: "OPS-NAMWON-20261017",
+    productCode: "OPS-NAMWON01",
+    productName: "남원 광한루 · 춘향테마파크 당일",
+    departureDate: "2026-10-17",
+    guideName: "김서연",
+    status: "운행중",
+    notifiedCount: 8,
+    noteCount: 0,
+    chatRoom: { registered: true, name: "남원 10/17 안내방", joinedCount: 7 },
+    boardingTimes: [
+      { name: "서울역", time: "07:00" },
+      { name: "사당역", time: "07:20" },
+    ],
+    itinerary: ["서울역", "광한루원", "춘향테마파크"],
+    segments: outboundSegment("서울역/사당역 → 남원"),
+    staff: [
+      { id: "G-31", name: "김서연", phone: "010-0000-1031" },
+      { id: "G-32", name: "최민호", phone: "010-0000-1032" },
+    ],
+    leadStaffId: "G-31",
+    handover: { at: "2026-10-16 16:30", by: "유미진" },
+    vehicles: [sampleVehicle("V-1", "1호차", "G-31", "BG-N1", "56다 1203", "오상철")],
+    initialVehicleByGroup: { "NW-R1": "V-1", "NW-R2": "V-1", "NW-R3": "V-1", "NW-R4": "V-1" },
+    reservations: [
+      sampleGroup(
+        "NW-R1",
+        "QA-RSV-262101",
+        "2026-09-20",
+        "서울역",
+        samplePassengers("NW-A", ["이도현", "이수아"], "boarded"),
+      ),
+      sampleGroup("NW-R2", "QA-RSV-262102", "2026-09-22", "서울역", samplePassengers("NW-B", ["박서준"], "boarded")),
+      sampleGroup(
+        "NW-R3",
+        "QA-RSV-262103",
+        "2026-09-25",
+        "사당역",
+        samplePassengers("NW-C", ["정하늘", "정우진", "정예린"], "boarded"),
+      ),
+      sampleGroup(
+        "NW-R4",
+        "QA-RSV-262104",
+        "2026-09-29",
+        "사당역",
+        samplePassengers("NW-D", ["한유나", "한지호"], "boarded"),
+      ),
+    ],
+  },
+  {
+    key: "OPS-DAMYANG-20261017",
+    productCode: "OPS-DAMYANG01",
+    productName: "담양 죽녹원 · 메타세쿼이아길 당일",
+    departureDate: "2026-10-17",
+    guideName: "박정우",
+    status: "출발예정",
+    notifiedCount: 6,
+    noteCount: 0,
+    chatRoom: { registered: true, name: "담양 10/17 안내방", joinedCount: 5 },
+    boardingTimes: [
+      { name: "서울역", time: "09:00" },
+      { name: "수원역", time: "09:40" },
+    ],
+    itinerary: ["서울역", "죽녹원", "메타세쿼이아길"],
+    segments: outboundSegment("서울역/수원역 → 담양"),
+    staff: [{ id: "G-41", name: "박정우", phone: "010-0000-1041" }],
+    leadStaffId: "G-41",
+    handover: { at: "2026-10-16 18:00", by: "유미진" },
+    vehicles: [sampleVehicle("V-1", "1호차", "G-41", "BG-D1", "78라 4512", "남기수")],
+    initialVehicleByGroup: { "DY-R1": "V-1", "DY-R2": "V-1", "DY-R3": "V-1" },
+    reservations: [
+      sampleGroup(
+        "DY-R1",
+        "QA-RSV-262201",
+        "2026-09-18",
+        "서울역",
+        samplePassengers("DY-A", ["문가영", "문태오"], "unchecked"),
+      ),
+      sampleGroup("DY-R2", "QA-RSV-262202", "2026-09-21", "서울역", samplePassengers("DY-B", ["배수진"], "unchecked")),
+      sampleGroup(
+        "DY-R3",
+        "QA-RSV-262203",
+        "2026-09-30",
+        "수원역",
+        samplePassengers("DY-C", ["서하준", "서지안", "서이현"], "unchecked"),
+      ),
+    ],
+  },
+  {
+    key: "OPS-JEJU-20261018",
+    productCode: "OPS-JEJU01",
+    productName: "제주 올레길 3박4일 힐링",
+    departureDate: "2026-10-18",
+    guideName: "장윤호",
+    status: "출발예정",
+    notifiedCount: 0,
+    noteCount: 0,
+    chatRoom: { registered: false, name: "", joinedCount: 0 },
+    boardingTimes: [{ name: "김포공항", time: "07:30" }],
+    itinerary: ["김포공항", "제주", "올레길"],
+    segments: outboundSegment("김포공항 → 제주"),
+    staff: [
+      { id: "G-21", name: "장윤호", phone: "010-0000-1001" },
+      { id: "G-22", name: "이수민", phone: "010-0000-1003" },
+    ],
+    leadStaffId: "G-21",
+    handover: null,
+    vehicles: [
+      sampleVehicle("V-1", "1호차", "G-21", "BG-J1", "제주 31바 2201", "고영수"),
+      sampleVehicle("V-2", "2호차", "", ""),
+    ],
+    initialVehicleByGroup: { "JJ-R1": "V-1", "JJ-R2": "V-1", "JJ-R3": "V-1", "JJ-R4": "V-2" },
+    reservations: [
+      sampleGroup(
+        "JJ-R1",
+        "QA-RSV-262301",
+        "2026-09-10",
+        "김포공항",
+        samplePassengers("JJ-A", ["강지원", "강하람"], "unchecked"),
+      ),
+      sampleGroup(
+        "JJ-R2",
+        "QA-RSV-262302",
+        "2026-09-12",
+        "김포공항",
+        samplePassengers("JJ-B", ["노은채", "노시우", "노유진"], "unchecked"),
+      ),
+      sampleGroup(
+        "JJ-R3",
+        "QA-RSV-262303",
+        "2026-09-15",
+        "김포공항",
+        samplePassengers("JJ-C", ["백승호"], "unchecked"),
+      ),
+      sampleGroup(
+        "JJ-R4",
+        "QA-RSV-262304",
+        "2026-09-19",
+        "김포공항",
+        samplePassengers("JJ-D", ["성다인", "성민재"], "unchecked"),
+      ),
+      sampleGroup(
+        "JJ-R5",
+        "QA-RSV-262305",
+        "2026-10-05",
+        "김포공항",
+        samplePassengers("JJ-E", ["윤채아", "윤도겸"], "unchecked"),
+      ),
+    ],
+  },
+  {
+    key: "OPS-DANYANG-20261018",
+    productCode: "OPS-DANYANG01",
+    productName: "단양 도담삼봉 · 패러글라이딩 당일",
+    departureDate: "2026-10-18",
+    guideName: "홍길동",
+    status: "출발예정",
+    notifiedCount: 6,
+    noteCount: 0,
+    chatRoom: { registered: true, name: "단양 10/18 안내방", joinedCount: 4 },
+    boardingTimes: [
+      { name: "잠실역", time: "07:00" },
+      { name: "동서울터미널", time: "07:20" },
+    ],
+    itinerary: ["잠실역", "도담삼봉", "패러글라이딩"],
+    segments: outboundSegment("잠실역/동서울터미널 → 단양"),
+    staff: [{ id: "G-51", name: "홍길동", phone: "010-0000-1002" }],
+    leadStaffId: "G-51",
+    handover: { at: "2026-10-16 19:10", by: "유미진" },
+    vehicles: [sampleVehicle("V-1", "1호차", "G-51", "BG-Y1", "90마 3321", "류정민")],
+    initialVehicleByGroup: { "DN-R1": "V-1", "DN-R2": "V-1", "DN-R3": "V-1" },
+    reservations: [
+      sampleGroup(
+        "DN-R1",
+        "QA-RSV-262401",
+        "2026-09-23",
+        "잠실역",
+        samplePassengers("DN-A", ["구본희", "구민서"], "unchecked"),
+      ),
+      sampleGroup(
+        "DN-R2",
+        "QA-RSV-262402",
+        "2026-09-26",
+        "동서울터미널",
+        samplePassengers("DN-B", ["하승우", "하윤슬", "하도하"], "unchecked"),
+      ),
+      sampleGroup("DN-R3", "QA-RSV-262403", "2026-10-02", "잠실역", samplePassengers("DN-C", ["표지훈"], "unchecked")),
+    ],
+  },
+  {
+    key: "OPS-JEONJU-20261016",
+    productCode: "OPS-JEONJU01",
+    productName: "전주 한옥마을 · 남부시장 당일",
+    departureDate: "2026-10-16",
+    guideName: "이수민",
+    status: "행사완료",
+    notifiedCount: 10,
+    noteCount: 3,
+    chatRoom: { registered: true, name: "전주 10/16 안내방", joinedCount: 9 },
+    boardingTimes: [
+      { name: "서울역", time: "07:30" },
+      { name: "영등포역", time: "07:50" },
+    ],
+    itinerary: ["서울역", "전주 한옥마을", "남부시장"],
+    segments: outboundSegment("서울역/영등포역 → 전주"),
+    staff: [
+      { id: "G-61", name: "이수민", phone: "010-0000-1003" },
+      { id: "G-62", name: "박정우", phone: "010-0000-1004" },
+    ],
+    leadStaffId: "G-61",
+    handover: { at: "2026-10-15 17:00", by: "유미진" },
+    vehicles: [
+      sampleVehicle("V-1", "1호차", "G-61", "BG-E1", "11가 5501", "장동수"),
+      sampleVehicle("V-2", "2호차", "G-62", "BG-E1", "22나 6602", "엄태식"),
+    ],
+    initialVehicleByGroup: { "JU-R1": "V-1", "JU-R2": "V-1", "JU-R3": "V-1", "JU-R4": "V-2", "JU-R5": "V-2" },
+    reservations: [
+      sampleGroup(
+        "JU-R1",
+        "QA-RSV-262501",
+        "2026-09-11",
+        "서울역",
+        samplePassengers("JU-A", ["김도윤", "김하린"], "boarded"),
+      ),
+      sampleGroup(
+        "JU-R2",
+        "QA-RSV-262502",
+        "2026-09-14",
+        "서울역",
+        samplePassengers("JU-B", ["이준서"], { status: "no_show", reason: "연락두절" }),
+      ),
+      sampleGroup(
+        "JU-R3",
+        "QA-RSV-262503",
+        "2026-09-17",
+        "영등포역",
+        samplePassengers("JU-C", ["박지아", "박시현"], "boarded"),
+      ),
+      sampleGroup(
+        "JU-R4",
+        "QA-RSV-262504",
+        "2026-09-20",
+        "영등포역",
+        samplePassengers("JU-D", ["최유찬", "최서아", "최다온"], "boarded"),
+      ),
+      sampleGroup(
+        "JU-R5",
+        "QA-RSV-262505",
+        "2026-09-24",
+        "서울역",
+        samplePassengers("JU-E", ["정로운", "정아린"], "boarded"),
+      ),
+    ],
+  },
+  {
+    key: "OPS-ANDONG-20261015",
+    productCode: "OPS-ANDONG01",
+    productName: "안동 하회마을 · 월영교 당일",
+    departureDate: "2026-10-15",
+    guideName: "홍길동",
+    status: "행사완료",
+    notifiedCount: 6,
+    noteCount: 3,
+    chatRoom: { registered: true, name: "안동 10/15 안내방", joinedCount: 6 },
+    boardingTimes: [
+      { name: "서울역", time: "07:00" },
+      { name: "양재역", time: "07:30" },
+    ],
+    itinerary: ["서울역", "하회마을", "월영교"],
+    segments: outboundSegment("서울역/양재역 → 안동"),
+    staff: [{ id: "G-71", name: "홍길동", phone: "010-0000-1002" }],
+    leadStaffId: "G-71",
+    handover: { at: "2026-10-14 16:00", by: "유미진" },
+    vehicles: [sampleVehicle("V-1", "1호차", "G-71", "BG-A1", "33다 7703", "변상훈")],
+    initialVehicleByGroup: { "AD-R1": "V-1", "AD-R2": "V-1", "AD-R3": "V-1" },
+    reservations: [
+      sampleGroup(
+        "AD-R1",
+        "QA-RSV-262601",
+        "2026-09-08",
+        "서울역",
+        samplePassengers("AD-A", ["송지후", "송예준"], "boarded"),
+      ),
+      sampleGroup("AD-R2", "QA-RSV-262602", "2026-09-13", "양재역", samplePassengers("AD-B", ["임나연"], "boarded")),
+      sampleGroup(
+        "AD-R3",
+        "QA-RSV-262603",
+        "2026-09-27",
+        "서울역",
+        samplePassengers("AD-C", ["황보람", "황시온", "황다은"], "boarded"),
+      ),
     ],
   },
 ];
@@ -469,6 +839,11 @@ function buildGuideDeparture(
   };
   const passengers = seed.reservations.flatMap((group) => group.passengers);
   const firstSegment = summarizeGuideBoarding(passengers, seed.segments, 0);
+  /** 탑승객별 지정 탑승지 기준 집계. 운영배정에서 추가된 탑승지(기본 시간표에 없는 곳)도 포함합니다. */
+  const { counts: pointCounts } = countGuidePassengersByPoint(passengers);
+  const extraPoints = pointCounts
+    .filter(({ point }) => !boardingTimes.some((item) => item.name === point))
+    .map(({ point }) => ({ name: point, time: "-" }));
   return {
     ...seed,
     boardingGroups: [],
@@ -476,11 +851,9 @@ function buildGuideDeparture(
     boardedCount: firstSegment.boarded,
     uncheckedCount: firstSegment.unchecked,
     noShowCount: firstSegment.noShow,
-    boardingPoints: boardingTimes.map((point) => ({
+    boardingPoints: [...boardingTimes, ...extraPoints].map((point) => ({
       ...point,
-      count: seed.reservations
-        .filter((group) => group.boardingPoint === point.name)
-        .reduce((sum, group) => sum + group.passengers.length, 0),
+      count: pointCounts.find((item) => item.point === point.name)?.count ?? 0,
     })),
   };
 }
@@ -501,9 +874,11 @@ export function findGuideSampleDepartureKey(productName: string, departureDate: 
 }
 
 /** 운영배정용 가이드 후보 (SAMPLE · 실제 직원 데이터 연동 전) */
-export const GUIDE_SAMPLE_STAFF_POOL: Omit<GuideStaff, "roles">[] = SAMPLE_GUIDE_DEPARTURE_SEEDS[0].staff.map((item) => ({
-  ...item,
-}));
+export const GUIDE_SAMPLE_STAFF_POOL: Omit<GuideStaff, "roles">[] = SAMPLE_GUIDE_DEPARTURE_SEEDS[0].staff.map(
+  (item) => ({
+    ...item,
+  }),
+);
 
 /** 저장된 배정값이 있으면 사용하고, 없으면 시드의 초기 배정을 사용합니다. */
 export function getGuideOperationPlanForSeed(seed: GuideDepartureSeed) {
@@ -537,6 +912,16 @@ export function getGuideOperationPlan(key: string) {
 export function saveGuideOperationPlan(key: string, plan: GuideOperationPlan) {
   if (!findGuideDepartureSeed(key)) return;
   saveGuideOperationPlanForKey(key, plan);
+}
+
+/** 출발회차 SAMPLE이 참조하는 원본 상품 (상품코드 기준 · 중복 제거) */
+export function getGuideSampleProducts() {
+  const products = new Map<string, { code: string; name: string }>();
+  SAMPLE_GUIDE_DEPARTURE_SEEDS.forEach((seed) => {
+    if (!products.has(seed.productCode))
+      products.set(seed.productCode, { code: seed.productCode, name: seed.productName });
+  });
+  return Array.from(products.values());
 }
 
 /** 예약접수현황 목록에 표시할 운영 출발상품 예약 (SAMPLE). 예약 데이터는 예약관리에서 사용합니다. */
@@ -622,7 +1007,10 @@ export function getGuidePassengerPointOptions(departure: GuideDeparture, item: G
  */
 export type GuidePassengerPointStatus = "pending" | "no_group" | "missing" | "check" | "ok";
 
-export function getGuidePassengerPointStatus(departure: GuideDeparture, item: GuidePassenger): GuidePassengerPointStatus {
+export function getGuidePassengerPointStatus(
+  departure: GuideDeparture,
+  item: GuidePassenger,
+): GuidePassengerPointStatus {
   const vehicle = getGuidePassengerVehicle(departure, item);
   if (!vehicle) return "pending";
   const group = getGuideVehicleBoardingGroup(departure, vehicle);
@@ -864,11 +1252,15 @@ export type GuideBoardingFilter = "all" | "boarded" | "unchecked" | "no_show" | 
 
 /** 구간별 배정이 있으면 우선 사용하고, 없으면 기본 배정을 사용합니다. */
 export function getGuideAssignment(passenger: GuidePassenger, segmentKey: string): GuideSeatAssignment {
-  return passenger.assignment[segmentKey] ?? passenger.assignment[GUIDE_DEFAULT_ASSIGNMENT_KEY] ?? { vehicleId: "", seat: 0 };
+  return (
+    passenger.assignment[segmentKey] ?? passenger.assignment[GUIDE_DEFAULT_ASSIGNMENT_KEY] ?? { vehicleId: "", seat: 0 }
+  );
 }
 
 export function getGuideSegmentVehicles(departure: GuideDeparture, segment: GuideBoardingSegment) {
-  return segment.vehicleIds ? departure.vehicles.filter((vehicle) => segment.vehicleIds?.includes(vehicle.id)) : departure.vehicles;
+  return segment.vehicleIds
+    ? departure.vehicles.filter((vehicle) => segment.vehicleIds?.includes(vehicle.id))
+    : departure.vehicles;
 }
 
 export function getGuideStaff(departure: GuideDeparture, staffId: string) {
@@ -913,7 +1305,11 @@ export function getGuideSegmentStatus(
 
 export type GuideBoardingSummary = ReturnType<typeof summarizeGuideBoarding>;
 
-export function summarizeGuideBoarding(passengers: GuidePassenger[], segments: GuideBoardingSegment[], segmentIndex: number) {
+export function summarizeGuideBoarding(
+  passengers: GuidePassenger[],
+  segments: GuideBoardingSegment[],
+  segmentIndex: number,
+) {
   const statuses = passengers.map((item) => getGuideSegmentStatus(item, segments, segmentIndex));
   const count = (status: GuideBoardingDisplayStatus) => statuses.filter((item) => item === status).length;
   const boarded = count("boarded");
@@ -929,6 +1325,37 @@ export function summarizeGuideBoarding(passengers: GuidePassenger[], segments: G
     /** 탑승 여부가 확정된 인원 (탑승완료 + 미탑승 + 대상 제외) */
     confirmed: boarded + noShow + excluded,
     complete: passengers.length > 0 && unchecked === 0,
+  };
+}
+
+/** 탑승체크 화면에서 기록한 탑승상태 (세션 · SAMPLE). 새로고침하면 초기 샘플로 돌아갑니다. */
+const sessionBoarding: Record<string, Record<string, Record<string, GuideBoardingRecord>>> = {};
+
+export function saveGuideBoardingSession(key: string, groups: GuideReservationGroup[]) {
+  sessionBoarding[key] = Object.fromEntries(
+    groups.flatMap((group) => group.passengers.map((item) => [item.id, { ...item.boarding }])),
+  );
+}
+
+/** 저장된 탑승상태를 반영하고 첫 구간 집계를 다시 계산합니다. 예약인원(totalPeople)은 변경하지 않습니다. */
+export function applyGuideBoardingSession(departure: GuideDeparture): GuideDeparture {
+  const saved = sessionBoarding[departure.key];
+  if (!saved) return departure;
+  const reservations = departure.reservations.map((group) => ({
+    ...group,
+    passengers: group.passengers.map((item) => (saved[item.id] ? { ...item, boarding: { ...saved[item.id] } } : item)),
+  }));
+  const summary = summarizeGuideBoarding(
+    reservations.flatMap((group) => group.passengers),
+    departure.segments,
+    0,
+  );
+  return {
+    ...departure,
+    reservations,
+    boardedCount: summary.boarded,
+    uncheckedCount: summary.unchecked,
+    noShowCount: summary.noShow,
   };
 }
 

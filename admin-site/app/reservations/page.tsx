@@ -26,6 +26,7 @@ import {
   useReservationViewer,
 } from "@/components/reservations/ReservationSource";
 import { useQueryParam } from "@/components/settlements/SettlementParts";
+import { GuideOperationPhaseBadge } from "@/components/guide/GuideOperationPhaseBadge";
 import {
   GUIDE_ASSIGNMENT_STATUS_BADGE,
   formatGuideDepartureDate,
@@ -182,7 +183,10 @@ function OperationSummaryPanel({
         return (
           <div className="reservation-ops-row" key={departure.key}>
             <div className="reservation-ops-title">
-              <span className={`badge ${GUIDE_ASSIGNMENT_STATUS_BADGE[summary.status]}`}>{summary.status}</span>
+              <GuideOperationPhaseBadge departure={departure.departure} />
+              {!departure.handedOver && (
+                <span className={`badge ${GUIDE_ASSIGNMENT_STATUS_BADGE[summary.status]}`}>{summary.status}</span>
+              )}
               <b>{departure.productName}</b>
               <small>출발 {formatGuideDepartureDate(departure.departureDate)}</small>
             </div>
@@ -248,6 +252,7 @@ export default function ReservationsPage() {
   const pageSize = 8;
   const [viewer, changeViewer] = useReservationViewer();
   const [linkedKeyword, setLinkedKeyword] = useQueryParam("keyword", "");
+  const [linkedDeparture, setLinkedDeparture] = useQueryParam("departure", "");
   const reservationList = useMemo(() => getReservationList(), []);
   const operationViews = useMemo(() => getReservationOperationViews(reservationList), [reservationList]);
   const upcomingDepartures = useMemo(() => {
@@ -292,6 +297,7 @@ export default function ReservationsPage() {
         return false;
       }
       if (!matchesKeyword(reservation, linkedKeyword)) return false;
+      if (linkedDeparture && operationViews[reservation.code]?.departureKey !== linkedDeparture) return false;
       if (!matchesKeyword(reservation, applied.keyword)) return false;
       if (applied.code && !reservation.code.toLowerCase().includes(applied.code.toLowerCase())) return false;
       if (applied.bookerName && !reservation.bookerName.includes(applied.bookerName)) return false;
@@ -302,7 +308,7 @@ export default function ReservationsPage() {
       if (!matchesDateRange(reservation.departureAt, applied.departureFrom, applied.departureTo)) return false;
       return true;
     });
-  }, [allReservations, applied, linkedKeyword, viewer]);
+  }, [allReservations, applied, linkedKeyword, linkedDeparture, operationViews, viewer]);
 
   const kpis = useMemo(() => getReservationKpis(allReservations), [allReservations]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -318,6 +324,7 @@ export default function ReservationsPage() {
     setDraft(EMPTY_FILTERS);
     setApplied(EMPTY_FILTERS);
     setLinkedKeyword("");
+    setLinkedDeparture("");
     setPage(1);
     act("검색 조건을 초기화했습니다.");
   };
@@ -652,6 +659,25 @@ export default function ReservationsPage() {
                 상품 연결 조회 <b>{linkedKeyword}</b> · 원본/판매 상품코드 기준으로 예약을 표시합니다.
               </span>
               <button type="button" className="secondary settlement-inline-button" onClick={clearLinkedKeyword}>
+                <X size={12} />
+                조건 해제
+              </button>
+            </div>
+          )}
+
+          {linkedDeparture && (
+            <div className="settlement-drill-chip" role="status">
+              <span>
+                출발회차 연결 조회 <b>{linkedDeparture}</b> · 해당 출발회차(상품 + 출발일)의 예약만 표시합니다.
+              </span>
+              <button
+                type="button"
+                className="secondary settlement-inline-button"
+                onClick={() => {
+                  setLinkedDeparture("");
+                  setPage(1);
+                }}
+              >
                 <X size={12} />
                 조건 해제
               </button>

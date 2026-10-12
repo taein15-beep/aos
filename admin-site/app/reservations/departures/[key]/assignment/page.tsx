@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import { ProductAdminShell } from "@/components/products/ProductAdminShell";
+import { GuideOperationPhaseBadge } from "@/components/guide/GuideOperationPhaseBadge";
 import { ShareConfirmDialog, type ShareConfirmDialogState } from "@/components/products/ShareConfirmDialog";
 import { useQueryParam } from "@/components/settlements/SettlementParts";
 import {
@@ -39,6 +40,7 @@ import {
   type GuidePassenger,
   type GuideReservationGroup,
   type GuideVehicle,
+  formatTestReferenceNow,
 } from "@/lib/admin/guide-operation-data";
 import {
   OPERATION_ELIGIBILITY_META,
@@ -59,9 +61,7 @@ const PARTIAL_VALUE = "__partial";
 const HANDOVER_BY = "장윤호 (관리자)";
 
 function formatNow() {
-  const now = new Date();
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  return formatTestReferenceNow();
 }
 
 function vehicleIdOf(passenger: GuidePassenger) {
@@ -598,7 +598,10 @@ function OperationAssignmentBody({
         <div className="guide-ops-hero-main">
           <p className="member-web-breadcrumb">예약관리 &gt; 예약접수현황 &gt; 운영배정</p>
           <div className="guide-ops-hero-status">
-            <span className={`badge ${GUIDE_ASSIGNMENT_STATUS_BADGE[summary.status]}`}>{summary.status}</span>
+            <GuideOperationPhaseBadge departure={departure} />
+            {!departure.handover && (
+              <span className={`badge ${GUIDE_ASSIGNMENT_STATUS_BADGE[summary.status]}`}>{summary.status}</span>
+            )}
             <span className="guide-ops-code">{departure.productCode}</span>
           </div>
           <h1 id="ops-assign-title">{departure.productName}</h1>

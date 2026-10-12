@@ -46,6 +46,27 @@ const SELLER_ADMIN_PROFILES: SellerAdminProfile[] = [
   },
 ];
 
+/** 판매점 가입 시 등록된 정보 (조회 전용 — 공급여행사 추가 가입 시 재입력하지 않음) */
+export type SellerRegisteredInfo = {
+  representative: string;
+  contactName: string;
+  contactPhone: string;
+  businessNumber: string;
+};
+
+const SELLER_REGISTERED_INFO: Record<string, SellerRegisteredInfo> = {
+  SEL00032: {
+    representative: "김민수",
+    contactName: "홍길동",
+    contactPhone: "010-1234-5678",
+    businessNumber: "123-45-67890",
+  },
+};
+
+export function getSellerRegisteredInfo(sellerId: string): SellerRegisteredInfo | null {
+  return SELLER_REGISTERED_INFO[sellerId.trim()] ?? null;
+}
+
 export function getSellerAdminProfileByLoginId(loginId: string): SellerAdminProfile | null {
   const normalized = loginId.trim().toLowerCase();
   if (!normalized) return null;
