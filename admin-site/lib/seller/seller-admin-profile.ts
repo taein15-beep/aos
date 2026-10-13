@@ -67,6 +67,21 @@ export function getSellerRegisteredInfo(sellerId: string): SellerRegisteredInfo 
   return SELLER_REGISTERED_INFO[sellerId.trim()] ?? null;
 }
 
+/** 판매점 정산 지급계좌 (조회 전용 · 계좌번호는 Masking 값만 보관) */
+export type SellerPayoutAccount = {
+  holder: string;
+  bank: string;
+  maskedNumber: string;
+};
+
+const SELLER_PAYOUT_ACCOUNTS: Record<string, SellerPayoutAccount> = {
+  SEL00032: { holder: "그래가자", bank: "국민은행", maskedNumber: "123-****-****-01" },
+};
+
+export function getSellerPayoutAccount(sellerId: string): SellerPayoutAccount | null {
+  return SELLER_PAYOUT_ACCOUNTS[sellerId.trim()] ?? null;
+}
+
 export function getSellerAdminProfileByLoginId(loginId: string): SellerAdminProfile | null {
   const normalized = loginId.trim().toLowerCase();
   if (!normalized) return null;

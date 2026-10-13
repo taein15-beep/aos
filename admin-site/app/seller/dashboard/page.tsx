@@ -352,6 +352,9 @@ export default function SellerDashboardPage() {
               <h2 id="seller-dash-settle-title">정산 현황</h2>
               <p>판매점이 공급여행사에 지급할 정산 금액입니다. 판매점 수익은 ‘예상 수익’으로 별도 표시합니다.</p>
             </div>
+            <Link href={`${SELLER_ADMIN_BASE_PATH}/settlements`} className="text-btn seller-dash-link">
+              정산관리 →
+            </Link>
           </div>
           {settlementSuppliers.length === 0 ? (
             <div className="seller-dash-empty">

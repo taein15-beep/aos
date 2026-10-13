@@ -22,6 +22,7 @@ export const RESERVATION_VIEWERS: ReservationViewer[] = [
   { key: "selling-graegaja", type: "sellingAgency", agencyName: "그래가자", userName: "한지민", label: "판매여행사 · 그래가자" },
   { key: "seller-smarttour", type: "seller", agencyName: "스마트투어 판매점", userName: "오세린", label: "판매점 · 스마트투어 판매점" },
   { key: "supplier-happytour", type: "supplierAgency", agencyName: "행복투어", userName: "김민재", label: "공급여행사 · 행복투어" },
+  { key: "supplier-hyundam", type: "supplierAgency", agencyName: "현담여행사", userName: "박준호", label: "공급여행사 · 현담여행사" },
 ];
 
 export const DEFAULT_RESERVATION_VIEWER = RESERVATION_VIEWERS[0];

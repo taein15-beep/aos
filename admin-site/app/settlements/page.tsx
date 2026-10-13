@@ -21,7 +21,7 @@ import { SettlementDocumentStatusBadge } from "@/components/settlements/Settleme
 import { SettlementDashboard } from "@/components/settlements/SettlementDashboard";
 import { SettlementDocumentList } from "@/components/settlements/SettlementDocumentList";
 import { SellerChannelSettlementPanel } from "@/components/settlements/SellerChannelSettlementPanel";
-import { SELLER_SETTLEMENT_SUPPLIER_NAME } from "@/lib/admin/seller-channel-settlements";
+import { SELLER_SETTLEMENT_SUPPLIER_NAME, isSellerSettlementSupplier } from "@/lib/admin/seller-channel-settlements";
 import { formatReservationTimestamp } from "@/lib/admin/reservations-data";
 import {
   SETTLEMENT_DOCUMENT_FILTER_STATUSES,
@@ -145,7 +145,7 @@ export default function SettlementsPage() {
   const isSellerView = viewer.type === "seller";
   const documentTabLabel = viewer.type === "sellingAgency" ? "받은 정산서" : "정산서";
   const canViewSellerChannel =
-    viewer.type === "integrated" || (viewer.type === "supplierAgency" && viewer.agencyName === SELLER_SETTLEMENT_SUPPLIER_NAME);
+    viewer.type === "integrated" || (viewer.type === "supplierAgency" && isSellerSettlementSupplier(viewer.agencyName));
   const activeTab = (tab === "document" && isSellerView) || (tab === "seller" && !canViewSellerChannel) ? "reservation" : tab;
   const kpis = useMemo(() => getSettlementKpis(visibleRecords), [visibleRecords]);
   const groups = useMemo(() => getSettlementDepartureGroups(filtered), [filtered]);
@@ -338,8 +338,10 @@ export default function SettlementsPage() {
 
         {activeTab === "seller" ? (
           <SellerChannelSettlementPanel
+            key={`seller-channel-${viewer.key}`}
             audience="supplier"
-            canManage={viewer.type === "supplierAgency" && viewer.agencyName === SELLER_SETTLEMENT_SUPPLIER_NAME}
+            supplierName={viewer.type === "supplierAgency" ? viewer.agencyName : SELLER_SETTLEMENT_SUPPLIER_NAME}
+            canManage={viewer.type === "supplierAgency" && isSellerSettlementSupplier(viewer.agencyName)}
             reservationHref={(code) => withReservationViewer(`/reservations/${encodeURIComponent(code)}`, viewer)}
             onNotify={notify}
           />

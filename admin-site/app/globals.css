@@ -1814,6 +1814,284 @@ a.secondary.seller-pd-link-button{display:inline-flex;align-items:center;gap:5px
   .seller-rsv-product,.seller-prod-supplier,.seller-rsv-customer,.seller-rsv-date{justify-items:end;text-align:right;min-width:0}
   .seller-rsv-flag{justify-self:end}
 }
+/* 판매점 관리자 > 인보이스 목록 (STEP 8-1) */
+.seller-invoices-page{display:grid;gap:12px}
+.seller-inv-payment-counts{border-top:1px solid #edf0f4}
+.seller-inv-status{display:grid;gap:3px;justify-items:start}
+.seller-inv-status small{color:#7a8699;font-size:10px;font-weight:600;white-space:nowrap}
+.seller-inv-status small.is-review{color:#b45309}
+@media(max-width:760px){
+  .seller-inv-table td[data-label="인보이스번호"]{order:1}
+  .seller-inv-table td[data-label="인보이스 상태"]{order:2}
+  .seller-inv-table td[data-label="예약번호"]{order:3}
+  .seller-inv-table td[data-label="상품"]{order:4}
+  .seller-inv-table td[data-label="공급여행사"]{order:5}
+  .seller-inv-table td[data-label="예약자"]{order:6}
+  .seller-inv-table td[data-label="인보이스 금액"]{order:7}
+  .seller-inv-table td[data-label="결제상태"]{order:8}
+  .seller-inv-table td[data-label="발행일"]{order:9}
+  .seller-inv-table td[data-label="관리"]{order:10}
+  .seller-inv-status{justify-items:end;text-align:right}
+}
+/* 판매점 관리자 > 정산관리 목록 (STEP 9-1) */
+.seller-settlements-page{display:grid;gap:12px;min-width:0}
+.seller-stl-code{color:#213047;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.seller-stl-table .seller-prod-money b.seller-settle-minus,.seller-settlements-page .seller-dash-stats dd.seller-settle-minus{color:#b45309}
+.seller-stl-table .seller-inv-status-badges .badge{white-space:nowrap}
+@media(min-width:761px) and (max-width:1100px){
+  .seller-stl-table .seller-stl-sub-col{display:none}
+}
+@media(max-width:760px){
+  .seller-stl-table td[data-label="정산번호"]{order:1}
+  .seller-stl-table td[data-label="정산상태"]{order:2}
+  .seller-stl-table td[data-label="공급여행사"]{order:3}
+  .seller-stl-table td[data-label="정산기간"]{order:4}
+  .seller-stl-table td[data-label="최종 정산금액"]{order:5}
+  .seller-stl-table td[data-label="조정금액"]{order:6}
+  .seller-stl-table td[data-label="예약건수"]{order:7}
+  .seller-stl-table td[data-label="지급상태"]{order:8}
+  .seller-stl-table td[data-label="정산 원금"]{order:9}
+  .seller-stl-table td[data-label="관리"]{order:10}
+}
+/* 판매점 관리자 > 인보이스 상세 · 재발행 (STEP 8-2) */
+.seller-inv-status-badges{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px}
+.badge.seller-inv-version{font-variant-numeric:tabular-nums}
+.seller-inv-detail-page{display:grid;gap:14px}
+.seller-inv-detail-page>.page-head{margin-bottom:0}
+.seller-inv-detail-title-block{display:grid;gap:4px;min-width:0}
+.seller-inv-breadcrumb{display:flex;align-items:center;gap:6px;color:#7a8699;font-size:11px;font-weight:600}
+.seller-inv-breadcrumb a{color:#536075;text-decoration:none}
+.seller-inv-breadcrumb a:hover{color:#0f766e;text-decoration:underline}
+.seller-inv-breadcrumb [aria-current]{color:#213047}
+.seller-inv-detail-title-block .seller-pd-code{text-decoration:none}
+.seller-inv-detail-title-block .seller-pd-code:hover{color:#0f766e;text-decoration:underline}
+.seller-inv-current-chip{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border:1px solid #99d5cc;border-radius:999px;background:#f0fdfa;color:#0f766e;font-size:11px;font-weight:700}
+.seller-inv-current-chip b{font-variant-numeric:tabular-nums}
+.seller-inv-current-chip.is-none{border-color:#d7dee8;background:#f8fafc;color:#6b778a;font-weight:650}
+.seller-inv-detail-actions{align-items:center}
+.seller-inv-action-note{flex-basis:100%;color:#7a8699;font-size:11px;text-align:right}
+.seller-relation-drawer-alert.seller-inv-past-alert{align-items:center;border-color:#d7dee8;background:#f8fafc;color:#334056}
+.seller-inv-past-alert>span{flex:1;min-width:0}
+.seller-inv-past-alert .secondary{height:30px;font-size:11px;white-space:nowrap}
+.seller-inv-version-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.seller-inv-version-tabs button{height:30px;padding:0 12px;border:1px solid #d7dee8;border-radius:999px;background:#fff;color:#536075;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer}
+.seller-inv-version-tabs button:hover{border-color:#0f766e;color:#0f766e}
+.seller-inv-version-tabs button.is-active{border-color:#0f766e;background:#0f766e;color:#fff}
+.seller-inv-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"info info" "reservation supplier" "reservation seller" "amount history" "payment history" "issuer history" "sends sends";gap:14px;align-items:start}
+.seller-inv-card-info{grid-area:info}
+.seller-inv-card-amount{grid-area:amount}
+.seller-inv-card-reservation{grid-area:reservation}
+.seller-inv-card-supplier{grid-area:supplier}
+.seller-inv-card-seller{grid-area:seller}
+.seller-inv-card-payment{grid-area:payment}
+.seller-inv-card-history{grid-area:history}
+.seller-inv-card-issuer{grid-area:issuer}
+.seller-inv-summary-title{margin:0;padding:11px 14px 0;color:#1f2d42;font-size:14px}
+.seller-inv-card-info dl>div:first-child{border-left:0}
+.seller-inv-refund{color:#b42318}
+.seller-inv-versions{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.seller-inv-versions button{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:9px 12px;border:1px solid #e3e8ef;border-radius:7px;background:#fff;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.seller-inv-versions button:hover{border-color:#99d5cc}
+.seller-inv-versions li.is-selected button{border-color:#0f766e;background:#f0fdfa}
+.seller-inv-versions-head{display:inline-flex;flex-wrap:wrap;align-items:center;gap:5px}
+.seller-inv-versions-head b{color:#1f2d42;font-size:13px;font-variant-numeric:tabular-nums}
+.seller-inv-versions time{grid-column:1;color:#7a8699;font-size:11px;font-variant-numeric:tabular-nums}
+.seller-inv-versions strong{grid-column:2;grid-row:1;align-self:center;color:#1f2d42;font-size:14px;font-variant-numeric:tabular-nums}
+.seller-inv-versions small{grid-column:1/-1;color:#536075;font-size:11px}
+.seller-inv-mock [role="group"]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.seller-inv-mock select{height:32px;padding:0 8px;border:1px solid #d7dee8;border-radius:6px;background:#fff;color:#213047;font-size:12px}
+.seller-inv-mock .secondary{height:32px;font-size:12px}
+.seller-inv-mock p{margin:0;color:#6b778a;font-size:12px}
+.seller-price-readonly div.is-total{background:#f0fdfa}
+.seller-price-readonly div.is-total dd{color:#0f766e}
+.seller-inv-compare{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px}
+.seller-inv-compare>div{display:grid;gap:3px;padding:10px 12px;border:1px solid #e3e8ef;border-radius:8px;background:#f8fafc}
+.seller-inv-compare>div.is-next{border-color:#99d5cc;background:#f0fdfa}
+.seller-inv-compare span{color:#536075;font-size:11px;font-weight:700}
+.seller-inv-compare strong{color:#1f2d42;font-size:18px;font-variant-numeric:tabular-nums}
+.seller-inv-compare .is-next strong{color:#0f766e}
+.seller-inv-compare small{color:#7a8699;font-size:11px}
+.seller-inv-compare>svg{color:#8793a4}
+.seller-inv-delta{margin:0;display:flex;justify-content:flex-end;align-items:baseline;gap:8px;color:#536075;font-size:12px;font-weight:650}
+.seller-inv-delta b{color:#0f766e;font-size:15px;font-variant-numeric:tabular-nums}
+.seller-inv-delta b.is-minus{color:#b42318}
+/* 판매점 관리자 > 인보이스 문서 미리보기 · 발송 (STEP 8-3) */
+.seller-inv-card-sends{grid-area:sends}
+.seller-inv-versions li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
+.seller-inv-versions li>button{grid-row:1}
+.seller-inv-versions .seller-inv-versions-doc{grid-column:2;width:auto;display:inline-flex;align-items:center;gap:4px;padding:0 10px;color:#0f766e;font-size:11px;font-weight:700;white-space:nowrap}
+.seller-inv-sends-empty{margin:0;padding:10px 0;color:#7a8699;font-size:12px}
+.seller-inv-sends-wrap{overflow-x:auto}
+.seller-inv-sends-table{width:100%;border-collapse:collapse;font-size:12px}
+.seller-inv-sends-table th{padding:7px 10px;border-bottom:1px solid #e3e8ef;background:#f8fafc;color:#536075;font-size:11px;font-weight:700;text-align:left;white-space:nowrap}
+.seller-inv-sends-table td{padding:8px 10px;border-bottom:1px solid #eef1f5;color:#1f2d42;white-space:nowrap;font-variant-numeric:tabular-nums}
+.seller-inv-sends-table td small{margin-left:5px;color:#8793a4;font-size:11px}
+.seller-sup-modal.seller-inv-preview-modal{width:min(980px,calc(100vw - 32px));max-height:calc(100dvh - 24px);display:flex;flex-direction:column}
+.seller-inv-preview-modal .seller-sup-modal-body{display:block;padding:0;overflow-y:auto;min-height:0;background:#eef1f5}
+.seller-inv-preview-modal .modal-actions{flex:0 0 auto}
+.seller-inv-preview-modal .modal-actions button{display:inline-flex;align-items:center;gap:5px}
+.invoice-preview-bar{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 18px;border-bottom:1px solid #e3e8ef;background:#fff}
+.invoice-preview-bar.is-past{border-bottom-color:#fed7aa;background:#fff7ed}
+.invoice-preview-code{color:#162136;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.invoice-preview-past{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 9px;border-radius:999px;background:#9a3412;color:#fff;font-size:11px;font-weight:700}
+.invoice-preview-warn{margin-left:auto;color:#b45309;font-size:11px;font-weight:700}
+.invoice-preview-stage{padding:24px 32px 32px}
+.invoice-preview-empty{padding:48px 18px;text-align:center;background:#fff}
+.invoice-document{position:relative;width:min(100%,794px);aspect-ratio:210/297;margin:0 auto;padding:44px 48px;display:flex;flex-direction:column;gap:18px;border:1px solid #dfe4ea;background:#fff;box-shadow:0 2px 12px rgba(15,23,42,.12);color:#1f2d42;font-size:12px;box-sizing:border-box}
+.invoice-document dl{margin:0}
+.invoice-document dd{margin:0;overflow-wrap:anywhere}
+.invoice-document dd small{margin-left:4px;color:#8793a4;font-size:11px;font-weight:500}
+.invoice-document-watermark{position:absolute;inset:0;overflow:hidden;display:grid;place-items:center;pointer-events:none}
+.invoice-document-watermark b{transform:rotate(-24deg);color:rgba(180,35,24,.1);font-size:96px;font-weight:900;letter-spacing:.08em;white-space:nowrap}
+.invoice-document-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:14px;border-bottom:2px solid #213047}
+.invoice-document-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.invoice-document-brand>div{display:grid;gap:2px}
+.invoice-document-brand strong{color:#162136;font-size:17px}
+.invoice-document-brand small{color:#7a8699;font-size:11px;font-weight:600}
+.invoice-document-title{text-align:right}
+.invoice-document-title h4{margin:0;color:#162136;font-size:28px;letter-spacing:.16em}
+.invoice-document-title p{margin:2px 0 0;display:inline-flex;align-items:center;gap:6px;color:#536075;font-size:12px;font-weight:700}
+.invoice-document-meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:10px 14px;border-radius:6px;background:#f8fafc}
+.invoice-document-meta>div,.invoice-document-grid>div{display:grid;gap:2px;min-width:0}
+.invoice-document dt{color:#7a8699;font-size:10px;font-weight:700}
+.invoice-document-meta dd{color:#162136;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums}
+.invoice-document-parties{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.invoice-document-parties>section{padding:12px 14px;border:1px solid #e3e8ef;border-radius:6px}
+.invoice-document h5{margin:0 0 8px;color:#0f766e;font-size:12px;font-weight:800}
+.invoice-document-parties dl{display:grid;gap:4px}
+.invoice-document-parties dl>div{display:grid;grid-template-columns:88px minmax(0,1fr);gap:8px;align-items:baseline}
+.invoice-document-parties dd{font-weight:650}
+.invoice-document-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 14px}
+.invoice-document-grid dd{font-weight:650;font-variant-numeric:tabular-nums}
+.invoice-document-table-wrap{overflow-x:auto}
+.invoice-document-table{width:100%;border-collapse:collapse}
+.invoice-document-table th{padding:7px 10px;border-top:1px solid #213047;border-bottom:1px solid #cfd6df;background:#f1f5f9;color:#334056;font-size:11px;font-weight:700;text-align:right}
+.invoice-document-table td{padding:9px 10px;border-bottom:1px solid #e3e8ef;text-align:right;font-variant-numeric:tabular-nums}
+.invoice-document-table th:first-child,.invoice-document-table td:first-child{text-align:left}
+.invoice-document-table td small{display:block;color:#8793a4;font-size:10.5px}
+.invoice-document .invoice-document-total{width:min(100%,320px);margin:10px 0 0 auto;display:grid}
+.invoice-document-total>div{display:flex;justify-content:space-between;gap:12px;padding:6px 2px;border-bottom:1px dashed #e3e8ef}
+.invoice-document-total dt{font-size:11.5px;color:#536075}
+.invoice-document-total dd{font-weight:700;font-variant-numeric:tabular-nums}
+.invoice-document-total>div.is-total{margin-top:4px;padding-top:9px;border-top:2px solid #213047;border-bottom:0}
+.invoice-document-total>div.is-total dt{color:#162136;font-size:13px;font-weight:800}
+.invoice-document-total>div.is-total dd{color:#0f766e;font-size:16px;font-weight:800}
+.invoice-document .is-minus{color:#b42318}
+.invoice-document-note{margin:8px 0 0;color:#7a8699;font-size:11px;text-align:right}
+.invoice-document-foot{margin-top:auto;padding-top:10px;border-top:1px solid #e3e8ef}
+.invoice-document-foot p{margin:2px 0;color:#536075;font-size:11px}
+.invoice-document-foot p.is-warn{display:flex;align-items:center;gap:4px;color:#b42318;font-weight:700}
+.invoice-document-foot small{color:#8793a4;font-size:10.5px}
+.seller-inv-send-form{display:grid;gap:10px}
+.seller-inv-send-channels{margin:0;padding:0;border:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px}
+.seller-inv-send-channels legend{margin-bottom:6px;padding:0}
+.seller-inv-send-channels legend small,.seller-inv-send-field .seller-price-label small{margin-left:4px;color:#8793a4;font-size:11px;font-weight:500}
+.seller-inv-send-channels label{display:inline-flex;align-items:center;gap:6px;color:#213047;font-size:13px;font-weight:650;cursor:pointer}
+.seller-inv-send-field{display:grid;gap:5px}
+.seller-inv-send-field input{height:34px;padding:0 10px;border:1px solid #d7dee8;border-radius:6px;color:#1f2d42;font-size:13px}
+.seller-inv-send-field input[aria-invalid="true"]{border-color:#e5484d}
+.seller-inv-send-error{margin:0;color:#b42318;font-size:11px;font-weight:650}
+.seller-inv-send-message{margin:0;display:grid;gap:3px;padding:10px 12px;border:1px solid #e3e8ef;border-radius:6px;background:#f8fafc;color:#1f2d42;font-size:12.5px;font-weight:650}
+.seller-inv-send-message small{color:#7a8699;font-size:11px;font-weight:500}
+.seller-inv-send-modal .seller-pd-origin-note.seller-inv-send-review{color:#b45309;font-weight:650}
+@media(max-width:1080px){
+  .seller-inv-detail-grid{grid-template-columns:1fr;grid-template-areas:"info" "amount" "reservation" "supplier" "seller" "payment" "history" "issuer" "sends"}
+  .invoice-preview-stage{padding:16px}
+  .invoice-document{padding:32px 30px}
+}
+@media(max-width:760px){
+  .seller-inv-detail-page{display:flex;flex-direction:column}
+  .seller-inv-detail-head,.seller-inv-detail-grid{display:contents}
+  .seller-inv-card-info{order:1}
+  .seller-inv-card-amount{order:2}
+  .seller-inv-card-reservation{order:3}
+  .seller-inv-card-supplier{order:4}
+  .seller-inv-card-seller{order:5}
+  .seller-inv-card-payment{order:6}
+  .seller-inv-card-history{order:7}
+  .seller-inv-card-issuer{order:8}
+  .seller-pd-head-actions.seller-inv-detail-actions{order:9;justify-content:stretch}
+  .seller-inv-detail-actions>a,.seller-inv-detail-actions>button,.seller-inv-detail-actions>.seller-prod-action-lock{flex:1 1 auto;justify-content:center}
+  .seller-inv-detail-actions>.seller-prod-action-lock button{width:100%;justify-content:center}
+  .seller-inv-action-note{text-align:left}
+  .seller-inv-mock,.seller-inv-detail-page>.seller-dash-mock{order:10}
+  .seller-inv-past-alert{flex-wrap:wrap}
+  .seller-inv-compare{grid-template-columns:1fr}
+  .seller-inv-compare>svg{justify-self:center;transform:rotate(90deg)}
+  .seller-inv-card-sends{order:8}
+  .seller-inv-reissue-modal .modal-actions{position:sticky;bottom:0;background:#fff}
+  .modal-backdrop:has(.seller-inv-preview-modal){place-items:stretch}
+  .seller-sup-modal.seller-inv-preview-modal{width:100vw;height:100dvh;max-height:100dvh;border-radius:0}
+  .seller-inv-preview-modal .seller-sup-modal-body{flex:1 1 auto}
+  .seller-inv-preview-modal .modal-actions{height:auto;flex-wrap:wrap;padding:10px 12px;background:#fff}
+  .seller-inv-preview-modal .modal-actions>button,.seller-inv-preview-modal .modal-actions>.seller-prod-action-lock{flex:1 1 40%;justify-content:center}
+  .seller-inv-preview-modal .modal-actions>.seller-prod-action-lock button{width:100%;justify-content:center}
+  .invoice-preview-bar{padding:8px 12px}
+  .invoice-preview-warn{flex-basis:100%;margin-left:0}
+  .invoice-preview-stage{padding:10px}
+  .invoice-document{aspect-ratio:auto;padding:18px 16px;gap:14px}
+  .invoice-document-head{flex-wrap:wrap;align-items:flex-start}
+  .invoice-document-title{text-align:left}
+  .invoice-document-title h4{font-size:22px}
+  .invoice-document-meta,.invoice-document-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .invoice-document-parties{grid-template-columns:1fr}
+  .invoice-document-parties dl>div{grid-template-columns:84px minmax(0,1fr)}
+  .invoice-document-table{min-width:420px}
+  .invoice-document .invoice-document-total{width:100%}
+  .invoice-document-note{text-align:left}
+  .invoice-document-watermark b{font-size:56px}
+}
+/* 판매점 관리자 > 정산 상세 · 정산서 확인 (STEP 9-2) */
+.seller-stl-detail-page{min-width:0}
+.seller-stl-detail-page .seller-settle-minus{color:#b45309}
+.seller-stl-detail-page .seller-relation-drawer-alert.seller-pd-alert.is-info{border-color:#bfdbfe;background:#eff6ff;color:#1e3a8a}
+.seller-stl-detail-page .seller-pd-alert>button{margin-left:auto;flex:0 0 auto}
+.seller-stl-detail-page a.seller-stl-code{text-decoration:none}
+.seller-stl-detail-page a.seller-stl-code:hover,.seller-stl-table a.seller-stl-code:hover{color:#0f766e;text-decoration:underline}
+.seller-stl-table a.seller-stl-code{text-decoration:none}
+.seller-stl-detail-stats{grid-template-columns:repeat(6,minmax(0,1fr))}
+.seller-stl-detail-stats dd{font-size:15px;white-space:nowrap}
+.seller-stl-detail-stats .seller-stl-stat-final dd{font-size:17px}
+.seller-stl-detail-grid,.seller-stl-detail-bottom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.seller-stl-detail-side{display:grid;gap:14px;min-width:0}
+.seller-stl-detail-table{min-width:1040px}
+.seller-stl-detail-table .seller-prod-money small{white-space:nowrap}
+.seller-stl-detail-table .seller-inv-status small{white-space:normal;max-width:150px}
+.seller-stl-aggregate-row td{background:#fafbfc;color:#536075}
+.seller-stl-formula{margin:10px 14px 14px}
+.seller-stl-compare{margin:6px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,max-content));gap:6px}
+.seller-stl-compare>div{display:grid;gap:2px;padding:6px 12px;border:1px solid #fde68a;border-radius:6px;background:#fff}
+.seller-stl-compare dt{color:#92400e;font-size:10.5px;font-weight:700}
+.seller-stl-compare dd{margin:0;color:#1f2d42;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.seller-stl-compare>div:last-child dd{color:#0f766e}
+.seller-stl-compare dd.seller-settle-minus{color:#b45309}
+.seller-stl-confirm-check{margin-top:12px}
+@media(max-width:1100px){
+  .seller-stl-detail-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .seller-stl-detail-stats>div:nth-child(3n){border-right:0}
+  .seller-stl-detail-stats>div:nth-child(-n+3){border-bottom:1px solid #edf0f4}
+  .seller-stl-detail-bottom{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  .seller-stl-detail-page .seller-pd-head-actions.seller-inv-detail-actions{order:0}
+  .seller-stl-detail-grid,.seller-stl-detail-bottom,.seller-stl-detail-side{grid-template-columns:1fr}
+  .seller-stl-detail-stats{display:flex;flex-wrap:wrap}
+  .seller-stl-detail-stats>div{flex:1 1 50%;border-bottom:1px solid #edf0f4}
+  .seller-stl-detail-stats>div:nth-child(n){border-right:0}
+  .seller-stl-detail-stats .seller-stl-stat-final{order:1;flex-basis:100%}
+  .seller-stl-detail-stats .seller-stl-stat-supplier{order:2}
+  .seller-stl-detail-stats .seller-stl-stat-period{order:3}
+  .seller-stl-detail-stats .seller-stl-stat-principal{order:4}
+  .seller-stl-detail-stats .seller-stl-stat-adjust{order:5}
+  .seller-stl-detail-stats .seller-stl-stat-count{order:6}
+  .seller-stl-detail-table{min-width:0}
+  .seller-stl-detail-table td[data-label="여행일"],
+  .seller-stl-detail-table td[data-label="판매방식"],
+  .seller-stl-detail-table td[data-label="예약자"],
+  .seller-stl-detail-table td[data-label="인원"],
+  .seller-stl-detail-table td[data-label="예약금액"]{display:none}
+  .seller-stl-compare{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 /* 판매점 관리자 > 예약 상세 (STEP 7-2) */
 .seller-rsv-detail-page{display:grid;gap:14px}
 .seller-rsv-detail-page>.page-head{margin-bottom:0}
@@ -2066,6 +2344,44 @@ a.secondary.seller-pd-link-button{display:inline-flex;align-items:center;gap:5px
   .seller-settle-table td:last-child{border-bottom:0}
   .seller-settle-table td::before{content:attr(data-label);flex:none;color:#7a8699;font-size:10px;font-weight:700;text-align:left}
   .seller-settle-actions button{flex:1}
+}
+/* 공급여행사 지급처리 · 판매점 지급정보 (STEP 9-3) */
+.seller-settle-mock-options{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:6px}
+.seller-pay-block{padding:12px;border:1px solid #dbe7f5;border-radius:8px;background:#fbfdff}
+.seller-pay-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.3fr);gap:10px;align-items:start}
+.seller-pay-grid>section{display:grid;gap:8px;min-width:0;padding:10px 12px;border:1px solid #e3e8ef;border-radius:7px;background:#fff}
+.seller-pay-grid h4{margin:0;display:flex;align-items:center;gap:6px;color:#2f3d52;font-size:12px}
+.seller-pay-grid dl{margin:0;display:grid;gap:5px}
+.seller-pay-grid dl>div{display:grid;grid-template-columns:84px minmax(0,1fr);gap:8px;font-size:12px}
+.seller-pay-grid dt{color:#7a8699;font-weight:600}
+.seller-pay-grid dd{margin:0;color:#1f2d42;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.seller-pay-grid dd small{margin-left:4px;color:#7a8699;font-size:10.5px;font-weight:500}
+.seller-pay-grid dl>div.is-total dd{color:#1d4ed8;font-size:15px;font-weight:800}
+.seller-pay-status{border-color:#bfdbfe}
+.seller-pay-action{display:grid;gap:6px}
+.seller-pay-action button{justify-self:start;height:34px;padding:0 18px;font-size:12px}
+.seller-pay-empty{margin:0;padding:8px 10px;border:1px dashed #fcd34d;border-radius:6px;background:#fffbeb;color:#92400e;font-size:12px;font-weight:650}
+.settlement-modal.seller-pay-modal{width:min(680px,calc(100vw - 32px))}
+.seller-pay-modal .product-share-confirm-details.seller-pay-details{margin:0}
+.seller-pay-details div.is-total dd b{color:#1d4ed8;font-size:15px;font-variant-numeric:tabular-nums}
+.seller-pay-details dd small{display:inline-flex;align-items:center;gap:3px;margin-left:6px;color:#7a8699;font-size:10.5px;font-weight:500}
+.seller-pay-form.settlement-modal-form{grid-template-columns:repeat(3,minmax(0,1fr))}
+.seller-pay-form small{color:#8793a4;font-weight:500}
+.seller-pay-form .seller-pay-error{color:#b42318;font-weight:650}
+.seller-pay-form input[aria-invalid="true"]{border-color:#e5484d}
+.seller-pay-required{color:#b42318}
+.seller-pay-info{margin:0}
+@media(max-width:1100px){
+  .seller-pay-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .seller-pay-status{grid-column:1/-1}
+}
+@media(max-width:760px){
+  .seller-pay-grid{grid-template-columns:1fr}
+  .seller-pay-grid>section.seller-pay-status{order:-1}
+  .seller-pay-action button{justify-self:stretch}
+  .seller-pay-form.settlement-modal-form{grid-template-columns:1fr}
+  .seller-pay-modal .modal-actions{position:sticky;bottom:0;background:#fff}
+  .seller-pay-modal .modal-actions button{flex:1}
 }
 @media(max-width:1080px){
   .seller-pd-top{grid-template-columns:1fr}

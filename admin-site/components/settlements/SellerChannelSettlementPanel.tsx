@@ -4,27 +4,37 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AlertTriangle, Info, Lock } from "lucide-react";
 import { ReservationActionDialog, type ReservationActionDialogState } from "@/components/reservations/ReservationSource";
+import { SellerSettlementPaymentModal } from "@/components/settlements/SellerSettlementPaymentModal";
 import { useQueryParam } from "@/components/settlements/SettlementParts";
 import {
   SELLER_SETTLEMENT_SCENARIOS,
+  SELLER_SETTLEMENT_SUPPLIER_NAME,
   applySellerSettlementCancelAdjustments,
   confirmSellerSettlementBySeller,
   formatSellerSettlementAmount as won,
   formatSellerSettlementSigned as signed,
   getSellerSettlementConfirmCheck,
+  getSellerSettlementPaymentCheck,
   getSellerSettlementScenario,
-  listSellerSettlements,
+  isSellerPayoutAccountUnregisteredMock,
+  isSettlementLockedAfterPayment,
+  listSellerSettlementsBySupplier,
+  paySellerSettlement,
   reconfirmSellerSettlement,
   reissueSellerSettlementDocument,
+  sellerSettlementPaymentBadgeClass,
   sellerSettlementReflectionBadgeClass,
   sellerSettlementStatusBadgeClass,
+  setSellerPayoutAccountUnregisteredMock,
   setSellerSettlementScenario,
   summarizeSellerSettlements,
   useSellerSettlementStoreVersion,
   type SellerNextAdjustment,
   type SellerSettlement,
   type SellerSettlementLine,
+  type SellerSettlementPaymentInput,
 } from "@/lib/admin/seller-channel-settlements";
+import { getSellerRegisteredInfo } from "@/lib/seller/seller-admin-profile";
 
 const REFLECTION_LABELS: Record<SellerSettlementLine["reflection"], string> = {
   정상: "정상",
@@ -108,12 +118,15 @@ function NextAdjustmentTable({ items, incoming }: { items: SellerNextAdjustment[
  */
 export function SellerChannelSettlementPanel({
   audience,
+  supplierName = SELLER_SETTLEMENT_SUPPLIER_NAME,
   sellerId,
   canManage = false,
   reservationHref,
   onNotify,
 }: {
   audience: "supplier" | "seller";
+  /** 정산을 관리하는 공급여행사 (공급여행사 관리자 관점) */
+  supplierName?: string;
   sellerId?: string;
   canManage?: boolean;
   reservationHref: (code: string) => string;
@@ -121,10 +134,12 @@ export function SellerChannelSettlementPanel({
 }) {
   const storeVersion = useSellerSettlementStoreVersion();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const settlements = useMemo(() => listSellerSettlements(sellerId), [sellerId, storeVersion]);
-  const [selectedCode, setSelectedCode] = useQueryParam("period", "STL-SEL032-202610-1");
+  const settlements = useMemo(() => listSellerSettlementsBySupplier(supplierName, sellerId), [supplierName, sellerId, storeVersion]);
+  const [selectedCode, setSelectedCode] = useQueryParam("period", "STL-202610-HT-001");
   const [dialog, setDialog] = useState<ReservationActionDialogState | null>(null);
+  const [paymentOpen, setPaymentOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const isScenarioSupplier = supplierName === SELLER_SETTLEMENT_SUPPLIER_NAME;
   const selected = settlements.find((item) => item.code === selectedCode) ?? settlements.find((item) => item.status !== "지급완료") ?? null;
   const summary = summarizeSellerSettlements(settlements);
   const isSeller = audience === "seller";
@@ -214,11 +229,40 @@ export function SellerChannelSettlementPanel({
       onConfirm: () => run(() => reconfirmSellerSettlement(settlement.code), "정산이 다시 확정되었습니다."),
     });
 
+  const paymentCheck = selected ? getSellerSettlementPaymentCheck(selected) : null;
+  const canPay = Boolean(selected && canManage && !isSeller && paymentCheck?.canPay);
+  const sellerInfo = selected ? getSellerRegisteredInfo(selected.sellerId) : null;
+
+  const requestPayment = (settlement: SellerSettlement, input: SellerSettlementPaymentInput) =>
+    setDialog({
+      title: "정산금을 지급완료 처리하시겠습니까?",
+      details: [
+        { label: "판매점", value: `${settlement.sellerName} (${settlement.sellerId})` },
+        { label: "정산번호", value: settlement.code },
+        { label: "지급금액", value: won(settlement.finalAmount) },
+        { label: "지급방법", value: input.method },
+        { label: "지급일", value: dotted(input.paymentDate) },
+      ],
+      notes: ["이번 Prototype에서는 실제 계좌이체 없이 지급상태만 변경됩니다."],
+      confirmLabel: "지급처리",
+      onConfirm: () => {
+        setDialog(null);
+        const payment = paySellerSettlement(settlement.code, supplierName, input);
+        setPaymentOpen(false);
+        onNotify(
+          payment
+            ? "정산 지급처리가 완료되었습니다. 판매점에서 지급완료 내역을 확인할 수 있습니다."
+            : "지급처리할 수 없는 상태입니다. 정산 상태를 다시 확인해주세요.",
+        );
+      },
+    });
+
   return (
     <>
       {!isSeller && (
         <fieldset className="seller-dash-mock seller-settle-mock">
-          <legend>프로토타입 Mock 시나리오 · 10월 1차 정산의 취소 발생 전 상태</legend>
+          <legend>{isScenarioSupplier ? "프로토타입 Mock 시나리오 · 10월 1차 정산의 취소 발생 전 상태" : "프로토타입 Mock"}</legend>
+          {isScenarioSupplier && (
           <div role="radiogroup" aria-label="정산 Mock 시나리오">
             {SELLER_SETTLEMENT_SCENARIOS.map((item) => (
               <label key={item.key} className={item.key === getSellerSettlementScenario() ? "is-selected" : undefined}>
@@ -236,6 +280,22 @@ export function SellerChannelSettlementPanel({
                 {item.label}
               </label>
             ))}
+          </div>
+          )}
+          <div className="seller-settle-mock-options">
+            <label className={isSellerPayoutAccountUnregisteredMock() ? "is-selected" : undefined}>
+              <input
+                type="checkbox"
+                name="seller-settlement-account-unregistered"
+                checked={isSellerPayoutAccountUnregisteredMock()}
+                disabled={!canManage}
+                onChange={(event) => {
+                  setSellerPayoutAccountUnregisteredMock(event.target.checked);
+                  onNotify(event.target.checked ? "판매점 지급계좌 미등록 Mock을 적용했습니다." : "판매점 지급계좌 미등록 Mock을 해제했습니다.");
+                }}
+              />
+              판매점 지급계좌 미등록 (QA)
+            </label>
           </div>
         </fieldset>
       )}
@@ -308,7 +368,12 @@ export function SellerChannelSettlementPanel({
                     <StatusBadges settlement={item} />
                   </td>
                   <td data-label={isSeller ? "지급일" : "정산예정일 / 지급일"} className="date-cell">
-                    {item.paidAt ? `${dotted(item.paidAt.slice(0, 10))} 지급` : isSeller ? "-" : `${dotted(item.dueDate)} 예정`}
+                    <span className="seller-settle-period">
+                      <b>{item.paidAt ? `${dotted(item.paidAt.slice(0, 10))} 지급` : isSeller ? "-" : `${dotted(item.dueDate)} 예정`}</b>
+                      <small>
+                        <span className={`badge ${sellerSettlementPaymentBadgeClass(item.paymentStatus)}`}>{item.paymentStatus}</span>
+                      </small>
+                    </span>
                   </td>
                   <td data-label="상세">
                     <button
@@ -343,6 +408,7 @@ export function SellerChannelSettlementPanel({
             </div>
             <span className="reservation-status-stack">
               <StatusBadges settlement={selected} />
+              <span className={`badge ${sellerSettlementPaymentBadgeClass(selected.paymentStatus)}`}>{selected.paymentStatus}</span>
               {latestDoc ? <span className="badge gray">정산서 v{latestDoc.version}</span> : null}
             </span>
           </div>
@@ -442,7 +508,7 @@ export function SellerChannelSettlementPanel({
                         정산확정
                       </button>
                     )}
-                    {selected.status === "정산확정" && <span className="badge info">지급대기 · 실제 지급 없음</span>}
+                    {selected.status === "정산확정" && <span className="badge info">지급대기 · 아래 지급정보에서 지급처리</span>}
                   </div>
                   {check && (check.blockers.length > 0 || check.warnings.length > 0) && selected.status !== "정산확정" && (
                     <ul className="seller-settle-checks">
@@ -459,6 +525,138 @@ export function SellerChannelSettlementPanel({
                   {!canManage && <p>정산 수정은 공급여행사({selected.supplierName}) 관리자 관점에서 진행할 수 있습니다.</p>}
                 </>
               )}
+            </div>
+          )}
+
+          {!isSeller && paymentCheck && (
+            <div className="seller-settle-block seller-pay-block" aria-labelledby="seller-pay-block-title">
+              <h3 id="seller-pay-block-title">지급정보</h3>
+              <div className="seller-pay-grid">
+                <section aria-label="판매점 정보">
+                  <h4>판매점</h4>
+                  <dl>
+                    <div>
+                      <dt>판매점명</dt>
+                      <dd>{selected.sellerName}</dd>
+                    </div>
+                    <div>
+                      <dt>판매점코드</dt>
+                      <dd>{selected.sellerId}</dd>
+                    </div>
+                    <div>
+                      <dt>대표자</dt>
+                      <dd>{sellerInfo?.representative ?? "-"}</dd>
+                    </div>
+                    <div>
+                      <dt>담당자</dt>
+                      <dd>{sellerInfo?.contactName ?? "-"}</dd>
+                    </div>
+                  </dl>
+                </section>
+                <section aria-label="지급계좌">
+                  <h4>지급계좌</h4>
+                  {paymentCheck.account ? (
+                    <dl>
+                      <div>
+                        <dt>예금주</dt>
+                        <dd>{paymentCheck.account.holder}</dd>
+                      </div>
+                      <div>
+                        <dt>은행</dt>
+                        <dd>{paymentCheck.account.bank}</dd>
+                      </div>
+                      <div>
+                        <dt>계좌번호</dt>
+                        <dd>{paymentCheck.account.maskedNumber}</dd>
+                      </div>
+                    </dl>
+                  ) : (
+                    <p className="seller-pay-empty">판매점 지급계좌가 등록되어 있지 않습니다.</p>
+                  )}
+                  <p className="seller-settle-note">
+                    <Lock size={11} aria-hidden="true" /> 조회 전용 · 계좌번호 일부 Masking
+                  </p>
+                </section>
+                <section aria-label="지급상태" className="seller-pay-status">
+                  <h4>
+                    지급상태 <span className={`badge ${sellerSettlementPaymentBadgeClass(selected.paymentStatus)}`}>{selected.paymentStatus}</span>
+                  </h4>
+                  {selected.payment ? (
+                    <dl>
+                      <div className="is-total">
+                        <dt>지급금액</dt>
+                        <dd>{won(selected.payment.amount)}</dd>
+                      </div>
+                      <div>
+                        <dt>지급일</dt>
+                        <dd>{dotted(selected.payment.paymentDate)}</dd>
+                      </div>
+                      <div>
+                        <dt>지급방법</dt>
+                        <dd>{selected.payment.method}</dd>
+                      </div>
+                      <div>
+                        <dt>지급참조번호</dt>
+                        <dd>{selected.payment.reference ?? "-"}</dd>
+                      </div>
+                      <div>
+                        <dt>처리자</dt>
+                        <dd>
+                          {selected.payment.paidBy} <small>{dotted(selected.payment.processedAt)}</small>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>지급기준</dt>
+                        <dd>정산서 v{selected.payment.statementVersion}</dd>
+                      </div>
+                      {selected.payment.memo ? (
+                        <div>
+                          <dt>지급메모</dt>
+                          <dd>{selected.payment.memo}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  ) : (
+                    <dl>
+                      <div className="is-total">
+                        <dt>지급예정금액</dt>
+                        <dd>{selected.status === "정산대기" ? "정산확정 후 확정" : won(paymentCheck.amount)}</dd>
+                      </div>
+                      <div>
+                        <dt>정산예정일</dt>
+                        <dd>{dotted(selected.dueDate)}</dd>
+                      </div>
+                      <div>
+                        <dt>지급기준</dt>
+                        <dd>{paymentCheck.version ? `정산서 v${paymentCheck.version} (현재 유효)` : "정산서 미발행"}</dd>
+                      </div>
+                    </dl>
+                  )}
+                  {isSettlementLockedAfterPayment(selected) ? (
+                    <p className="seller-settle-note">
+                      <Lock size={11} aria-hidden="true" /> 지급완료된 정산은 금액 · 조정 · 정산서 Version을 변경할 수 없습니다. 이후 취소는 차기정산에서 차감합니다.
+                    </p>
+                  ) : selected.status === "정산확정" ? (
+                    <div className="seller-pay-action">
+                      <button type="button" className="primary" disabled={!canPay} onClick={() => setPaymentOpen(true)}>
+                        지급처리
+                      </button>
+                      {paymentCheck.blockers.length > 0 ? (
+                        <ul className="seller-settle-checks">
+                          {paymentCheck.blockers.map((text) => (
+                            <li key={text} className="is-blocker">
+                              {text}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {!canManage && <p className="seller-settle-note">지급처리는 공급여행사({selected.supplierName}) 관리자 관점에서 진행할 수 있습니다.</p>}
+                    </div>
+                  ) : (
+                    <p className="seller-settle-note">{paymentCheck.blockers[0] ?? "지급처리할 수 없는 상태입니다."}</p>
+                  )}
+                </section>
+              </div>
             </div>
           )}
 
@@ -645,6 +843,15 @@ export function SellerChannelSettlementPanel({
         </section>
       )}
 
+      {paymentOpen && selected && paymentCheck?.canPay ? (
+        <SellerSettlementPaymentModal
+          settlement={selected}
+          check={paymentCheck}
+          suspended={Boolean(dialog)}
+          onClose={() => setPaymentOpen(false)}
+          onSubmit={(input) => requestPayment(selected, input)}
+        />
+      ) : null}
       <ReservationActionDialog dialog={dialog} onClose={() => setDialog(null)} />
     </>
   );
