@@ -76,6 +76,7 @@ function supplierStatusBadgeClass(status: SupplierTradeStatus) {
 function profitNote(detail: SellerReservationDetail) {
   if (detail.status === "취소완료") return "취소완료";
   if (detail.status === "취소요청") return "취소 검토중";
+  if (detail.status === "취소승인") return "취소승인 · 환불대기";
   return "예약 당시 조건 기준";
 }
 
@@ -153,7 +154,7 @@ export default function SellerReservationDetailPage() {
   const settlementLookup = detail.status === "취소완료" ? getSellerSettlementByReservation(detail.reservationCode) : null;
   const settlementInfo = settlementLookup && settlementLookup.line.reflection !== "정상" ? settlementLookup : null;
   const travelTiming = sellerReservationTravelTiming(detail);
-  const cancellable = isSellerReservationCancellable(detail.status);
+  const cancellable = isSellerReservationCancellable(detail.status) && !cancel;
   const cancelLocked = cancellable && travelTiming === "past";
 
   const openCancel = () => {
@@ -231,6 +232,7 @@ export default function SellerReservationDetailPage() {
             </button>
           ) : null}
           {detail.status === "취소요청" ? <span className="seller-rsv-cancel-pending">취소요청 확인중</span> : null}
+          {detail.status === "취소승인" ? <span className="seller-rsv-cancel-pending">취소승인 · 환불대기</span> : null}
         </div>
       </section>
 
@@ -253,11 +255,33 @@ export default function SellerReservationDetailPage() {
           </span>
         </div>
       ) : null}
+      {detail.status === "취소승인" && cancel ? (
+        <div className="seller-relation-drawer-alert seller-pd-alert is-warn" role="status">
+          <AlertTriangle size={15} aria-hidden="true" />
+          <span>
+            <b>{detail.supplierName}에서 취소를 승인했습니다.</b>
+            <small>
+              {cancel.refundFailed
+                ? "환불처리가 실패하여 공급여행사에서 재처리 중입니다. 환불완료 후 취소완료됩니다."
+                : "공급여행사의 환불처리 후 취소완료됩니다. 결제상태는 환불완료 전까지 변경되지 않습니다."}
+            </small>
+          </span>
+        </div>
+      ) : null}
+      {cancel?.processStatus === "취소거절" ? (
+        <div className="seller-relation-drawer-alert seller-pd-alert" role="status">
+          <AlertTriangle size={15} aria-hidden="true" />
+          <span>
+            <b>{detail.supplierName}에서 취소요청을 거절했습니다.</b>
+            <small>예약은 취소요청 전 상태({detail.status})로 유지됩니다. 거절사유: {cancel.rejectReason ?? "-"}</small>
+          </span>
+        </div>
+      ) : null}
       {detail.status === "취소완료" ? (
         <div className="seller-relation-drawer-alert seller-pd-alert" role="status">
           <AlertTriangle size={15} aria-hidden="true" />
           <span>
-            <b>취소 및 환불이 완료된 예약입니다.</b>
+            <b>{detail.paymentStatus === "미결제" ? "취소가 완료된 예약입니다." : "취소 및 환불이 완료된 예약입니다."}</b>
             <small>판매점 예상수익은 0원이며 정산 대상에서 제외됩니다.</small>
           </span>
         </div>
@@ -286,7 +310,7 @@ export default function SellerReservationDetailPage() {
           <Row label="예약금액">{formatSellerReservationAmount(amount)}</Row>
           <Row label="판매점 예상수익" emphasis>
             <span className={detail.status === "취소완료" ? "is-excluded" : undefined}>{formatSellerReservationAmount(expectedProfit)}</span>
-            <small className={detail.status === "취소요청" ? "is-review" : undefined}>{profitNote(detail)}</small>
+            <small className={detail.status === "취소요청" || detail.status === "취소승인" ? "is-review" : undefined}>{profitNote(detail)}</small>
           </Row>
         </dl>
       </section>
@@ -474,7 +498,7 @@ export default function SellerReservationDetailPage() {
               <Row label="예약금액">{formatSellerReservationAmount(amount)}</Row>
               <Row label="예상수익" emphasis>
                 <span className={detail.status === "취소완료" ? "is-excluded" : undefined}>{formatSellerReservationAmount(expectedProfit)}</span>
-                <small className={detail.status === "취소요청" ? "is-review" : undefined}>{profitNote(detail)}</small>
+                <small className={detail.status === "취소요청" || detail.status === "취소승인" ? "is-review" : undefined}>{profitNote(detail)}</small>
               </Row>
             </dl>
             <p className="seller-rsv-formula">
@@ -562,12 +586,35 @@ export default function SellerReservationDetailPage() {
               <Row label="취소사유">{formatSellerCancelReason(cancel)}</Row>
               <Row label="고객 요청내용">{cancel.customerNote ?? "-"}</Row>
               <Row label="처리상태">
-                <span className={`badge ${cancel.processStatus === "취소완료" ? "danger" : "warn"}`}>{cancel.processStatus}</span>
+                <span className={`badge ${cancel.processStatus === "취소완료" ? "danger" : cancel.processStatus === "취소거절" ? "gray" : "warn"}`}>
+                  {cancel.processStatus}
+                </span>
               </Row>
+              {cancel.processStatus === "취소승인" ? (
+                <>
+                  <Row label="승인일시">{cancel.completedAt ? formatSellerReservationDateTime(cancel.completedAt) : "-"}</Row>
+                  <Row label="취소수수료">
+                    {formatSellerReservationAmount(cancel.cancelFee ?? 0)} <small>공급여행사 확정</small>
+                  </Row>
+                  <Row label="환불예정금액">
+                    {formatSellerReservationAmount(cancel.refundAmount ?? 0)}{" "}
+                    <small>{cancel.refundFailed ? "환불실패 · 공급여행사 재처리 중" : "공급여행사 환불처리 대기"}</small>
+                  </Row>
+                </>
+              ) : null}
+              {cancel.processStatus === "취소거절" ? (
+                <>
+                  <Row label="처리일시">{cancel.completedAt ? formatSellerReservationDateTime(cancel.completedAt) : "-"}</Row>
+                  <Row label="거절사유">{cancel.rejectReason ?? "-"}</Row>
+                </>
+              ) : null}
               {cancel.processStatus === "취소완료" ? (
                 <>
                   <Row label="처리일시">{cancel.completedAt ? formatSellerReservationDateTime(cancel.completedAt) : "-"}</Row>
                   <Row label="처리결과">취소완료</Row>
+                  {cancel.cancelFee !== undefined && cancel.cancelFee !== null ? (
+                    <Row label="취소수수료">{formatSellerReservationAmount(cancel.cancelFee)}</Row>
+                  ) : null}
                   <Row label="환불금액">{formatSellerReservationAmount(cancel.refundAmount ?? 0)}</Row>
                   <Row label="판매점 예상수익">
                     {formatSellerReservationAmount(0)} <small>취소완료</small>
@@ -578,6 +625,8 @@ export default function SellerReservationDetailPage() {
             <p className="seller-relation-drawer-help">
               {cancel.processStatus === "취소완료"
                 ? "취소완료 예약은 정산 대상에서 제외됩니다."
+                : cancel.processStatus === "취소거절"
+                  ? "공급여행사가 거절한 취소요청입니다. 요청 이력은 유지됩니다."
                 : "취소 승인 · 환불 처리는 공급여행사에서 진행하며, 처리 결과가 이 화면에 반영됩니다."}
             </p>
           </section>

@@ -74,6 +74,8 @@ export type SellerInvoiceCancelOutcome = {
   feeRate: number;
   approvedAt: string;
   completedAt: string | null;
+  /** 공급여행사 관리자 연동 결과 — 확정 취소수수료 · 환불금액 (있으면 수수료율 계산 대신 사용) */
+  linked?: { cancelFee: number; refundAmount: number };
 };
 
 export type SellerInvoiceReissueRecord = {
@@ -262,10 +264,11 @@ function buildInvoice(
   let cancelSettlement: SellerInvoiceCancelSettlement | null = null;
   let cancelCompletedAt: string | null = null;
   if (activeOutcome) {
-    const cancelFee = Math.min(Math.round((reservationAmount * activeOutcome.feeRate) / 100), basePaid);
-    const refundAmount = basePaid - cancelFee;
+    const linked = activeOutcome.linked;
+    const cancelFee = linked ? Math.min(linked.cancelFee, basePaid) : Math.min(Math.round((reservationAmount * activeOutcome.feeRate) / 100), basePaid);
+    const refundAmount = linked ? linked.refundAmount : basePaid - cancelFee;
     reservationStatus = activeOutcome.stage;
-    cancelSettlement = { stage: activeOutcome.stage, paidAmount: basePaid, refundAmount, cancelFee, feeRate: activeOutcome.feeRate, simulated: true };
+    cancelSettlement = { stage: activeOutcome.stage, paidAmount: basePaid, refundAmount, cancelFee, feeRate: activeOutcome.feeRate, simulated: !linked };
     if (activeOutcome.stage === "취소완료") {
       cancelCompletedAt = activeOutcome.completedAt;
       if (refundAmount > 0) paymentStatus = "환불완료";
@@ -340,8 +343,7 @@ function buildInvoice(
 
   const history: SellerInvoiceHistoryEntry[] = [{ at: issuedAt, status: "정상", note: "인보이스 발행 (v1)" }];
   if (event) history.push({ at: event.at, status: event.type === "voided" ? "무효" : "재발행 필요", note: event.reason });
-  if (activeOutcome) history.push({ at: activeOutcome.approvedAt, status: "재발행 필요", note: "공급여행사 취소승인 · 환불금액 확정" });
-  if (cancelCompletedAt && !event) history.push({ at: cancelCompletedAt, status: "재발행 필요", note: "예약 취소완료 · 환불 반영 필요" });
+  if (activeOutcome) history.push({ at: activeOutcome.approvedAt, status: "재발행 필요", note: "공급여행사 취소승인 · 환불금액 확정" });  if (cancelCompletedAt && !event) history.push({ at: cancelCompletedAt, status: "재발행 필요", note: "예약 취소완료 · 환불 반영 필요" });
   versions.slice(1).forEach((version) => {
     const alreadyVoided = version.version === 2 && event?.type === "voided";
     if (!alreadyVoided) history.push({ at: version.issuedAt, status: "무효", note: `v${version.version - 1} 무효 처리 (재발행으로 대체)` });

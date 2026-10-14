@@ -68,7 +68,7 @@ export type SellerDashboardSupplier = {
   settlement: SellerDashboardSettlement | null;
 };
 
-export type SellerDashboardReservationStatus = "예약접수" | "예약확정" | "취소요청" | "취소완료";
+export type SellerDashboardReservationStatus = "예약접수" | "예약확정" | "취소요청" | "취소승인" | "취소완료";
 
 export type SellerDashboardReservation = {
   reservationCode: string;
@@ -288,7 +288,7 @@ export function formatSellerDashboardDate(value: string) {
 export function sellerDashboardStatusBadgeClass(status: SellerDashboardReservationStatus) {
   if (status === "예약확정") return "success";
   if (status === "예약접수") return "info";
-  if (status === "취소요청") return "warn";
+  if (status === "취소요청" || status === "취소승인") return "warn";
   return "danger";
 }
 

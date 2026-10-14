@@ -12,10 +12,10 @@
 import { listSellerAdminProducts, type SellerProductSaleMode } from "@/lib/seller/seller-admin-products-data";
 import { getSellerProductDetail } from "@/lib/seller/seller-product-detail-data";
 
-export type SellerReservationStatus = "예약접수" | "예약확정" | "취소요청" | "취소완료";
+export type SellerReservationStatus = "예약접수" | "예약확정" | "취소요청" | "취소승인" | "취소완료";
 export type SellerReservationPaymentStatus = "결제완료" | "일부결제" | "미결제" | "환불완료";
 
-export const SELLER_RESERVATION_STATUSES: SellerReservationStatus[] = ["예약접수", "예약확정", "취소요청", "취소완료"];
+export const SELLER_RESERVATION_STATUSES: SellerReservationStatus[] = ["예약접수", "예약확정", "취소요청", "취소승인", "취소완료"];
 export const SELLER_RESERVATION_PAYMENT_STATUSES: SellerReservationPaymentStatus[] = ["결제완료", "일부결제", "미결제", "환불완료"];
 
 export type SellerReservation = {
@@ -179,7 +179,7 @@ export function summarizeSellerReservations(reservations: readonly SellerReserva
         total: acc.total + 1,
         confirmed: acc.confirmed + (row.status === "예약확정" ? 1 : 0),
         received: acc.received + (row.status === "예약접수" ? 1 : 0),
-        cancelRequested: acc.cancelRequested + (row.status === "취소요청" ? 1 : 0),
+        cancelRequested: acc.cancelRequested + (row.status === "취소요청" || row.status === "취소승인" ? 1 : 0),
         cancelled: acc.cancelled + (row.status === "취소완료" ? 1 : 0),
         salesAmount: acc.salesAmount + (active ? sellerReservationAmount(row) : 0),
         expectedProfit: acc.expectedProfit + sellerReservationExpectedProfit(row),
@@ -277,7 +277,7 @@ export function isSellerReservationFilterActive(filters: SellerReservationFilter
 export function sellerReservationStatusBadgeClass(status: SellerReservationStatus) {
   if (status === "예약확정") return "success";
   if (status === "예약접수") return "info";
-  if (status === "취소요청") return "warn";
+  if (status === "취소요청" || status === "취소승인") return "warn";
   return "danger";
 }
 
@@ -333,9 +333,15 @@ export type SellerReservationCancelRequest = {
   customerNote: string | null;
   /** 시스템 등록 주체 (판매점명) — 기존 Mock은 null */
   registeredBy: string | null;
-  processStatus: "공급여행사 확인중" | "취소완료";
+  processStatus: "공급여행사 확인중" | "취소승인" | "취소거절" | "취소완료";
   completedAt: string | null;
   refundAmount: number | null;
+  /** 공급여행사 확정 취소수수료 (취소승인 이후) */
+  cancelFee?: number | null;
+  /** 공급여행사 환불처리 실패 — 재처리 대기 */
+  refundFailed?: boolean;
+  /** 공급여행사 취소거절 사유 */
+  rejectReason?: string;
 };
 
 export type SellerReservationDetail = SellerReservation & {
@@ -509,41 +515,6 @@ export type SellerReservationCancelRequestEntry = {
 /** 예약번호 → 취소요청 */
 export type SellerReservationCancelRequestMap = Readonly<Record<string, SellerReservationCancelRequestEntry>>;
 
-/**
- * 판매점이 등록한 취소요청 시나리오 (SAMPLE) — 공급여행사 관리자 화면의 초기 취소요청 기준
- * 판매점 화면은 Client State(세션)로만 취소요청을 등록하므로 이 시나리오를 초기값으로 쓰지 않음
- */
-export const SELLER_CANCEL_REQUEST_SCENARIO: SellerReservationCancelRequestMap = {
-  "RSV-20261012-001": {
-    requestedAt: "2026-10-12 16:30",
-    registeredBy: "그래가자",
-    reason: "고객 개인사정",
-    reasonDetail: null,
-    customerNote: "가족 일정 변경으로 여행 참여가 어렵습니다.",
-  },
-  "RSV-20261012-003": {
-    requestedAt: "2026-10-12 11:05",
-    registeredBy: "그래가자",
-    reason: "중복예약",
-    reasonDetail: null,
-    customerNote: "같은 날짜로 다른 상품을 예약했습니다.",
-  },
-  "RSV-20261011-004": {
-    requestedAt: "2026-10-12 09:20",
-    registeredBy: "그래가자",
-    reason: "일정 변경",
-    reasonDetail: null,
-    customerNote: "출장 일정이 생겨 참여가 어렵습니다.",
-  },
-  "RSV-20261010-006": {
-    requestedAt: "2026-10-11 10:15",
-    registeredBy: "그래가자",
-    reason: "건강상의 사유",
-    reasonDetail: null,
-    customerNote: null,
-  },
-};
-
 /** 판매점 취소요청 가능 예약상태 — 결제상태(미결제 · 일부결제 · 결제완료)와 무관 */
 export function isSellerReservationCancellable(status: SellerReservationStatus) {
   return status === "예약접수" || status === "예약확정";
@@ -622,6 +593,7 @@ export const SELLER_RESERVATION_STATUS_DESCRIPTIONS: Record<SellerReservationSta
   예약접수: "예약이 접수되어 공급여행사의 예약확정을 기다리는 상태입니다.",
   예약확정: "공급여행사에서 예약이 확정된 상태입니다.",
   취소요청: "취소요청이 등록되어 공급여행사의 취소처리를 기다리는 상태입니다.",
+  취소승인: "공급여행사가 취소를 승인했습니다. 환불처리 후 취소완료됩니다.",
   취소완료: "예약 취소와 환불이 완료된 상태입니다. 정산 대상에서 제외됩니다.",
 };
 

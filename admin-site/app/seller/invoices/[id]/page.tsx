@@ -46,7 +46,7 @@ import {
   useSellerInvoices,
 } from "@/lib/seller/use-seller-invoices-state";
 import { useSellerProductsState } from "@/lib/seller/use-seller-products-state";
-import { useSellerReservationDetail } from "@/lib/seller/use-seller-reservations-state";
+import { isSellerReservationSupplierLinked, useSellerReservationDetail } from "@/lib/seller/use-seller-reservations-state";
 import { useSellerSession } from "@/lib/seller/use-seller-session";
 
 const LIST_PATH = "/seller/invoices";
@@ -140,6 +140,7 @@ export default function SellerInvoiceDetailPage() {
   const reissue = invoice.reissue;
   const lastEventAt = invoice.history[invoice.history.length - 1]?.at ?? invoice.issuedAt;
   const settlement = invoice.cancelSettlement;
+  const supplierLinked = isSellerReservationSupplierLinked(sellerId, invoice.reservationCode);
   const canSimulate = invoice.reservationStatus === "취소요청" || (invoice.reservationStatus === "취소승인" && settlement?.simulated);
   const sendState = getSellerInvoiceSendState(invoice, view.version);
   const canSendCurrent = getSellerInvoiceSendState(invoice, invoice.currentVersion).kind === "available";
@@ -189,14 +190,14 @@ export default function SellerInvoiceDetailPage() {
         { label: "신규", value: `v${current.version + 1} / ${formatSellerReservationAmount(reissue.target.amount)}` },
         { label: "사유", value: reasonText },
       ],
-      message: `기존 v${current.version}은 무효로 보존되고, v${current.version + 1}이 현재 유효 인보이스가 됩니다.`,
+      message: `기존 v${current.version} 인보이스는 무효로 보존되고, 신규 v${current.version + 1} 인보이스가 현재 유효 인보이스가 됩니다.`,
       confirmLabel: "재발행",
       onConfirm: () => {
         setConfirmDialog(null);
         setReissueOpen(false);
         const done = reissueSellerInvoice(sellerId, invoice, { issuedAt: sellerInvoiceEventAt(lastEventAt), ...input });
         setSelectedVersion(null);
-        if (done) notify(`v${current.version + 1}로 재발행되었습니다.`, `기존 v${current.version}은 무효 처리되어 이력에 보존됩니다.`);
+        if (done) notify(`v${current.version + 1} 인보이스로 재발행되었습니다.`, `기존 v${current.version} 인보이스는 무효 처리되어 이력에 보존됩니다.`);
         else notify("재발행할 변경사항이 없습니다.");
       },
     });
@@ -279,7 +280,7 @@ export default function SellerInvoiceDetailPage() {
         <div className="seller-relation-drawer-alert seller-pd-alert seller-inv-past-alert" role="status">
           <Lock size={15} aria-hidden="true" />
           <span>
-            <b>v{view.version}은 재발행으로 무효 처리된 과거 Version입니다.</b>
+            <b>v{view.version} 인보이스는 재발행으로 무효 처리된 과거 Version입니다.</b>
             <small>조회만 가능하며 수정 · 재발행 · 상태 변경을 할 수 없습니다.</small>
           </span>
           <button type="button" className="secondary" onClick={() => setSelectedVersion(null)}>
@@ -659,33 +660,35 @@ export default function SellerInvoiceDetailPage() {
         </section>
       </div>
 
-      <fieldset className="seller-dash-mock seller-inv-mock">
-        <legend>프로토타입 Mock · 공급여행사 취소처리 결과</legend>
-        {canSimulate ? (
-          <div role="group" aria-label="공급여행사 취소처리 결과 Mock">
-            <select
-              aria-label="취소수수료 기준"
-              value={invoice.reservationStatus === "취소승인" && settlement ? settlement.feeRate : feeRate}
-              disabled={invoice.reservationStatus === "취소승인"}
-              onChange={(event) => setFeeRate(Number(event.target.value))}
-            >
-              {CANCEL_FEE_PRESETS.map((preset) => (
-                <option key={preset.rate} value={preset.rate}>
-                  {preset.label}
-                </option>
-              ))}
-            </select>
-            <button type="button" className="secondary" disabled={invoice.reservationStatus !== "취소요청"} onClick={() => simulate("취소승인")}>
-              취소승인 반영 (환불 전)
-            </button>
-            <button type="button" className="secondary" onClick={() => simulate("취소완료")}>
-              취소완료 + 환불완료 반영
-            </button>
-          </div>
-        ) : (
-          <p>취소요청 상태의 예약에서만 공급여행사 취소처리 결과를 재현할 수 있습니다. 예약 상세에서 취소요청을 먼저 등록해주세요.</p>
-        )}
-      </fieldset>
+      {supplierLinked ? null : (
+        <fieldset className="seller-dash-mock seller-inv-mock">
+          <legend>프로토타입 Mock · 공급여행사 취소처리 결과</legend>
+          {canSimulate ? (
+            <div role="group" aria-label="공급여행사 취소처리 결과 Mock">
+              <select
+                aria-label="취소수수료 기준"
+                value={invoice.reservationStatus === "취소승인" && settlement ? settlement.feeRate : feeRate}
+                disabled={invoice.reservationStatus === "취소승인"}
+                onChange={(event) => setFeeRate(Number(event.target.value))}
+              >
+                {CANCEL_FEE_PRESETS.map((preset) => (
+                  <option key={preset.rate} value={preset.rate}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+              <button type="button" className="secondary" disabled={invoice.reservationStatus !== "취소요청"} onClick={() => simulate("취소승인")}>
+                취소승인 반영 (환불 전)
+              </button>
+              <button type="button" className="secondary" onClick={() => simulate("취소완료")}>
+                취소완료 + 환불완료 반영
+              </button>
+            </div>
+          ) : (
+            <p>취소요청 상태의 예약에서만 공급여행사 취소처리 결과를 재현할 수 있습니다. 예약 상세에서 취소요청을 먼저 등록해주세요.</p>
+          )}
+        </fieldset>
+      )}
       <SellerProductsMockControls sellerId={sellerId} mock={mock} keys={MOCK_KEYS} />
 
       {reissueOpen && reissue.kind === "available" && !isPast ? (

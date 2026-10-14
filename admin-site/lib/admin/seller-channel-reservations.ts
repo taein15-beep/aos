@@ -2,7 +2,7 @@
  * 공급여행사 관리자 · 판매점 채널 예약 (SAMPLE / 테스트 데이터)
  * - 판매점 관리자 예약 Mock(seller-reservations-data)의 같은 예약 객체를 공급여행사 예약 Schema로 변환
  * - 공급여행사(행복투어) 상품 예약만 포함 · 금액 · 결제 · 상태이력은 판매점 화면과 같은 값을 사용
- * - 초기 취소요청은 판매점 취소요청 시나리오(SELLER_CANCEL_REQUEST_SCENARIO) 기준
+ * - 취소요청은 판매점 취소요청 Store(seller-cancel-request-store)와 같은 Source를 사용
  */
 
 import type {
@@ -19,8 +19,8 @@ import {
   sellerCancelPolicyRules,
   type SellerCancelPolicyRule,
 } from "@/lib/seller/seller-product-detail-data";
+import { getSellerCancelRequestVersion, getSellerCancelRequests } from "@/lib/seller/seller-cancel-request-store";
 import {
-  SELLER_CANCEL_REQUEST_SCENARIO,
   SELLER_RESERVATION_BASE_DATE,
   formatSellerCancelReason,
   getSellerReservationDetail,
@@ -109,7 +109,7 @@ function toHistory(code: string, timeline: ReservationStatusTimelineEntry[], sup
 }
 
 function buildRecord(code: string, baseStatus: SellerReservationStatus): SellerChannelRecord | null {
-  const detail = getSellerReservationDetail(SELLER_CHANNEL_SELLER_ID, code, SELLER_CANCEL_REQUEST_SCENARIO);
+  const detail = getSellerReservationDetail(SELLER_CHANNEL_SELLER_ID, code, getSellerCancelRequests(SELLER_CHANNEL_SELLER_ID));
   if (!detail) return null;
   const amount = sellerReservationAmount(detail);
   const timeline = detail.statusHistory.map((record) => toTimeline(detail, record));
@@ -209,9 +209,11 @@ function buildRecord(code: string, baseStatus: SellerReservationStatus): SellerC
 }
 
 let records: Map<string, SellerChannelRecord> | null = null;
+let recordsVersion = -1;
 
 function recordMap() {
-  if (!records) {
+  if (!records || recordsVersion !== getSellerCancelRequestVersion()) {
+    recordsVersion = getSellerCancelRequestVersion();
     records = new Map();
     listSellerReservations(SELLER_CHANNEL_SELLER_ID)
       .filter((row) => row.supplierTravelAgencyId === SUPPLIER_TRAVEL_AGENCY_ID)

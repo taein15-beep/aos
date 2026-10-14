@@ -19,7 +19,12 @@ import {
   type SellerInvoiceSendChannel,
   type SellerInvoiceSendRecord,
 } from "@/lib/seller/seller-invoices-data";
-import { useSellerReservations } from "@/lib/seller/use-seller-reservations-state";
+import { sellerReservationAmount, type SellerReservation } from "@/lib/seller/seller-reservations-data";
+import {
+  getSellerSupplierCancelProgress,
+  isSellerReservationSupplierLinked,
+  useSellerReservationsWithRequests,
+} from "@/lib/seller/use-seller-reservations-state";
 
 type State = Partial<Record<string, SellerInvoiceClientState>>;
 
@@ -41,12 +46,43 @@ function update(sellerId: string, next: SellerInvoiceClientState) {
   listeners.forEach((listener) => listener());
 }
 
-/** 현재 판매점 인보이스 목록 — 예약 Client State + 인보이스 Client State 반영 */
+/**
+ * 공급여행사 관리자 연동 예약 — 취소처리 결과를 공급여행사 Data 기준 Outcome으로 변환
+ * (연동 예약은 인보이스 화면의 취소처리 Mock 결과를 사용하지 않음)
+ */
+function linkSupplierOutcomes(sellerId: string, rows: readonly SellerReservation[], clientState: SellerInvoiceClientState) {
+  const outcomes: Record<string, SellerInvoiceCancelOutcome> = {};
+  const linkedRows = rows.map((row) => {
+    const code = row.reservationCode;
+    if (!isSellerReservationSupplierLinked(sellerId, code)) {
+      if (clientState.outcomes[code]) outcomes[code] = clientState.outcomes[code];
+      return row;
+    }
+    const progress = row.status === "취소요청" ? getSellerSupplierCancelProgress(sellerId, code) : null;
+    if (!progress) return row;
+    if (progress.kind === "rejected") return { ...row, status: progress.restoredStatus };
+    const amount = sellerReservationAmount(row);
+    outcomes[code] = {
+      stage: progress.kind === "approved" ? "취소승인" : "취소완료",
+      feeRate: amount > 0 ? Math.round((progress.cancelFee / amount) * 100) : 0,
+      approvedAt: progress.kind === "approved" ? progress.at : progress.approvedAt,
+      completedAt: progress.kind === "completed" ? progress.at : null,
+      linked: { cancelFee: progress.cancelFee, refundAmount: progress.refundAmount },
+    };
+    return row;
+  });
+  return { rows: linkedRows, clientState: { ...clientState, outcomes } };
+}
+
+/** 현재 판매점 인보이스 목록 — 예약 Client State + 공급여행사 처리결과 + 인보이스 Client State 반영 */
 export function useSellerInvoices(sellerId: string): SellerInvoice[] {
-  const reservations = useSellerReservations(sellerId);
+  const reservations = useSellerReservationsWithRequests(sellerId);
   const current = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const clientState = current[sellerId] ?? EMPTY_SELLER_INVOICE_CLIENT_STATE;
-  return useMemo(() => buildSellerInvoices(sellerId, reservations, clientState), [sellerId, reservations, clientState]);
+  return useMemo(() => {
+    const linked = linkSupplierOutcomes(sellerId, reservations, clientState);
+    return buildSellerInvoices(sellerId, linked.rows, linked.clientState);
+  }, [sellerId, reservations, clientState]);
 }
 
 /** 인보이스 재발행 — 재발행 가능 상태에서만 같은 인보이스번호로 Version 1 증가 */
@@ -90,6 +126,7 @@ export function applySellerInvoiceCancelOutcome(
   feeRate: number,
   at: string,
 ): boolean {
+  if (isSellerReservationSupplierLinked(sellerId, invoice.reservationCode)) return false;
   const clientState = state[sellerId] ?? EMPTY_SELLER_INVOICE_CLIENT_STATE;
   const existing = clientState.outcomes[invoice.reservationCode];
   let next: SellerInvoiceCancelOutcome;

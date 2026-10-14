@@ -337,7 +337,11 @@ export function SellerRelationDrawer({
                             )}
                           </td>
                           <td>
-                            <span className={`badge ${product.status === "판매중" ? "success" : "gray"}`}>
+                            <span
+                              className={`badge ${
+                                product.status === "판매중" ? "success" : product.status === "판매중지" ? "danger" : "gray"
+                              }`}
+                            >
                               {product.status}
                             </span>
                           </td>

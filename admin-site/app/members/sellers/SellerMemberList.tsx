@@ -5,11 +5,13 @@ import { QrCode, RotateCcw, Search, Store } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   CURRENT_SUPPLIER_NAME,
+  SELLER_CHANNEL_LINKED_SELLER_CODE,
   SELLER_RELATION_PAGE_SIZE,
   SELLER_RELATION_STATUS_FILTERS,
   countSellerRelations,
   filterSellerRelations,
   formatSellerRelationDate,
+  linkSellerChannelRelation,
   loadSupplierSellerRelations,
   sellerRelationLogoText,
   sellerRelationStatusBadgeClass,
@@ -17,6 +19,8 @@ import {
   type SellerRelationStatus,
   type SellerRelationStatusFilter,
 } from "@/lib/admin/members-seller-relation-data";
+import { useSellerProductsState } from "@/lib/seller/use-seller-products-state";
+import { useSellerReservations } from "@/lib/seller/use-seller-reservations-state";
 import { SellerApplicationModal, SellerRelationConfirmModal, SellerRelationDrawer } from "./SellerRelationDialogs";
 
 function isMembersChildCurrent(child: string) {
@@ -76,10 +80,17 @@ export function SellerMemberList() {
     };
   }, []);
 
-  const counts = useMemo(() => countSellerRelations(rowsAll), [rowsAll]);
+  const { products: linkedSellerProducts } = useSellerProductsState(SELLER_CHANNEL_LINKED_SELLER_CODE);
+  const linkedSellerReservations = useSellerReservations(SELLER_CHANNEL_LINKED_SELLER_CODE);
+  const rows = useMemo(
+    () => rowsAll.map((row) => linkSellerChannelRelation(row, linkedSellerProducts, linkedSellerReservations)),
+    [rowsAll, linkedSellerProducts, linkedSellerReservations],
+  );
+
+  const counts = useMemo(() => countSellerRelations(rows), [rows]);
   const filteredRows = useMemo(
-    () => filterSellerRelations(rowsAll, keyword, statusFilter),
-    [rowsAll, keyword, statusFilter],
+    () => filterSellerRelations(rows, keyword, statusFilter),
+    [rows, keyword, statusFilter],
   );
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / SELLER_RELATION_PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -88,8 +99,8 @@ export function SellerMemberList() {
     currentPage * SELLER_RELATION_PAGE_SIZE,
   );
 
-  const applicationSeller = rowsAll.find((row) => row.id === applicationId) ?? null;
-  const drawerSeller = rowsAll.find((row) => row.id === drawerId) ?? null;
+  const applicationSeller = rows.find((row) => row.id === applicationId) ?? null;
+  const drawerSeller = rows.find((row) => row.id === drawerId) ?? null;
 
   const changeStatusFilter = (next: SellerRelationStatusFilter) => {
     setStatusFilter(next);

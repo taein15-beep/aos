@@ -46,6 +46,7 @@ type SupplierOption = {
 function profitNote(reservation: SellerReservation) {
   if (reservation.status === "취소완료") return "취소완료 · 정산 제외";
   if (reservation.status === "취소요청") return "취소 검토중";
+  if (reservation.status === "취소승인") return "취소승인 · 환불대기";
   return "예상수익";
 }
 
@@ -374,7 +375,7 @@ export default function SellerReservationsPage() {
                         <td data-label="판매점 수익" className="money">
                           <span className={`seller-prod-money${isCancelled ? " is-excluded" : ""}`}>
                             <b>{formatSellerReservationAmount(sellerReservationExpectedProfit(row))}</b>
-                            <small className={row.status === "취소요청" ? "is-review" : undefined}>{profitNote(row)}</small>
+                            <small className={row.status === "취소요청" || row.status === "취소승인" ? "is-review" : undefined}>{profitNote(row)}</small>
                           </span>
                         </td>
                         <td data-label="예약상태">

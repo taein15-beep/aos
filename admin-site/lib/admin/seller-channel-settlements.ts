@@ -787,7 +787,7 @@ function derivedEvents(state: CurrentState, seedLast: string): { before: SellerS
       events.push({ at, label: "정산 수정필요", actor: SYSTEM_ACTOR, tone: "warn", note: `${line.code} 취소조정 ${amount} 반영 필요` });
     } else {
       events.push({ at, label: "차기정산 조정등록", actor: SYSTEM_ACTOR, tone: "warn", note: `${amount} · ${NEXT_CODE}` });
-      events.push({ at, label: "차기정산 반영대기", actor: SYSTEM_ACTOR, tone: "gray", note: "기존 지급내역 변경 없음" });
+      events.push({ at, label: "차기정산 반영예정", actor: SYSTEM_ACTOR, tone: "gray", note: "기존 지급내역 변경 없음" });
     }
   });
   return { before, after };

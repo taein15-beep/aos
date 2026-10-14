@@ -3,14 +3,26 @@
  * - 현재 로그인한 공급여행사와 판매점 사이의 관계만 다룬다(다른 공급여행사 가입정보는 보관·노출하지 않음).
  * - DB/API 연동 없음. 화면 상태변경은 컴포넌트 state에서만 처리한다.
  * - 판매점 정보(연락처·이메일·사업자번호)는 모두 테스트용 샘플 값이다.
+ * - SEL00032(그래가자)는 판매점 관리자 Data(판매상품 · 예약)를 기준으로 판매상품 · 판매현황을 계산한다.
  */
 
+import type { SellerAdminProduct } from "@/lib/seller/seller-admin-products-data";
+import {
+  isSellerReservationInBaseMonth,
+  sellerReservationAmount,
+  type SellerReservation,
+} from "@/lib/seller/seller-reservations-data";
+
 export const CURRENT_SUPPLIER_NAME = "행복투어";
+const CURRENT_SUPPLIER_ID = "AGENCY-HAPPY";
+
+/** 판매점 관리자 Data와 연결된 판매점 코드 */
+export const SELLER_CHANNEL_LINKED_SELLER_CODE = "SEL00032";
 
 export type SellerRelationStatus = "승인대기" | "정상" | "이용중지" | "승인거절";
 export type SellerRelationBusinessType = "개인사업자" | "법인사업자";
 export type SellerRelationProductMode = "commission" | "deposit";
-export type SellerRelationProductStatus = "판매중" | "설정대기";
+export type SellerRelationProductStatus = "판매중" | "설정대기" | "판매중지";
 
 /** 가입 판매점 = 승인대기 + 정상 + 이용중지. 승인거절은 가입신청 이력으로 별도 필터에서만 조회 */
 export const SELLER_RELATION_STATUS_FILTERS = ["가입 판매점", "승인대기", "정상", "이용중지", "승인거절"] as const;
@@ -559,6 +571,47 @@ const SAMPLE_SELLER_RELATIONS: SellerRelation[] = [
 
 export function loadSupplierSellerRelations(): SellerRelation[] {
   return SAMPLE_SELLER_RELATIONS.map((row) => ({ ...row, products: row.products.map((product) => ({ ...product })) }));
+}
+
+function toRelationProduct(product: SellerAdminProduct): SellerRelationProduct {
+  const isCommission = product.saleMode === "수수료형";
+  return {
+    productCode: product.productCode,
+    productName: product.productName,
+    mode: isCommission ? "commission" : "deposit",
+    listPrice: product.supplyPrice ?? product.depositPrice ?? 0,
+    commissionRate: product.commissionRate,
+    depositPrice: product.depositPrice,
+    sellerPrice: product.sellerPrice,
+    status: product.salesStatus,
+  };
+}
+
+/**
+ * 연결 판매점 관계정보 — 판매점 관리자의 판매상품 · 판매점 판매가 · 판매상태 · 예약을 현재 공급여행사 상품으로 한정해 반영
+ * 관계상태(status)는 공급여행사 화면 값을 유지한다.
+ */
+export function linkSellerChannelRelation(
+  row: SellerRelation,
+  sellerProducts: readonly SellerAdminProduct[],
+  sellerReservations: readonly SellerReservation[],
+): SellerRelation {
+  if (row.sellerCode !== SELLER_CHANNEL_LINKED_SELLER_CODE) return row;
+  const products = sellerProducts
+    .filter((product) => product.supplierTravelAgencyId === CURRENT_SUPPLIER_ID)
+    .map(toRelationProduct);
+  const reservations = sellerReservations.filter((item) => item.supplierTravelAgencyId === CURRENT_SUPPLIER_ID);
+  const monthReservations = reservations.filter(isSellerReservationInBaseMonth);
+  return {
+    ...row,
+    products,
+    productCount: products.filter((product) => product.status === "판매중").length,
+    reservationCount: reservations.length,
+    monthReservationCount: monthReservations.length,
+    monthSalesAmount: monthReservations
+      .filter((item) => item.status !== "취소완료")
+      .reduce((sum, item) => sum + sellerReservationAmount(item), 0),
+  };
 }
 
 export interface SellerRelationCounts {
