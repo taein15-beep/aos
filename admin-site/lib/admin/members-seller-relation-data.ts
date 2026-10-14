@@ -6,6 +6,8 @@
  * - SEL00032(그래가자)는 판매점 관리자 Data(판매상품 · 예약)를 기준으로 판매상품 · 판매현황을 계산한다.
  */
 
+import { formatSellerPartnerCode, loadCreatedPrototypeSellerApplications } from "@/lib/admin/members-seller-data";
+import { PROTOTYPE_DEFAULT_AGENCY_ID } from "@/lib/seller/seller-domain";
 import type { SellerAdminProduct } from "@/lib/seller/seller-admin-products-data";
 import {
   isSellerReservationInBaseMonth,
@@ -20,7 +22,7 @@ const CURRENT_SUPPLIER_ID = "AGENCY-HAPPY";
 export const SELLER_CHANNEL_LINKED_SELLER_CODE = "SEL00032";
 
 export type SellerRelationStatus = "승인대기" | "정상" | "이용중지" | "승인거절";
-export type SellerRelationBusinessType = "개인사업자" | "법인사업자";
+export type SellerRelationBusinessType = "개인사업자" | "법인사업자" | "개인 판매점";
 export type SellerRelationProductMode = "commission" | "deposit";
 export type SellerRelationProductStatus = "판매중" | "설정대기" | "판매중지";
 
@@ -45,6 +47,7 @@ export interface SellerRelationProduct {
 
 export interface SellerRelation {
   id: string;
+  applicationId?: string;
   sellerCode: string;
   sellerName: string;
   representative: string;
@@ -570,7 +573,34 @@ const SAMPLE_SELLER_RELATIONS: SellerRelation[] = [
 ];
 
 export function loadSupplierSellerRelations(): SellerRelation[] {
-  return SAMPLE_SELLER_RELATIONS.map((row) => ({ ...row, products: row.products.map((product) => ({ ...product })) }));
+  // 직접등록 폼의 현재 여행사 Mock 관계를 목록에 연결한다.
+  const created = loadCreatedPrototypeSellerApplications()
+    .filter((row) => row.agencyId === PROTOTYPE_DEFAULT_AGENCY_ID)
+    .map((row): SellerRelation => ({
+      id: row.relationId,
+      applicationId: row.applicationId,
+      sellerCode: formatSellerPartnerCode(row.applicationId),
+      sellerName: row.sellerName,
+      representative: row.representativeName ?? row.sellerName,
+      managerName: row.contactName,
+      phone: row.contactPhone,
+      email: row.contactEmail,
+      businessNumber: row.businessNumber ?? "—",
+      businessType: row.sellerType === "individual" ? "개인 판매점" : row.businessKind ?? "개인사업자",
+      appliedAt: row.appliedAt.slice(0, 10),
+      joinedAt: row.approvedAt?.slice(0, 10) ?? null,
+      status: row.applicationStatus === "rejected" ? "승인거절"
+        : row.applicationStatus !== "approved" ? "승인대기"
+        : row.salesStatus === "suspended" ? "이용중지" : "정상",
+      productCount: row.productCount ?? 0,
+      reservationCount: 0,
+      monthReservationCount: 0,
+      monthSalesAmount: 0,
+      products: [],
+    }));
+  return [...created.reverse(), ...SAMPLE_SELLER_RELATIONS.map((row) => ({
+    ...row, products: row.products.map((product) => ({ ...product })),
+  }))];
 }
 
 function toRelationProduct(product: SellerAdminProduct): SellerRelationProduct {

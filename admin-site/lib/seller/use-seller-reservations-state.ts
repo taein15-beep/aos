@@ -29,7 +29,9 @@ import {
 } from "@/lib/seller/seller-reservations-data";
 
 const EMPTY_REQUESTS: SellerReservationCancelRequestMap = {};
-const getServerSnapshot = () => ({});
+// 서버 렌더링과 hydration 동안 동일한 초기 스냅샷을 재사용한다.
+const SERVER_SNAPSHOT: ReturnType<typeof getSellerCancelRequestState> = {};
+const getServerSnapshot = () => SERVER_SNAPSHOT;
 
 function useCancelRequests(sellerId: string) {
   const current = useSyncExternalStore(subscribeSellerCancelRequests, getSellerCancelRequestState, getServerSnapshot);

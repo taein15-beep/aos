@@ -1168,6 +1168,13 @@ export function loadPrototypeSellerApplications(): SellerApplication[] {
   return [...seeds, ...created];
 }
 
+/** 현재 브라우저에서 직접 등록한 판매점만 반환한다. 기존 샘플 목록은 포함하지 않는다. */
+export function loadCreatedPrototypeSellerApplications(): SellerApplication[] {
+  const { createdIds } = readPrototypePayload();
+  const ids = new Set(createdIds);
+  return loadPrototypeSellerApplications().filter((row) => ids.has(row.applicationId));
+}
+
 export function getPrototypeSellerApplication(applicationId: string): SellerApplication | null {
   const id = applicationId.trim();
   if (!id) return null;

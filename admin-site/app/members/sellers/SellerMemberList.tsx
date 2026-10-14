@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { QrCode, RotateCcw, Search, Store } from "lucide-react";
+import Link from "next/link";
+import "./registration.css";
+import { Plus, QrCode, RotateCcw, Search, Store } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   CURRENT_SUPPLIER_NAME,
@@ -156,6 +158,10 @@ export function SellerMemberList() {
   };
 
   const openRow = (row: SellerRelation) => {
+    if (row.applicationId) {
+      window.location.assign(`/members/sellers/${row.applicationId}`);
+      return;
+    }
     if (row.status === "승인대기" || row.status === "승인거절") setApplicationId(row.id);
     else setDrawerId(row.id);
   };
@@ -324,6 +330,10 @@ export function SellerMemberList() {
               <h1>판매점 관리</h1>
               <p>우리 여행사에 가입한 판매점과 가입 신청 현황을 관리합니다.</p>
             </div>
+            <Link href="/members/sellers/new" className="primary seller-registration-link">
+              <Plus size={14} aria-hidden="true" />
+              판매점 등록
+            </Link>
           </section>
 
           <div className="seller-relation-summary" role="group" aria-label="판매점 현황">

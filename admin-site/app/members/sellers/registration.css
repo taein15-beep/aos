@@ -1,0 +1,2 @@
+.seller-registration-link { display: inline-flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; text-decoration: none; }
+.seller-registration-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
