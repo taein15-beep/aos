@@ -86,6 +86,10 @@ export function navigateAdminChild(child: string, act: (message: string) => void
     window.location.assign("/settlements");
     return;
   }
+  if (child === "홈페이지설정") {
+    window.location.assign("/home-design");
+    return;
+  }
 
   const stampTourPath = getStampTourChildPath(child);
   if (stampTourPath) {

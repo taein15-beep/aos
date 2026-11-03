@@ -40,3 +40,6 @@ next-env.d.ts
 /.sites-runtime/
 /outputs/
 /work/
+
+# 홈페이지 디자인 개발 전용 초안 JSON (운영 저장소 아님)
+/.data/

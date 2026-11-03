@@ -1,3 +1,16 @@
+## AOS 로컬 실행
+
+```bash
+cd /Users/taein/Projects/AviaNext/aos-platform/website
+npm run dev
+```
+
+접속 주소: http://localhost:3002
+
+개발 포트는 3002로 지정되어 있습니다. 사용 중이면 다른 포트로 자동 이동하지 않고 오류로 종료합니다. 기존 서버의 터미널에서 Control+C로 종료한 뒤 다시 실행하세요. 포트 확인: `lsof -nP -iTCP:3002 -sTCP:LISTEN`.
+루트의 `npm run dev`는 이전 HTML 관리자 서버이므로 위 폴더에서 실행하세요.
+이 설정은 개발 실행에 적용되며 운영용 `npm start`와는 별개입니다.
+
 # vinext-starter
 
 A clean full-stack starter running on

@@ -1,6 +1,7 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
+import { homeDesignDraftDevServer } from "./build/home-design-draft-plugin";
 import { sites } from "./build/sites-vite-plugin";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
@@ -45,13 +46,17 @@ export default defineConfig(async () => {
 
   return {
     server: {
-      host: "0.0.0.0",
-      allowedHosts: ["terminal.local"],
+      port: 3001,
+      strictPort: true,
+      // 개발 전용 인증·초안 API가 있으므로 외부 바인딩(0.0.0.0)을 쓰지 않는다.
+      host: "localhost",
+      allowedHosts: ["localhost", "127.0.0.1"],
       ...(isCodexSeatbeltSandbox
         ? { watch: { useFsEvents: false, usePolling: true } }
         : {}),
     },
     plugins: [
+      homeDesignDraftDevServer(),
       vinext(),
       sites(),
       cloudflare({

@@ -8,12 +8,13 @@
   },
   "scripts": {
     "install:ci": "bash scripts/install-ci.sh",
-    "dev": "vinext dev",
+    "dev": "vinext dev --port 3001",
     "build": "next build",
     "build:sites": "bash scripts/build-verified.sh",
     "build:vercel": "next build",
     "start": "next start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test:home-design": "NODE_ENV=test node --experimental-strip-types --test tests/home-design-contract.test.ts tests/home-design-draft.test.ts tests/home-design-publish.test.ts tests/home-design-auth.test.ts",
     "validate:artifact": "bash scripts/validate-artifact.sh",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate"

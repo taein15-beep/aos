@@ -1,0 +1,36 @@
+---
+description: AOS 확정 작업 경로, 포트, 기존 관리자 보존 규칙
+alwaysApply: true
+---
+
+# AOS 작업 범위 (2026-11-02 확정)
+
+- 기본 폴더: `/Users/taein/Projects/AviaNext/aos-platform`
+- **최종 관리자:** `admin-site`, 포트 **3001**
+- **여행사 홈페이지:** `website`, 포트 **3002**
+- **기존 관리자 보존:** `/Users/taein/Projects/AviaNext/aos-admin-live` (신규 기능·이전 구현 금지)
+- 스탬프투어: `admin-site/app/stamp-tours`
+
+신규 관리자 기능은 `admin-site`에서만 작업한다. 홈페이지는 `website`에서만 개발한다.
+
+작업 시작 전 대상 폴더, Git 브랜치, 기존 변경, 실행 스크립트를 확인하고 보고한다.
+
+실행:
+
+```bash
+cd /Users/taein/Projects/AviaNext/aos-platform/admin-site && npm run dev -- --port 3001
+cd /Users/taein/Projects/AviaNext/aos-platform/website && npm run dev -- --port 3002
+```
+
+루트 `npm run dev`는 이전 HTML 관리자(3080)다. 새 관리자 실행에 쓰지 않는다.
+
+금지:
+
+- `aos-admin-live`, `public/admin`에 새 기능 추가
+- 기존 파일·미커밋 변경 삭제, 덮어쓰기, 일괄 병합
+- `aos-admin-live`에서 git reset / clean / checkout 등 손실 가능 작업
+- 기존 관리자 기능 이전을 비교·데이터 연동 검증 없이 진행
+- 포트가 사용 중일 때 임의로 다른 포트로 변경
+- 기존 관리자 기본 포트 3001과 충돌 시 `admin-site` 포트를 바꾸지 말 것. live는 명시 요청 시에만 `PORT=` 지정
+
+완료 보고: 수정한 절대 경로, 실행 명령, 접속 주소, 검증 결과, 미확인 사항
