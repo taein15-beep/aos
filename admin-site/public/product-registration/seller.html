@@ -1,0 +1,1196 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>상품상세 - 판매점설정</title>
+  
+  
+  
+  
+<style>*{box-sizing:border-box}
+body[data-page="product_seller_setting"] *,body[data-page="product_seller_setting"] *::before,body[data-page="product_seller_setting"] *::after{
+  box-sizing: border-box;
+}
+body[data-page="product_seller_setting"] .app{
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  min-height: 100vh;
+}
+body[data-page="product_seller_setting"] .sidebar{
+  background: #071122;
+  color: #d7e1f0;
+  padding: 18px 0;
+}
+body[data-page="product_seller_setting"] .brand{
+  padding: 0 18px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+body[data-page="product_seller_setting"] .brand strong{
+  display: block;
+  color: #fff;
+  font-size: 17px;
+}
+body[data-page="product_seller_setting"] .brand small{
+  color: #8ea0bb;
+}
+body[data-page="product_seller_setting"] .nav-title{
+  padding: 18px 18px 8px;
+  color: #8ea0bb;
+  font-size: 11px;
+}
+body[data-page="product_seller_setting"] .nav-tree{
+  padding: 8px 0 18px;
+}
+body[data-page="product_seller_setting"] .nav-group{
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  padding: 6px 0;
+}
+body[data-page="product_seller_setting"] .nav-depth1{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+body[data-page="product_seller_setting"] .nav-depth1::after{
+  content: '▾';
+  color: #8ea0bb;
+  font-size: 10px;
+}
+body[data-page="product_seller_setting"] .nav-group:not(.open) .nav-depth1::after{
+  content: '▸';
+}
+body[data-page="product_seller_setting"] .nav-group:not(.open) a{
+  display: none;
+}
+body[data-page="product_seller_setting"] .nav-group a{
+  position: relative;
+  display: block;
+  padding: 7px 18px 7px 46px;
+  border-left: 3px solid transparent;
+  color: #b9c6d8;
+  font-size: 12px;
+  text-decoration: none;
+}
+body[data-page="product_seller_setting"] .nav-group a.active{
+  border-left-color: #5b8cff;
+  background: rgba(91, 140, 255, .18);
+  color: #fff;
+}
+body[data-page="product_seller_setting"] .nav-group.open .nav-depth1{
+  color: #8fb3ff;
+}
+body[data-page="product_seller_setting"] .topbar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid #d9dde3;
+  background: #fff;
+}
+body[data-page="product_seller_setting"] main,body[data-page="product_seller_setting"] .product-seller-setting-page{
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+body[data-page="product_seller_setting"] h1{
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+body[data-page="product_seller_setting"] .product-seller-setting-page{
+  padding: 16px 16px 96px;
+}
+body[data-page="product_seller_setting"] .page-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+body[data-page="product_seller_setting"] .tabs{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 12px;
+}
+body[data-page="product_seller_setting"] .tab{
+  border: 1px solid #cfd5dd;
+  border-radius: 18px;
+  background: #fff;
+  color: #344054;
+  padding: 8px 14px;
+  font-weight: 900;
+  text-decoration: none;
+}
+body[data-page="product_seller_setting"] .tab.active{
+  border-color: #7c3aed;
+  background: #7c3aed;
+  color: #fff;
+}
+body[data-page="product_seller_setting"] .panel,body[data-page="product_seller_setting"] .product-summary,body[data-page="product_seller_setting"] .seller-search-section,body[data-page="product_seller_setting"] .seller-result-section,body[data-page="product_seller_setting"] .selected-seller-section,body[data-page="product_seller_setting"] .seller-management-grid{
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+body[data-page="product_seller_setting"] .panel{
+  overflow: visible;
+  margin-bottom: 12px;
+  border: 1px solid #d9dde3;
+  border-radius: 7px;
+  background: #fff;
+}
+body[data-page="product_seller_setting"] .panel-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border-bottom: 1px solid #d9dde3;
+  background: #e6e6e6;
+  font-weight: 900;
+}
+body[data-page="product_seller_setting"] .panel-body{
+  min-width: 0;
+  padding: 14px;
+  overflow: visible;
+}
+body[data-page="product_seller_setting"] .product-summary{
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(180px, 1fr);
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid #d9dde3;
+  border-radius: 7px;
+  background: #fff;
+}
+body[data-page="product_seller_setting"] .product-summary > div{
+  min-width: 0;
+  padding: 12px 14px;
+  border-right: 1px solid #d9dde3;
+  border-bottom: 1px solid #d9dde3;
+  background: #fff;
+}
+body[data-page="product_seller_setting"] .product-summary > div:last-child{
+  border-right: 0;
+}
+body[data-page="product_seller_setting"] .product-summary span{
+  display: block;
+  margin-bottom: 5px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+}
+body[data-page="product_seller_setting"] .product-summary strong{
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #172033;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body[data-page="product_seller_setting"] .seller-filter-grid{
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(120px, .8fr) minmax(140px, .9fr) minmax(120px, .8fr) minmax(130px, .9fr) minmax(130px, .9fr) minmax(150px, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  width: 100%;
+  min-width: 0;
+}
+body[data-page="product_seller_setting"] .search-field{
+  min-width: 0;
+}
+body[data-page="product_seller_setting"] .search-field label{
+  display: block;
+  margin-bottom: 6px;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+body[data-page="product_seller_setting"] input,body[data-page="product_seller_setting"] select,body[data-page="product_seller_setting"] .btn{
+  min-height: 36px;
+}
+body[data-page="product_seller_setting"] .seller-filter-grid input,body[data-page="product_seller_setting"] .seller-filter-grid select,body[data-page="product_seller_setting"] .selected-search,body[data-page="product_seller_setting"] .per-page select{
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #d6dbe1;
+  border-radius: 4px;
+  background: #fff;
+  padding: 8px 9px;
+}
+body[data-page="product_seller_setting"] .search-actions{
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: max-content;
+}
+body[data-page="product_seller_setting"] .search-actions .btn{
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+body[data-page="product_seller_setting"] .result-toolbar,body[data-page="product_seller_setting"] .selected-toolbar{
+  flex-wrap: wrap;
+}
+body[data-page="product_seller_setting"] .result-title{
+  min-width: 0;
+  white-space: nowrap;
+}
+body[data-page="product_seller_setting"] .table-actions,body[data-page="product_seller_setting"] .result-actions,body[data-page="product_seller_setting"] .selected-actions,body[data-page="product_seller_setting"] .per-page,body[data-page="product_seller_setting"] .save-actions{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+body[data-page="product_seller_setting"] .result-actions,body[data-page="product_seller_setting"] .selected-actions{
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+body[data-page="product_seller_setting"] .per-page{
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+}
+body[data-page="product_seller_setting"] .per-page select{
+  width: 74px;
+  padding: 0 8px;
+}
+body[data-page="product_seller_setting"] .selected-search{
+  flex: 1 1 220px;
+  width: clamp(220px, 22vw, 320px);
+}
+body[data-page="product_seller_setting"] .seller-management-grid{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+body[data-page="product_seller_setting"] .seller-management-grid .panel{
+  margin-bottom: 0;
+}
+body[data-page="product_seller_setting"] .table-scroll{
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+body[data-page="product_seller_setting"] .seller-result-table,body[data-page="product_seller_setting"] .selected-seller-table{
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+}
+body[data-page="product_seller_setting"] .seller-result-table th,body[data-page="product_seller_setting"] .seller-result-table td,body[data-page="product_seller_setting"] .selected-seller-table th,body[data-page="product_seller_setting"] .selected-seller-table td{
+  overflow: hidden;
+  box-sizing: border-box;
+  height: 42px;
+  padding: 6px 8px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-align: center;
+}
+body[data-page="product_seller_setting"] .seller-management-grid .table th,body[data-page="product_seller_setting"] .seller-management-grid .table td{
+  padding-right: 6px;
+  padding-left: 6px;
+}
+body[data-page="product_seller_setting"] .seller-result-table th,body[data-page="product_seller_setting"] .selected-seller-table th{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border: 1px solid #cfd3d8;
+  background: #e7e7e7;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+}
+body[data-page="product_seller_setting"] .seller-result-table td,body[data-page="product_seller_setting"] .selected-seller-table td{
+  border: 1px solid #edf0f3;
+  background: #fff;
+  color: #111827;
+  font-weight: 500;
+}
+body[data-page="product_seller_setting"] .seller-result-table tbody tr:nth-child(odd) td,body[data-page="product_seller_setting"] .selected-seller-table tbody tr:nth-child(odd) td{
+  background: #f5f5f5;
+}
+body[data-page="product_seller_setting"] .col-check{
+  width: 42px;
+}
+body[data-page="product_seller_setting"] .col-seller{
+  width: 140px;
+}
+body[data-page="product_seller_setting"] .col-region{
+  width: 92px;
+}
+body[data-page="product_seller_setting"] .col-grade{
+  width: 86px;
+}
+body[data-page="product_seller_setting"] .col-public{
+  width: 86px;
+}
+body[data-page="product_seller_setting"] .col-date{
+  width: 86px;
+}
+body[data-page="product_seller_setting"] .col-manage{
+  width: 78px;
+}
+body[data-page="product_seller_setting"] .seller-name-button{
+  display: inline;
+  max-width: 100%;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: #111827;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+body[data-page="product_seller_setting"] .seller-name-button:hover{
+  color: #175cd3;
+  text-decoration: underline;
+}
+body[data-page="product_seller_setting"] .seller-name-button:focus{
+  outline: 2px solid #84a9ff;
+  outline-offset: 2px;
+}
+body[data-page="product_seller_setting"] tr.is-selected td{
+  background: #eef5ff;
+}
+body[data-page="product_seller_setting"] tr.is-disabled td{
+  color: #98a2b3;
+  background: #fafafa;
+}
+body[data-page="product_seller_setting"] .badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  border-radius: 14px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+body[data-page="product_seller_setting"] .selected-panel{
+  border-color: #cfe0ff;
+}
+body[data-page="product_seller_setting"] .selected-panel .panel-head{
+  background: #f7fbff;
+}
+body[data-page="product_seller_setting"] .empty-state{
+  display: none;
+  padding: 34px 16px;
+  border-top: 1px solid #edf0f3;
+  color: #667085;
+  text-align: center;
+}
+body[data-page="product_seller_setting"] .empty-state strong{
+  display: block;
+  margin-bottom: 8px;
+  color: #172033;
+  font-size: 15px;
+}
+body[data-page="product_seller_setting"] .pagination{
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 12px;
+  padding-bottom: 4px;
+}
+body[data-page="product_seller_setting"] .pagination button{
+  min-width: 32px;
+  min-height: 32px;
+  border: 1px solid #cfd5dd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+body[data-page="product_seller_setting"] .pagination button.active{
+  border-color: #2f63f6;
+  background: #2f63f6;
+  color: #fff;
+}
+body[data-page="product_seller_setting"] .page-action-bar{
+  position: static;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d9dde3;
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 -4px 14px rgba(7, 17, 34, .08);
+}
+body[data-page="product_seller_setting"] .page-action-bar .hint{
+  min-width: 220px;
+}
+body[data-page="product_seller_setting"] .save-actions{
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+body[data-page="product_seller_setting"] .modal-backdrop{
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 18px;
+  background: rgba(7, 17, 34, .45);
+}
+body[data-page="product_seller_setting"] .modal-backdrop.open{
+  display: flex;
+}
+body[data-page="product_seller_setting"] .modal-box{
+  width: min(460px, 96vw);
+  overflow: hidden;
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(7, 17, 34, .18);
+}
+body[data-page="product_seller_setting"] .seller-edit-box{
+  width: min(760px, 96vw);
+}
+body[data-page="product_seller_setting"] .seller-edit-box .modal-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+body[data-page="product_seller_setting"] .seller-edit-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+body[data-page="product_seller_setting"] .seller-edit-grid .field{
+  min-width: 0;
+}
+body[data-page="product_seller_setting"] .seller-edit-grid label{
+  display: block;
+  margin-bottom: 6px;
+  color: #475467;
+  font-weight: 900;
+}
+body[data-page="product_seller_setting"] .seller-edit-grid input,body[data-page="product_seller_setting"] .seller-edit-grid select{
+  width: 100%;
+  border: 1px solid #d6dbe1;
+  border-radius: 4px;
+  background: #fff;
+  padding: 8px 9px;
+}
+body[data-page="product_seller_setting"] .seller-edit-help{
+  margin: 12px 0 0;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+}
+body[data-page="product_seller_setting"] .modal-head,body[data-page="product_seller_setting"] .modal-foot{
+  padding: 13px 16px;
+  border-bottom: 1px solid #edf0f3;
+  font-weight: 900;
+}
+body[data-page="product_seller_setting"] .modal-body{
+  padding: 18px 16px;
+  color: #344054;
+  line-height: 1.6;
+}
+body[data-page="product_seller_setting"] .modal-foot{
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #edf0f3;
+  border-bottom: 0;
+}
+@media (max-width: 1400px){body[data-page="product_seller_setting"] .seller-filter-grid{
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+  }
+body[data-page="product_seller_setting"] .search-name-field{
+    grid-column: span 2;
+  }
+body[data-page="product_seller_setting"] .search-actions{
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 900px){body[data-page="product_seller_setting"] .seller-management-grid{
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1200px){body[data-page="product_seller_setting"] .product-summary{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1100px){body[data-page="product_seller_setting"] .seller-filter-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+body[data-page="product_seller_setting"] .search-name-field,body[data-page="product_seller_setting"] .search-actions{
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 768px){body[data-page="product_seller_setting"] .app{
+    grid-template-columns: 1fr;
+  }
+body[data-page="product_seller_setting"] .sidebar{
+    display: none;
+  }
+body[data-page="product_seller_setting"] .page-head,body[data-page="product_seller_setting"] .result-toolbar,body[data-page="product_seller_setting"] .selected-toolbar,body[data-page="product_seller_setting"] .page-action-bar{
+    align-items: stretch;
+    flex-direction: column;
+  }
+body[data-page="product_seller_setting"] .product-summary,body[data-page="product_seller_setting"] .seller-filter-grid{
+    grid-template-columns: 1fr;
+  }
+body[data-page="product_seller_setting"] .search-name-field,body[data-page="product_seller_setting"] .search-actions{
+    grid-column: auto;
+  }
+body[data-page="product_seller_setting"] .search-actions,body[data-page="product_seller_setting"] .result-actions,body[data-page="product_seller_setting"] .selected-actions,body[data-page="product_seller_setting"] .save-actions{
+    justify-content: flex-start;
+  }
+body[data-page="product_seller_setting"] .search-actions{
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+body[data-page="product_seller_setting"] .seller-edit-grid{
+    grid-template-columns: 1fr;
+  }
+}
+body[data-page="product_seller_setting"] .app{display:block;min-width:0}body[data-page="product_seller_setting"] main{margin:0;width:100%;min-width:0}body[data-page="product_seller_setting"] .page{padding:16px}body[data-page="product_seller_setting"] .save-bar{position:sticky;bottom:0;left:0;width:100%;z-index:10}
+</style></head>
+<body data-page="product_seller_setting">
+<div class="app">
+  
+  <main>
+    
+    <div class="page product-seller-setting-page">
+      <div class="page-head">
+        <div>
+          <h1>판매점설정</h1>
+          <div class="desc">해당 상품을 판매할 수 있는 판매점을 선택하고 관리합니다.</div>
+        </div>
+        <button class="btn green" id="topSaveBtn" type="button">판매점 설정 저장</button>
+      </div>
+
+      <nav class="tabs" aria-label="상품 관리 탭">
+        <a class="tab" href="./index.html">상품기본설정</a>
+        <a class="tab" href="./schedule.html">일정표</a>
+        <a class="tab" href="./price.html">요금설정</a>
+        <a class="tab active" href="./seller.html">판매점설정</a>
+        <a class="tab" href="#">거래처설정</a>
+      </nav>
+
+      <p class="hint" role="note">초기 기획 시연 화면입니다. 판매점 선택·수정·저장은 현재 화면에만 반영되며 새로고침·탭 이동 시 초기화됩니다. 실제 판매점 공개 설정은 변경되지 않습니다.</p><section class="product-summary" aria-label="상품 정보">
+        <div>
+          <span>상품명</span>
+          <strong id="productName" title="[팔도장터열차] 공주 유구 색동수국정원 / 계룡산 동학사">[팔도장터열차] 공주 유구 색동수국정원 / 계룡산 동학사</strong>
+        </div>
+        <div>
+          <span>상품코드</span>
+          <strong id="productCode">PRD-2026-0611</strong>
+        </div>
+        <div>
+          <span>상품상태</span>
+          <strong><span class="badge b-green">판매중</span></strong>
+        </div>
+        <div>
+          <span>선택된 판매점</span>
+          <strong id="summarySelectedCount">0개</strong>
+        </div>
+        <div>
+          <span>최종 수정일</span>
+          <strong id="lastSavedAt">2026-07-13 14:30</strong>
+        </div>
+      </section>
+
+      <section class="panel seller-search-section">
+        <div class="panel-head">판매점 검색</div>
+        <div class="panel-body">
+          <div class="filter-grid seller-filter-grid">
+            <div class="field search-field search-name-field"><label for="filterName">판매점명</label><input id="filterName" placeholder="판매점명"></div>
+            <div class="field search-field"><label for="filterSido">시·도</label><select id="filterSido"></select></div>
+            <div class="field search-field"><label for="filterSigungu">시·군·구</label><select id="filterSigungu"></select></div>
+            <div class="field search-field"><label for="filterGrade">커미션등급</label><select id="filterGrade"><option value="">전체</option><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option></select></div>
+            <div class="field search-field"><label for="filterCeo">대표자명</label><input id="filterCeo" placeholder="대표자명"></div>
+            <div class="field search-field"><label for="filterManager">담당자명</label><input id="filterManager" placeholder="담당자명"></div>
+            <div class="field search-field"><label for="filterPhone">연락처</label><input id="filterPhone" placeholder="010 또는 지역번호"></div>
+            <div class="search-actions">
+              <button class="btn" id="resetFilterBtn" type="button">검색조건 초기화</button>
+              <button class="btn green" id="searchBtn" type="button">검색</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="seller-management-grid">
+      <section class="panel seller-result-section">
+        <div class="panel-head result-head result-toolbar">
+          <span class="result-title">판매점 <span class="muted" id="resultCountText">총 0개</span></span>
+          <div class="table-actions result-actions">
+            <label class="per-page"><span>페이지당</span><select id="pageSizeSelect"><option value="5">5개</option><option value="10" selected>10개</option><option value="20">20개</option></select></label>
+            <button class="btn green small" id="addSelectedBtn" type="button">선택항목 추가</button>
+          </div>
+        </div>
+        <div class="table-wrap seller-table-wrap table-scroll">
+          <table class="table seller-result-table">
+            <colgroup>
+              <col class="col-check">
+              <col class="col-seller">
+              <col class="col-region">
+              <col class="col-grade">
+              <col class="col-public">
+            </colgroup>
+            <thead>
+              <tr>
+                <th><input id="resultSelectAll" type="checkbox" aria-label="현재 페이지 전체 선택"></th>
+                <th>판매점명</th>
+                <th>지역</th>
+                <th>커미션등급</th>
+                <th>공개상태</th>
+              </tr>
+            </thead>
+            <tbody id="sellerResultRows"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="resultPagination" aria-label="판매점 페이지"></div>
+      </section>
+
+      <section class="panel selected-panel selected-seller-section">
+        <div class="panel-head result-head selected-toolbar">
+          <span class="result-title">선택된 판매점 <span class="badge b-blue" id="selectedCountBadge">0개</span></span>
+          <div class="table-actions selected-actions">
+            <input id="selectedSearchName" class="selected-search" placeholder="선택된 판매점명 검색">
+            <button class="btn small" id="sortSelectedBtn" type="button">가나다순 정렬</button>
+            <button class="btn small red" id="releaseCheckedBtn" type="button">선택 공개해제</button>
+          </div>
+        </div>
+        <div id="selectedEmpty" class="empty-state">
+          <strong>현재 이 상품에 공개된 판매점이 없습니다.</strong>
+          <span>위 판매점 목록에서 판매점을 선택한 후 추가해주세요.</span>
+        </div>
+        <div class="table-wrap seller-table-wrap table-scroll" id="selectedTableWrap">
+          <table class="table selected-seller-table">
+            <colgroup>
+              <col class="col-check">
+              <col class="col-seller">
+              <col class="col-region">
+              <col class="col-grade">
+              <col class="col-date">
+              <col class="col-manage">
+            </colgroup>
+            <thead>
+              <tr>
+                <th><input id="selectedSelectAll" type="checkbox" aria-label="선택된 판매점 전체 선택"></th>
+                <th>판매점명</th>
+                <th>지역</th>
+                <th>커미션등급</th>
+                <th>설정일</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="selectedSellerRows"></tbody>
+          </table>
+        </div>
+      </section>
+      </div>
+
+      <div class="save-bar page-action-bar">
+        <span class="hint" id="changeHint">저장 전까지 추가 및 삭제 내용은 임시상태로 유지됩니다.</span>
+        <div class="save-actions">
+          <button class="btn" id="cancelBtn" type="button">취소</button>
+          <button class="btn" id="resetChangesBtn" type="button">변경사항 초기화</button>
+          <button class="btn green" id="saveBtn" type="button">판매점 설정 저장</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="sellerEditModal" class="modal-backdrop seller-edit-modal" role="dialog" aria-modal="true" aria-labelledby="sellerEditTitle">
+  <div class="modal-box seller-edit-box">
+    <div class="modal-head">
+      <span id="sellerEditTitle">판매점 수정</span>
+      <button class="btn small" id="sellerEditCloseBtn" type="button">닫기</button>
+    </div>
+    <div class="modal-body">
+      <input id="editSellerId" type="hidden">
+      <div class="seller-edit-grid">
+        <div class="field"><label for="editSellerName">판매점명</label><input id="editSellerName"></div>
+        <div class="field"><label for="editSellerGrade">커미션등급</label><select id="editSellerGrade"><option>A등급</option><option>B등급</option><option>C등급</option><option>D등급</option></select></div>
+        <div class="field"><label for="editSellerSido">시·도</label><select id="editSellerSido"></select></div>
+        <div class="field"><label for="editSellerSigungu">시·군·구</label><select id="editSellerSigungu"></select></div>
+        <div class="field"><label for="editSellerCeo">대표자명</label><input id="editSellerCeo"></div>
+        <div class="field"><label for="editSellerManager">담당자명</label><input id="editSellerManager"></div>
+        <div class="field"><label for="editSellerPhone">연락처</label><input id="editSellerPhone"></div>
+        <div class="field"><label for="editSellerStatus">상태</label><select id="editSellerStatus"><option>정상</option><option>승인대기</option><option>사용중지</option></select></div>
+      </div>
+      <p class="seller-edit-help">샘플 데이터 기반 수정 화면입니다. 저장 시 현재 화면의 판매점 목록에 즉시 반영됩니다.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="sellerEditCancelBtn" type="button">취소</button>
+      <button class="btn green" id="sellerEditSaveBtn" type="button">판매점 정보 저장</button>
+    </div>
+  </div>
+</div>
+
+<div id="zeroSaveModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="zeroSaveTitle">
+  <div class="modal-box">
+    <div class="modal-head"><span id="zeroSaveTitle">판매점 공개 해제 확인</span></div>
+    <div class="modal-body">
+      선택된 판매점이 없습니다. 저장하면 해당 상품이 모든 판매점에서 비공개 처리됩니다. 계속하시겠습니까?
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="zeroSaveCancelBtn" type="button">취소</button>
+      <button class="btn green" id="zeroSaveConfirmBtn" type="button">비공개로 저장</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script>window.msg = function (text) { window.alert(text); };
+(function () {
+  var todayText = '2026-07-13';
+  var regionMap = {
+    '': ['전체'],
+    '서울': ['전체', '강남구', '마포구', '종로구', '송파구'],
+    '경기': ['전체', '수원시', '성남시', '고양시', '부천시'],
+    '인천': ['전체', '연수구', '남동구', '부평구'],
+    '부산': ['전체', '해운대구', '부산진구', '동래구'],
+    '대전': ['전체', '서구', '유성구', '중구'],
+    '제주': ['전체', '제주시', '서귀포시']
+  };
+
+  var sellers = [
+    { id: 's001', name: '에이비아 강남여행사', sido: '서울', sigungu: '강남구', grade: 'A등급', ceo: '김민준', manager: '박서연', phone: '02-1234-5678', status: '정상', selected: true },
+    { id: 's002', name: '마포 모두투어센터', sido: '서울', sigungu: '마포구', grade: 'B등급', ceo: '이도현', manager: '정하윤', phone: '02-778-2451', status: '정상', selected: true },
+    { id: 's003', name: '종로 프리미엄투어', sido: '서울', sigungu: '종로구', grade: 'C등급', ceo: '최지훈', manager: '한유진', phone: '02-736-9012', status: '승인대기', selected: false },
+    { id: 's004', name: '송파 패밀리여행', sido: '서울', sigungu: '송파구', grade: 'D등급', ceo: '오세준', manager: '윤다은', phone: '02-415-3300', status: '정상', selected: false },
+    { id: 's005', name: '수원 파트너투어', sido: '경기', sigungu: '수원시', grade: 'B등급', ceo: '장현우', manager: '김나린', phone: '031-222-1234', status: '정상', selected: true },
+    { id: 's006', name: '성남 드림여행사', sido: '경기', sigungu: '성남시', grade: 'C등급', ceo: '문태영', manager: '서지민', phone: '031-701-4411', status: '정상', selected: false },
+    { id: 's007', name: '고양 행복관광', sido: '경기', sigungu: '고양시', grade: 'A등급', ceo: '임수호', manager: '조아라', phone: '031-918-7070', status: '사용중지', selected: false },
+    { id: 's008', name: '부천 온누리투어', sido: '경기', sigungu: '부천시', grade: 'D등급', ceo: '강도윤', manager: '백예린', phone: '032-611-8920', status: '정상', selected: false },
+    { id: 's009', name: '인천공항 제휴센터', sido: '인천', sigungu: '연수구', grade: 'A등급', ceo: '손재원', manager: '이채원', phone: '032-811-6001', status: '정상', selected: true },
+    { id: 's010', name: '남동 스마트여행', sido: '인천', sigungu: '남동구', grade: 'C등급', ceo: '신유찬', manager: '권미소', phone: '032-472-8088', status: '승인대기', selected: false },
+    { id: 's011', name: '부평 레일파트너', sido: '인천', sigungu: '부평구', grade: 'B등급', ceo: '황서준', manager: '류은지', phone: '032-505-7788', status: '정상', selected: false },
+    { id: 's012', name: '부산 해운대투어', sido: '부산', sigungu: '해운대구', grade: 'A등급', ceo: '차민석', manager: '문소희', phone: '051-744-1122', status: '정상', selected: false },
+    { id: 's013', name: '부산진 여행마루', sido: '부산', sigungu: '부산진구', grade: 'B등급', ceo: '노지호', manager: '심예나', phone: '051-802-3309', status: '사용중지', selected: false },
+    { id: 's014', name: '대전 유성관광', sido: '대전', sigungu: '유성구', grade: 'C등급', ceo: '배준호', manager: '남가은', phone: '042-862-7744', status: '정상', selected: true },
+    { id: 's015', name: '대전 중앙여행클럽', sido: '대전', sigungu: '중구', grade: 'D등급', ceo: '전우진', manager: '홍시은', phone: '042-255-1004', status: '정상', selected: false },
+    { id: 's016', name: '제주 하늘길투어', sido: '제주', sigungu: '제주시', grade: 'A등급', ceo: '고은찬', manager: '양하늘', phone: '064-711-4522', status: '정상', selected: true },
+    { id: 's017', name: '서귀포 바다여행', sido: '제주', sigungu: '서귀포시', grade: 'B등급', ceo: '현지완', manager: '오유리', phone: '064-763-9030', status: '승인대기', selected: false },
+    { id: 's018', name: '동래 로컬트립', sido: '부산', sigungu: '동래구', grade: 'C등급', ceo: '윤태오', manager: '최보라', phone: '051-552-1900', status: '정상', selected: false }
+  ];
+
+  var initialSelectedIds = sellers.filter(function (seller) { return seller.selected; }).map(function (seller) { return seller.id; });
+  var savedSelectedIds = initialSelectedIds.slice();
+  var workingSelectedIds = initialSelectedIds.slice();
+  var pendingCheckedIds = [];
+  var checkedSelectedIds = [];
+  var currentPage = 1;
+  var pageSize = 10;
+  var selectedSortAsc = false;
+
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+    });
+  }
+
+  function getSeller(id) {
+    return sellers.find(function (seller) { return seller.id === id; });
+  }
+
+  function uniquePush(list, id) {
+    if (list.indexOf(id) === -1) list.push(id);
+  }
+
+  function removeFrom(list, id) {
+    return list.filter(function (value) { return value !== id; });
+  }
+
+  function isSelectable(seller) {
+    return seller.status === '정상';
+  }
+
+  function badge(text, type) {
+    return '<span class="badge ' + type + '">' + escapeHtml(text) + '</span>';
+  }
+
+  function gradeBadge(grade) {
+    var types = { 'A등급': 'b-blue', 'B등급': 'b-green', 'C등급': 'b-gray', 'D등급': 'b-orange' };
+    return badge(grade, types[grade] || 'b-gray');
+  }
+
+  function statusBadge(status) {
+    var types = { '정상': 'b-green', '승인대기': 'b-orange', '사용중지': 'b-red' };
+    return badge(status, types[status] || 'b-gray');
+  }
+
+  function publicBadge(id) {
+    return workingSelectedIds.indexOf(id) > -1 ? badge('선택됨', 'b-blue') : badge('미선택', 'b-gray');
+  }
+
+  function setSidoOptions() {
+    var sido = byId('filterSido');
+    sido.innerHTML = Object.keys(regionMap).map(function (value) {
+      return '<option value="' + escapeHtml(value) + '">' + (value || '전체') + '</option>';
+    }).join('');
+  }
+
+  function updateSigunguOptions() {
+    var sidoValue = byId('filterSido').value;
+    var options = regionMap[sidoValue] || ['전체'];
+    byId('filterSigungu').innerHTML = options.map(function (value) {
+      var optionValue = value === '전체' ? '' : value;
+      return '<option value="' + escapeHtml(optionValue) + '">' + escapeHtml(value) + '</option>';
+    }).join('');
+  }
+
+  function filterSellers() {
+    var name = byId('filterName').value.trim();
+    var sido = byId('filterSido').value;
+    var sigungu = byId('filterSigungu').value;
+    var grade = byId('filterGrade').value;
+    var ceo = byId('filterCeo').value.trim();
+    var manager = byId('filterManager').value.trim();
+    var phone = byId('filterPhone').value.trim();
+
+    return sellers.filter(function (seller) {
+      return (!name || seller.name.indexOf(name) > -1)
+        && (!sido || seller.sido === sido)
+        && (!sigungu || seller.sigungu === sigungu)
+        && (!grade || seller.grade === grade)
+        && (!ceo || seller.ceo.indexOf(ceo) > -1)
+        && (!manager || seller.manager.indexOf(manager) > -1)
+        && (!phone || seller.phone.indexOf(phone) > -1);
+    });
+  }
+
+  function currentPageRows(filtered) {
+    var totalPage = Math.max(1, Math.ceil(filtered.length / pageSize));
+    currentPage = Math.min(currentPage, totalPage);
+    return filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }
+
+  function renderResultRows() {
+    var filtered = filterSellers();
+    var rows = currentPageRows(filtered);
+    byId('resultCountText').textContent = '총 ' + filtered.length + '개';
+    byId('sellerResultRows').innerHTML = rows.length ? rows.map(function (seller) {
+      var disabled = !isSelectable(seller);
+      var checked = pendingCheckedIds.indexOf(seller.id) > -1;
+      var selected = workingSelectedIds.indexOf(seller.id) > -1;
+      return '<tr class="' + (selected ? 'is-selected ' : '') + (disabled ? 'is-disabled' : '') + '" title="' + (disabled ? escapeHtml(seller.status + ' 상태의 판매점은 선택할 수 없습니다.') : '') + '">'
+        + '<td class="center"><input type="checkbox" class="result-check" data-id="' + seller.id + '" aria-label="' + escapeHtml(seller.name) + ' 선택"' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '></td>'
+        + '<td title="' + escapeHtml(seller.name) + '"><button class="seller-name-button" type="button" data-edit-id="' + seller.id + '">' + escapeHtml(seller.name) + '</button></td>'
+        + '<td class="center" title="' + escapeHtml(seller.sido + ' ' + seller.sigungu) + '">' + escapeHtml(seller.sido + ' ' + seller.sigungu) + '</td>'
+        + '<td class="center">' + gradeBadge(seller.grade) + '</td>'
+        + '<td class="center">' + publicBadge(seller.id) + '</td>'
+        + '</tr>';
+    }).join('') : '<tr><td colspan="5" class="center">검색된 판매점이 없습니다.</td></tr>';
+
+    var selectableIds = rows.filter(isSelectable).map(function (seller) { return seller.id; });
+    byId('resultSelectAll').checked = selectableIds.length > 0 && selectableIds.every(function (id) { return pendingCheckedIds.indexOf(id) > -1; });
+    renderPagination(filtered.length);
+  }
+
+  function renderPagination(totalCount) {
+    var totalPage = Math.max(1, Math.ceil(totalCount / pageSize));
+    var html = [];
+    for (var i = 1; i <= totalPage; i += 1) {
+      html.push('<button type="button" class="' + (i === currentPage ? 'active' : '') + '" data-page="' + i + '">' + i + '</button>');
+    }
+    byId('resultPagination').innerHTML = html.join('');
+  }
+
+  function renderSelectedRows() {
+    var keyword = byId('selectedSearchName').value.trim();
+    var selectedRows = workingSelectedIds.map(getSeller).filter(Boolean);
+    if (selectedSortAsc) {
+      selectedRows.sort(function (a, b) { return a.name.localeCompare(b.name, 'ko'); });
+    }
+    if (keyword) {
+      selectedRows = selectedRows.filter(function (seller) { return seller.name.indexOf(keyword) > -1; });
+    }
+
+    byId('selectedSellerRows').innerHTML = selectedRows.map(function (seller) {
+      var checked = checkedSelectedIds.indexOf(seller.id) > -1;
+      return '<tr class="is-selected">'
+        + '<td class="center"><input type="checkbox" class="selected-check" data-id="' + seller.id + '" aria-label="' + escapeHtml(seller.name) + ' 선택됨 목록 선택"' + (checked ? ' checked' : '') + '></td>'
+        + '<td title="' + escapeHtml(seller.name) + '"><button class="seller-name-button" type="button" data-edit-id="' + seller.id + '">' + escapeHtml(seller.name) + '</button></td>'
+        + '<td class="center" title="' + escapeHtml(seller.sido + ' ' + seller.sigungu) + '">' + escapeHtml(seller.sido + ' ' + seller.sigungu) + '</td>'
+        + '<td class="center">' + gradeBadge(seller.grade) + '</td>'
+        + '<td class="center">' + todayText + '</td>'
+        + '<td class="center"><button class="btn small" type="button" data-remove-id="' + seller.id + '">공개해제</button></td>'
+        + '</tr>';
+    }).join('');
+
+    byId('selectedTableWrap').style.display = selectedRows.length ? '' : 'none';
+    byId('selectedEmpty').style.display = selectedRows.length ? 'none' : 'block';
+    byId('selectedSelectAll').checked = selectedRows.length > 0 && selectedRows.every(function (seller) { return checkedSelectedIds.indexOf(seller.id) > -1; });
+  }
+
+  function hasChanges() {
+    var saved = savedSelectedIds.slice().sort().join(',');
+    var working = workingSelectedIds.slice().sort().join(',');
+    return saved !== working;
+  }
+
+  function updateCounts() {
+    var count = workingSelectedIds.length;
+    byId('summarySelectedCount').textContent = count + '개';
+    byId('selectedCountBadge').textContent = count + '개';
+    byId('changeHint').textContent = hasChanges() ? '저장하지 않은 변경사항이 있습니다.' : '저장 전까지 추가 및 삭제 내용은 임시상태로 유지됩니다.';
+  }
+
+  function renderAll() {
+    renderResultRows();
+    renderSelectedRows();
+    updateCounts();
+  }
+
+  function resetFilters() {
+    ['filterName', 'filterGrade', 'filterCeo', 'filterManager', 'filterPhone'].forEach(function (id) { byId(id).value = ''; });
+    byId('filterSido').value = '';
+    updateSigunguOptions();
+    pendingCheckedIds = [];
+    currentPage = 1;
+    renderAll();
+  }
+
+  function addCheckedSellers() {
+    pendingCheckedIds.forEach(function (id) {
+      var seller = getSeller(id);
+      if (seller && isSelectable(seller)) uniquePush(workingSelectedIds, id);
+    });
+    pendingCheckedIds = [];
+    renderAll();
+  }
+
+  function removeSelectedId(id) {
+    workingSelectedIds = removeFrom(workingSelectedIds, id);
+    pendingCheckedIds = removeFrom(pendingCheckedIds, id);
+    checkedSelectedIds = removeFrom(checkedSelectedIds, id);
+  }
+
+  function releaseCheckedSelected() {
+    checkedSelectedIds.slice().forEach(removeSelectedId);
+    renderAll();
+  }
+
+  function resetChanges() {
+    workingSelectedIds = savedSelectedIds.slice();
+    pendingCheckedIds = [];
+    checkedSelectedIds = [];
+    selectedSortAsc = false;
+    byId('selectedSearchName').value = '';
+    renderAll();
+  }
+
+  function saveChanges() {
+    savedSelectedIds = workingSelectedIds.slice();
+    byId('lastSavedAt').textContent = '2026-07-13 15:00';
+    updateCounts();
+    window.msg('시연용 판매점 설정에 반영했습니다. 새로고침·탭 이동 시 초기화되며 실제 공개 설정은 변경되지 않습니다.');
+  }
+
+  function setOptions(select, values, current) {
+    select.innerHTML = values.map(function (value) {
+      return '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>';
+    }).join('');
+    select.value = current || values[0] || '';
+  }
+
+  function updateEditSigunguOptions(current) {
+    var sido = byId('editSellerSido').value;
+    var options = (regionMap[sido] || ['전체']).filter(function (value) { return value !== '전체'; });
+    setOptions(byId('editSellerSigungu'), options, current);
+  }
+
+  function openSellerEditModal(id) {
+    var seller = getSeller(id);
+    if (!seller) return;
+    byId('editSellerId').value = seller.id;
+    byId('editSellerName').value = seller.name;
+    setOptions(byId('editSellerGrade'), ['A등급', 'B등급', 'C등급', 'D등급'], seller.grade);
+    setOptions(byId('editSellerSido'), Object.keys(regionMap).filter(Boolean), seller.sido);
+    updateEditSigunguOptions(seller.sigungu);
+    byId('editSellerCeo').value = seller.ceo;
+    byId('editSellerManager').value = seller.manager;
+    byId('editSellerPhone').value = seller.phone;
+    byId('editSellerStatus').value = seller.status;
+    byId('sellerEditModal').classList.add('open');
+    byId('editSellerName').focus();
+  }
+
+  function closeSellerEditModal() {
+    byId('sellerEditModal').classList.remove('open');
+  }
+
+  function saveSellerEdit() {
+    var seller = getSeller(byId('editSellerId').value);
+    if (!seller) return;
+    seller.name = byId('editSellerName').value.trim() || seller.name;
+    seller.grade = byId('editSellerGrade').value;
+    seller.sido = byId('editSellerSido').value;
+    seller.sigungu = byId('editSellerSigungu').value;
+    seller.ceo = byId('editSellerCeo').value.trim();
+    seller.manager = byId('editSellerManager').value.trim();
+    seller.phone = byId('editSellerPhone').value.trim();
+    seller.status = byId('editSellerStatus').value;
+    if (!isSelectable(seller)) {
+      pendingCheckedIds = removeFrom(pendingCheckedIds, seller.id);
+      removeSelectedId(seller.id);
+    }
+    closeSellerEditModal();
+    renderAll();
+  }
+
+  function requestSave() {
+    if (workingSelectedIds.length === 0) {
+      byId('zeroSaveModal').classList.add('open');
+      return;
+    }
+    saveChanges();
+  }
+
+  function bindEvents() {
+    byId('filterSido').addEventListener('change', function () {
+      updateSigunguOptions();
+    });
+    byId('searchBtn').addEventListener('click', function () {
+      currentPage = 1;
+      renderAll();
+    });
+    byId('resetFilterBtn').addEventListener('click', resetFilters);
+    byId('pageSizeSelect').addEventListener('change', function () {
+      pageSize = Number(this.value);
+      currentPage = 1;
+      renderAll();
+    });
+    byId('resultSelectAll').addEventListener('change', function () {
+      currentPageRows(filterSellers()).filter(isSelectable).forEach(function (seller) {
+        if (byId('resultSelectAll').checked) uniquePush(pendingCheckedIds, seller.id);
+        else pendingCheckedIds = removeFrom(pendingCheckedIds, seller.id);
+      });
+      renderAll();
+    });
+    byId('sellerResultRows').addEventListener('change', function (event) {
+      if (!event.target.classList.contains('result-check')) return;
+      var id = event.target.getAttribute('data-id');
+      if (event.target.checked) uniquePush(pendingCheckedIds, id);
+      else pendingCheckedIds = removeFrom(pendingCheckedIds, id);
+      renderAll();
+    });
+    byId('sellerResultRows').addEventListener('click', function (event) {
+      var id = event.target.getAttribute('data-edit-id');
+      if (id) openSellerEditModal(id);
+    });
+    byId('resultPagination').addEventListener('click', function (event) {
+      var page = event.target.getAttribute('data-page');
+      if (!page) return;
+      currentPage = Number(page);
+      renderAll();
+    });
+    byId('addSelectedBtn').addEventListener('click', addCheckedSellers);
+    byId('selectedSearchName').addEventListener('input', renderSelectedRows);
+    byId('selectedSelectAll').addEventListener('change', function () {
+      var visibleIds = Array.prototype.slice.call(document.querySelectorAll('.selected-check')).map(function (input) {
+        return input.getAttribute('data-id');
+      });
+      visibleIds.forEach(function (id) {
+        if (byId('selectedSelectAll').checked) uniquePush(checkedSelectedIds, id);
+        else checkedSelectedIds = removeFrom(checkedSelectedIds, id);
+      });
+      renderSelectedRows();
+    });
+    byId('selectedSellerRows').addEventListener('change', function (event) {
+      if (!event.target.classList.contains('selected-check')) return;
+      var id = event.target.getAttribute('data-id');
+      if (event.target.checked) uniquePush(checkedSelectedIds, id);
+      else checkedSelectedIds = removeFrom(checkedSelectedIds, id);
+      renderSelectedRows();
+    });
+    byId('selectedSellerRows').addEventListener('click', function (event) {
+      var editId = event.target.getAttribute('data-edit-id');
+      if (editId) {
+        openSellerEditModal(editId);
+        return;
+      }
+      var id = event.target.getAttribute('data-remove-id');
+      if (!id) return;
+      removeSelectedId(id);
+      renderAll();
+    });
+    byId('releaseCheckedBtn').addEventListener('click', releaseCheckedSelected);
+    byId('sortSelectedBtn').addEventListener('click', function () {
+      selectedSortAsc = true;
+      renderSelectedRows();
+    });
+    byId('resetChangesBtn').addEventListener('click', resetChanges);
+    byId('saveBtn').addEventListener('click', requestSave);
+    byId('topSaveBtn').addEventListener('click', requestSave);
+    byId('cancelBtn').addEventListener('click', function () {
+      if (!hasChanges() || confirm('저장하지 않은 변경사항이 있습니다. 페이지를 이동하시겠습니까?')) {
+        location.href = './index.html';
+      }
+    });
+    byId('zeroSaveCancelBtn').addEventListener('click', function () {
+      byId('zeroSaveModal').classList.remove('open');
+    });
+    byId('zeroSaveConfirmBtn').addEventListener('click', function () {
+      byId('zeroSaveModal').classList.remove('open');
+      saveChanges();
+    });
+    byId('zeroSaveModal').addEventListener('click', function (event) {
+      if (event.target.id === 'zeroSaveModal') byId('zeroSaveModal').classList.remove('open');
+    });
+    byId('editSellerSido').addEventListener('change', function () {
+      updateEditSigunguOptions('');
+    });
+    byId('sellerEditCloseBtn').addEventListener('click', closeSellerEditModal);
+    byId('sellerEditCancelBtn').addEventListener('click', closeSellerEditModal);
+    byId('sellerEditSaveBtn').addEventListener('click', saveSellerEdit);
+    byId('sellerEditModal').addEventListener('click', function (event) {
+      if (event.target.id === 'sellerEditModal') closeSellerEditModal();
+    });
+    window.addEventListener('beforeunload', function (event) {
+      if (!hasChanges()) return;
+      event.preventDefault();
+      event.returnValue = '저장하지 않은 변경사항이 있습니다. 페이지를 이동하시겠습니까?';
+    });
+  }
+
+  setSidoOptions();
+  updateSigunguOptions();
+  bindEvents();
+  renderAll();
+})();
+</script></body>
+</html>
