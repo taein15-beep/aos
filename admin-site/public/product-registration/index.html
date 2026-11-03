@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>상품등록</title>
+  
+  
+  
+<style>*{box-sizing:border-box}
+body[data-page="product_register"]{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;font-size:13px}
+body[data-page="product_register"] h1{font-size:24px;margin:0 0 6px}
+body[data-page="product_register"] .desc{font-weight:700;color:#555}
+body[data-page="product_register"] .hint{color:#667085;font-size:12px;font-weight:700}
+body[data-page="product_register"] .muted{color:#667085;font-size:12px}
+body[data-page="product_register"] .badge{display:inline-flex;border-radius:14px;padding:4px 8px;font-size:12px;font-weight:900}
+body[data-page="product_register"] .b-green{background:#e7f8ee;color:#0f8738}
+body[data-page="product_register"] .b-blue{background:#eaf1ff;color:#2556d9}
+body[data-page="product_register"] .b-gray{background:#eef1f5;color:#475467}
+body[data-page="product_register"] .b-orange{background:#fff4de;color:#b45309}
+body[data-page="product_register"] .b-red{background:#fff0f0;color:#d92d20}
+body[data-page="product_register"] .tag{display:inline-flex;background:#f2f4f7;border:1px solid #d9dde3;border-radius:16px;padding:6px 10px;margin:3px;font-weight:800}
+body[data-page="product_register"] .app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+body[data-page="product_register"] .sidebar{background:#071122;color:#d7e1f0;padding:18px 0}
+body[data-page="product_register"] .brand{padding:0 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+body[data-page="product_register"] .brand strong{display:block;color:white;font-size:17px}
+body[data-page="product_register"] .nav-title{padding:18px 18px 8px;color:#8ea0bb;font-size:11px}
+body[data-page="product_register"] .nav a{display:block;padding:11px 18px;color:#cdd6e5;text-decoration:none;border-left:3px solid transparent}
+body[data-page="product_register"] .nav a.active{background:rgba(255,255,255,.08);border-left-color:#5b8cff;color:white}
+body[data-page="product_register"] .nav-tree{padding:8px 0 18px}
+body[data-page="product_register"] .nav-group{border-bottom:1px solid rgba(255,255,255,.06);padding:6px 0}
+body[data-page="product_register"] .nav-depth1{padding:10px 18px 8px;color:#fff;font-weight:900;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+body[data-page="product_register"] .nav-depth1:after{content:'▾';font-size:10px;color:#8ea0bb}
+body[data-page="product_register"] .nav-group:not(.open) .nav-depth1:after{content:'▸'}
+body[data-page="product_register"] .nav-group:not(.open) a{display:none}
+body[data-page="product_register"] .nav-group a{position:relative;padding:7px 18px 7px 46px;font-size:12px;color:#b9c6d8}
+body[data-page="product_register"] .nav-group a:before{content:'├';position:absolute;left:26px;top:7px;color:rgba(185,198,216,.7);font-size:12px;line-height:1}
+body[data-page="product_register"] .nav-group a.active{background:rgba(91,140,255,.18);border-left-color:#5b8cff;color:white}
+body[data-page="product_register"] .nav-group.open .nav-depth1{color:#8fb3ff}
+body[data-page="product_register"] .topbar{height:48px;background:white;border-bottom:1px solid #d9dde3;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+body[data-page="product_register"] .page{padding:16px;max-width:1800px}
+body[data-page="product_register"] .page-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+body[data-page="product_register"] .layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+body[data-page="product_register"] .panel{background:white;border:1px solid #d9dde3;border-radius:7px;margin-bottom:12px;overflow:hidden}
+body[data-page="product_register"] .panel.full{grid-column:1/-1}
+body[data-page="product_register"] .panel-head{background:#e6e6e6;padding:12px 14px;font-weight:900;border-bottom:1px solid #d9dde3;display:flex;align-items:center;justify-content:space-between;gap:8px}
+body[data-page="product_register"] .panel-body{padding:14px}
+body[data-page="product_register"] .save-bar{position:sticky;bottom:0;background:white;border:1px solid #d9dde3;border-radius:7px;padding:12px 14px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 -4px 14px rgba(7,17,34,.06)}
+@media(max-width:1200px){body[data-page="product_register"] .layout{grid-template-columns:1fr}
+}
+@media(max-width:760px){body[data-page="product_register"] .app{grid-template-columns:1fr}
+}
+@media(max-width:760px){body[data-page="product_register"] .sidebar{display:none}
+}
+@media(max-width:760px){body[data-page="product_register"] .page-head{display:block}
+}
+body[data-page="product_register"] .commission-panel .panel-head{align-items:center;padding:10px 12px}
+body[data-page="product_register"] .internal-row .panel{margin-bottom:0}
+body[data-page="product_register"] .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+body[data-page="product_register"] .tab{border:1px solid #cfd5dd;background:white;border-radius:18px;padding:8px 14px;text-decoration:none;color:#344054;font-weight:900}
+body[data-page="product_register"] .tab.active{background:#7c3aed;border-color:#7c3aed;color:white}
+body[data-page="product_register"] .btn{border:1px solid #cfd5dd;background:white;border-radius:4px;padding:8px 12px;font-weight:800;cursor:pointer;white-space:nowrap}
+body[data-page="product_register"] .btn:hover{background:#f7f9fb}
+body[data-page="product_register"] .btn.green{background:#18a34a;border-color:#18a34a;color:white}
+body[data-page="product_register"] .btn.blue{background:#2f63f6;border-color:#2f63f6;color:white}
+body[data-page="product_register"] .btn.red{background:#d92d20;border-color:#d92d20;color:white}
+body[data-page="product_register"] .btn.small{padding:6px 8px;font-size:12px}
+body[data-page="product_register"] .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+body[data-page="product_register"] .form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+body[data-page="product_register"] .field{display:flex;flex-direction:column;gap:6px}
+body[data-page="product_register"] .field.full{grid-column:1/-1}
+body[data-page="product_register"] .field.wide{grid-column:span 2}
+body[data-page="product_register"] label{font-weight:900;color:#3b4654}
+body[data-page="product_register"] input,body[data-page="product_register"] select,body[data-page="product_register"] textarea{border:1px solid #d6dbe1;border-radius:4px;padding:8px 9px;min-height:36px;box-sizing:border-box;background:white;width:100%}
+body[data-page="product_register"] textarea{min-height:100px;resize:vertical}
+body[data-page="product_register"] .table-wrap{overflow:auto}
+body[data-page="product_register"] .table{width:100%;border-collapse:collapse;min-width:760px}
+body[data-page="product_register"] .table.compact{min-width:0}
+body[data-page="product_register"] .table th{background:#e6e6e6;border:1px solid #cfd3d8;padding:9px;text-align:center;white-space:nowrap}
+body[data-page="product_register"] .table td{border:1px solid #edf0f3;padding:8px;background:white;vertical-align:middle}
+body[data-page="product_register"] .table td.center{text-align:center}
+body[data-page="product_register"] .table td.money{text-align:right}
+body[data-page="product_register"] .category-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end}
+body[data-page="product_register"] .category-list{margin-top:8px}
+body[data-page="product_register"] .image-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+body[data-page="product_register"] .image-item{height:112px;border:1px solid #d9dde3;border-radius:7px;background:#e9ecef;display:flex;align-items:center;justify-content:center;color:#98a2b3;font-weight:900;position:relative;overflow:hidden}
+body[data-page="product_register"] .image-item.primary{outline:3px solid #18a34a}
+body[data-page="product_register"] .image-item img{width:100%;height:100%;object-fit:cover}
+body[data-page="product_register"] .image-tools{position:absolute;left:6px;right:6px;bottom:6px;display:flex;gap:4px;justify-content:center}
+body[data-page="product_register"] .image-tools button{padding:4px 6px;font-size:11px}
+body[data-page="product_register"] .toggle{display:inline-flex;align-items:center;gap:6px}
+body[data-page="product_register"] .toggle input{width:auto;min-height:auto}
+body[data-page="product_register"] .editor-toolbar{border:1px solid #d9dde3;border-bottom:0;border-radius:5px 5px 0 0;background:#f7f9fb;padding:8px;display:flex;gap:6px;flex-wrap:wrap}
+body[data-page="product_register"] .editor-toolbar span{font-weight:900;padding:4px 6px}
+body[data-page="product_register"] .editor{border-radius:0 0 5px 5px;min-height:150px}
+body[data-page="product_register"] .content-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+body[data-page="product_register"] .content-tab{border:1px solid #cfd5dd;border-radius:18px;background:white;padding:8px 12px;font-weight:900;cursor:pointer}
+body[data-page="product_register"] .content-tab.active{background:#7c3aed;color:white;border-color:#7c3aed}
+@media(max-width:1200px){body[data-page="product_register"] .form-grid,body[data-page="product_register"] .form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:1200px){body[data-page="product_register"] .image-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:760px){body[data-page="product_register"] .form-grid,body[data-page="product_register"] .form-grid.two,body[data-page="product_register"] .category-row{grid-template-columns:1fr}
+}
+@media(max-width:760px){body[data-page="product_register"] .image-grid{grid-template-columns:repeat(2,1fr)}
+}
+body[data-page="product_register"] .basic-stack{display:grid;gap:12px}
+body[data-page="product_register"] .basic-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+body[data-page="product_register"] .basic-box{border:1px solid #edf0f3;border-radius:6px;background:#fafbfc;padding:10px}
+body[data-page="product_register"] .basic-box-title{font-weight:900;color:#344054;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+body[data-page="product_register"] .basic-category{display:grid;grid-template-columns:1.05fr 1.05fr .9fr;gap:8px}
+body[data-page="product_register"] .extra-category-stack{display:grid;gap:8px}
+body[data-page="product_register"] .extra-category-row{display:grid;grid-template-columns:1fr 1fr 1fr 82px;gap:6px}
+body[data-page="product_register"] .extra-category-row .btn{min-height:36px}
+body[data-page="product_register"] .basic-row.names{grid-template-columns:1.15fr .85fr}
+body[data-page="product_register"] .basic-row.info-period{grid-template-columns:1.4fr .6fr}
+body[data-page="product_register"] .period-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body[data-page="product_register"] .basic-policy-row{display:grid;grid-template-columns:520px 1fr;border:1px solid #d9dde3;border-radius:6px;overflow:hidden;background:white}
+body[data-page="product_register"] .policy-cell{display:grid;grid-template-columns:118px 1fr;align-items:center;border-right:1px solid #d9dde3}
+body[data-page="product_register"] .policy-cell:last-child{border-right:0}
+body[data-page="product_register"] .policy-title{height:100%;background:#eef1f5;font-weight:900;color:#344054;display:flex;align-items:center;padding:0 12px;white-space:nowrap}
+body[data-page="product_register"] .policy-body{padding:8px 10px}
+body[data-page="product_register"] .label-policy-input{max-width:380px}
+body[data-page="product_register"] .traveler-options{display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:nowrap;white-space:nowrap}
+body[data-page="product_register"] .traveler-options .pay-item{font-size:13px;gap:6px}
+@media(max-width:1300px){body[data-page="product_register"] .basic-policy-row{grid-template-columns:460px 1fr}
+}
+@media(max-width:1300px){body[data-page="product_register"] .label-policy-input{max-width:330px}
+}
+@media(max-width:1300px){body[data-page="product_register"] .traveler-options{gap:8px}
+}
+@media(max-width:1300px){body[data-page="product_register"] .traveler-options .pay-item{font-size:12px}
+}
+@media(max-width:1100px){body[data-page="product_register"] .basic-row,body[data-page="product_register"] .basic-row.names,body[data-page="product_register"] .basic-row.info-period,body[data-page="product_register"] .basic-policy-row{grid-template-columns:1fr}
+}
+@media(max-width:1100px){body[data-page="product_register"] .basic-category,body[data-page="product_register"] .extra-category-row,body[data-page="product_register"] .period-row{grid-template-columns:1fr}
+}
+@media(max-width:1100px){body[data-page="product_register"] .policy-cell{grid-template-columns:120px 1fr;border-right:0;border-bottom:1px solid #d9dde3}
+}
+@media(max-width:1100px){body[data-page="product_register"] .policy-cell:last-child{border-bottom:0}
+}
+@media(max-width:1100px){body[data-page="product_register"] .traveler-options{flex-wrap:wrap;white-space:normal}
+}
+@media(max-width:1100px){body[data-page="product_register"] .label-policy-input{max-width:100%}
+}
+body[data-page="product_register"] .pricing-ops-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(380px,.6fr) minmax(720px,1.2fr) minmax(300px,.45fr);gap:12px}
+body[data-page="product_register"] .price-panel .table-wrap,body[data-page="product_register"] .stay-panel .table-wrap{overflow:visible}
+body[data-page="product_register"] .price-table,body[data-page="product_register"] .stay-table{min-width:0;table-layout:fixed}
+body[data-page="product_register"] .price-table th,body[data-page="product_register"] .price-table td,body[data-page="product_register"] .stay-table th,body[data-page="product_register"] .stay-table td{padding:7px 6px}
+body[data-page="product_register"] .price-table th:nth-child(1),body[data-page="product_register"] .price-table td:nth-child(1){width:96px}
+body[data-page="product_register"] .price-table th:nth-child(2),body[data-page="product_register"] .price-table td:nth-child(2){width:96px}
+body[data-page="product_register"] .price-table th:nth-child(3),body[data-page="product_register"] .price-table td:nth-child(3){width:56px}
+body[data-page="product_register"] .price-table th:nth-child(4),body[data-page="product_register"] .price-table td:nth-child(4){width:52px}
+body[data-page="product_register"] .stay-table th:nth-child(1),body[data-page="product_register"] .stay-table td:nth-child(1){width:auto}
+body[data-page="product_register"] .stay-table th:nth-child(2),body[data-page="product_register"] .stay-table td:nth-child(2){width:58px}
+body[data-page="product_register"] .stay-table th:nth-child(3),body[data-page="product_register"] .stay-table td:nth-child(3){width:52px}
+body[data-page="product_register"] .price-table input,body[data-page="product_register"] .stay-table input{min-height:32px;padding:6px}
+body[data-page="product_register"] .price-table th,body[data-page="product_register"] .price-table td,body[data-page="product_register"] .stay-table th,body[data-page="product_register"] .stay-table td{font-size:12px}
+body[data-page="product_register"] .head-toggle{display:inline-flex;align-items:center;gap:8px;margin-left:10px;font-size:12px;font-weight:900;color:#344054}
+body[data-page="product_register"] .ops-stack{display:grid;gap:8px}
+body[data-page="product_register"] .ops-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+body[data-page="product_register"] .ops-row .field{gap:4px}
+body[data-page="product_register"] .ops-row input,body[data-page="product_register"] .ops-row select{padding:7px 8px}
+body[data-page="product_register"] .stay-disabled{opacity:.48;pointer-events:none}
+body[data-page="product_register"] .stay-disabled-note{display:none;color:#d92d20;font-weight:800;margin-top:8px}
+body[data-page="product_register"] .stay-disabled+.stay-disabled-note{display:block}
+@media(max-width:1400px){body[data-page="product_register"] .pricing-ops-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:1400px){body[data-page="product_register"] .stay-panel{grid-column:1/-1}
+}
+@media(max-width:1400px){body[data-page="product_register"] .ops-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){body[data-page="product_register"] .pricing-ops-row{grid-template-columns:1fr}
+}
+@media(max-width:760px){body[data-page="product_register"] .ops-row{grid-template-columns:1fr}
+}
+body[data-page="product_register"] .ops-divider{border-top:1px solid #d9dde3;margin:2px -14px 0;padding-top:0}
+body[data-page="product_register"] .ops-subtitle{background:#e6e6e6;border-bottom:1px solid #d9dde3;font-weight:900;color:#222;margin:0 0 10px;padding:12px 14px}
+body[data-page="product_register"] .stay-day-note{color:#d92d20;font-size:12px;font-weight:900;margin-left:6px;font-style:normal}
+body[data-page="product_register"] .stay-day-note.hidden{display:none}
+body[data-page="product_register"] .disabled-row{opacity:.5}
+body[data-page="product_register"] .disabled-row input{background:#f3f5f7;color:#667085}
+body[data-page="product_register"] .payment-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid #d9dde3;margin-top:2px;padding-top:9px}
+body[data-page="product_register"] .pay-item{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;white-space:nowrap}
+body[data-page="product_register"] .pay-item input[type=text]{width:92px;text-align:center;font-size:13px;min-height:32px;padding:6px 8px}
+body[data-page="product_register"] .switch{position:relative;display:inline-block;width:42px;height:24px;flex:0 0 auto}
+body[data-page="product_register"] .switch input{opacity:0;width:0;height:0}
+body[data-page="product_register"] .slider{position:absolute;cursor:pointer;inset:0;background:#c8ced6;border-radius:999px;transition:.15s}
+body[data-page="product_register"] .slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+body[data-page="product_register"] .switch input:checked+.slider{background:#20a64a}
+body[data-page="product_register"] .switch input:checked+.slider:before{transform:translateX(18px)}
+body[data-page="product_register"] .point-row{display:grid;grid-template-columns:125px 1fr;border:1px solid #d9dde3;border-left:0;border-right:0;margin-top:8px}
+body[data-page="product_register"] .point-title{background:#eef1f5;font-weight:900;font-size:13px;padding:13px 10px;display:flex;align-items:center}
+body[data-page="product_register"] .point-body{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 14px;font-size:13px}
+body[data-page="product_register"] .point-body input[type=text]{width:150px;min-height:32px}
+body[data-page="product_register"] .point-body input[type=radio]{width:auto;min-height:auto}
+@media(max-width:900px){body[data-page="product_register"] .point-row{grid-template-columns:1fr}
+}
+@media(max-width:900px){body[data-page="product_register"] .point-title{padding:9px 10px}
+}
+@media(max-width:900px){body[data-page="product_register"] .point-body{padding:10px}
+}
+@media(max-width:900px){body[data-page="product_register"] .payment-row{gap:10px}
+}
+body[data-page="product_register"] .commission-title{font-size:14px}
+body[data-page="product_register"] .commission-mode{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:900;flex:1;color:#1f2937}
+body[data-page="product_register"] .commission-body{display:grid;grid-template-columns:118px 1fr 1fr;gap:5px}
+body[data-page="product_register"] .commission-groups{border:2px dashed #9b4dff;border-radius:6px;padding:8px;display:grid;gap:7px;align-content:start}
+body[data-page="product_register"] .group-chip{background:#8a1ff0;color:white;border-radius:5px;text-align:center;font-size:12px;font-weight:900;padding:11px 5px;white-space:nowrap}
+body[data-page="product_register"] .commission-box{border:2px dashed #98a2b3;border-radius:6px;padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:7px;align-content:start}
+body[data-page="product_register"] .commission-box.fixed{border-color:#ff3b3b}
+body[data-page="product_register"] .commission-box.rate{border-color:#98a2b3}
+body[data-page="product_register"] .commission-box.active{box-shadow:inset 0 0 0 2px rgba(24,163,74,.08)}
+body[data-page="product_register"] .commission-input{display:flex;align-items:center;gap:5px;background:#f8fafc;border:1px solid #e1e6ec;border-radius:5px;padding:5px 6px;font-size:11px;font-weight:800;color:#344054;white-space:nowrap}
+body[data-page="product_register"] .commission-input input{flex:1;width:100%;min-width:58px;min-height:26px;text-align:right;font-size:12px;padding:4px 5px}
+body[data-page="product_register"] .commission-note{grid-column:1/-1;color:#667085;font-size:11px;font-weight:700;margin-top:6px}
+@media(max-width:1500px){body[data-page="product_register"] .commission-body{grid-template-columns:110px 1fr 1fr}
+}
+@media(max-width:1500px){body[data-page="product_register"] .commission-box{grid-template-columns:1fr;gap:6px}
+}
+@media(max-width:1500px){body[data-page="product_register"] .commission-mode{font-size:11px;gap:5px}
+}
+@media(max-width:1200px){body[data-page="product_register"] .commission-body{grid-template-columns:1fr}
+}
+@media(max-width:1200px){body[data-page="product_register"] .commission-groups{grid-template-columns:repeat(4,1fr)}
+}
+@media(max-width:1200px){body[data-page="product_register"] .commission-box{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){body[data-page="product_register"] .commission-groups,body[data-page="product_register"] .commission-box{grid-template-columns:1fr}
+}
+@media(max-width:760px){body[data-page="product_register"] .commission-mode{order:3;flex-basis:100%;justify-content:flex-start}
+}
+body[data-page="product_register"] .internal-row{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+body[data-page="product_register"] .internal-row textarea{min-height:132px}
+body[data-page="product_register"] .file-list{min-height:132px}
+@media(max-width:1100px){body[data-page="product_register"] .internal-row{grid-template-columns:1fr}
+}
+body[data-page="product_register"] .detail-content{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px}
+body[data-page="product_register"] .detail-editor-area{min-width:0}
+body[data-page="product_register"] .detail-editor-box{border:1px solid #d9dde3;border-radius:8px;overflow:hidden;background:white}
+body[data-page="product_register"] .detail-toolbar-menu{display:flex;gap:20px;padding:14px 18px 10px;font-weight:900;color:#1f2937}
+body[data-page="product_register"] .detail-toolbar-tools{display:flex;align-items:center;gap:18px;padding:12px 18px;border-top:1px solid #edf0f3;border-bottom:1px solid #edf0f3;box-shadow:0 2px 8px rgba(7,17,34,.06);font-size:18px;color:#1f2937}
+body[data-page="product_register"] .tool-chip{display:inline-flex;align-items:center;gap:10px;background:#f5f6f8;border-radius:4px;padding:6px 10px;font-size:14px}
+body[data-page="product_register"] .detail-editor-box textarea{border:0;border-radius:0;min-height:330px;font-size:13px}
+body[data-page="product_register"] .editor-status{border-top:1px solid #edf0f3;padding:6px 10px;color:#667085;font-size:12px}
+body[data-page="product_register"] .template-panel{border:1px solid #d9dde3;border-radius:8px;overflow:hidden;background:white}
+body[data-page="product_register"] .template-head{background:#f3f4f6;border-bottom:1px solid #d9dde3;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+body[data-page="product_register"] .template-head strong{font-size:15px}
+body[data-page="product_register"] .template-filter{padding:12px 14px;border-bottom:1px solid #edf0f3;background:#fafbfc}
+body[data-page="product_register"] .template-list{display:grid}
+body[data-page="product_register"] .template-list-row{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;border-bottom:1px solid #e1e6ec;padding:10px 12px}
+body[data-page="product_register"] .template-list-row.active{background:#eef5ff}
+body[data-page="product_register"] .template-name{font-weight:900;color:#1f2937;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body[data-page="product_register"] .template-actions{display:flex;gap:6px}
+body[data-page="product_register"] .detail-actions{text-align:right;margin-top:8px}
+body[data-page="product_register"] .modal-backdrop{position:fixed;inset:0;background:rgba(7,17,34,.42);display:none;align-items:center;justify-content:center;z-index:30}
+body[data-page="product_register"] .modal-backdrop.open{display:flex}
+body[data-page="product_register"] .modal-box{width:min(760px,92vw);background:white;border-radius:8px;border:1px solid #d9dde3;overflow:hidden;box-shadow:0 18px 40px rgba(7,17,34,.22)}
+body[data-page="product_register"] .modal-head{background:#e6e6e6;padding:12px 16px;font-weight:900;display:flex;justify-content:space-between;gap:12px}
+body[data-page="product_register"] .modal-body{padding:16px;white-space:pre-line;line-height:1.7}
+body[data-page="product_register"] .modal-body .template-list-row{margin:0 -16px;padding:12px 16px}
+body[data-page="product_register"] .modal-foot{padding:12px 16px;border-top:1px solid #edf0f3;text-align:right}
+@media(max-width:1200px){body[data-page="product_register"] .detail-content{grid-template-columns:1fr}
+}
+@media(max-width:1200px){body[data-page="product_register"] .template-panel{max-width:none}
+}
+@media(max-width:760px){body[data-page="product_register"] .detail-toolbar-menu,body[data-page="product_register"] .detail-toolbar-tools{gap:10px;overflow:auto}
+}
+@media(max-width:760px){body[data-page="product_register"] .template-head{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:760px){body[data-page="product_register"] .template-list-row{grid-template-columns:1fr}
+}
+@media(max-width:760px){body[data-page="product_register"] .template-actions{justify-content:flex-end}
+}
+body[data-page="product_register"] .app{display:block;min-width:0}body[data-page="product_register"] main{margin:0;width:100%;min-width:0}body[data-page="product_register"] .page{padding:16px}body[data-page="product_register"] .save-bar{position:sticky;bottom:0;left:0;width:100%;z-index:10}
+</style></head>
+<body data-page="product_register">
+  <div class="app">
+  
+<main>
+      
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h1>상품등록</h1>
+            <div class="desc">상품 기본정보를 등록합니다. 일정표와 날짜별/옵션 요금은 별도 탭에서 관리합니다.</div>
+          </div>
+          <button class="btn green" onclick="saveProduct()">저장</button>
+        </div>
+
+        <nav class="tabs" aria-label="상품 관리 탭">
+          <a class="tab active" href="#" data-unavailable="true">상품기본설정</a>
+          <a class="tab" href="#" data-unavailable="true">일정표</a>
+          <a class="tab" href="#" data-unavailable="true">요금설정</a>
+          <a class="tab" href="#" data-unavailable="true">판매점설정</a>
+          <a class="tab" href="#" onclick="msg('거래처설정 샘플입니다.');return false;">거래처설정</a>
+        </nav>
+
+        <p class="hint" role="note">초기 기획 화면입니다. 저장·이미지 등록·파일첨부는 시연 기능이며 실제 상품 데이터는 저장되지 않습니다.</p><div class="layout">
+          <!-- 상품 기본정보: 홈페이지 대표 노출 카테고리와 목록/상세 상단 노출 정보를 관리합니다. -->
+          <section class="panel full">
+            <div class="panel-head"><span>상품 기본정보</span><span class="hint">대표 1개 + 중복상품분류 최대 2개</span></div>
+            <div class="panel-body">
+              <div class="basic-stack">
+                <div class="basic-row">
+                  <div class="basic-box">
+                    <div class="basic-box-title"><span>상품분류</span><span class="hint">홈페이지 대표 노출 카테고리</span></div>
+                    <div class="basic-category">
+                      <select><option>기차여행</option><option>국내여행</option><option>지자체지원</option></select>
+                      <select><option>특별열차</option><option>당일여행</option><option>숙박여행</option></select>
+                      <select><option>소분류</option><option>수도권</option><option>강원권</option></select>
+                    </div>
+                  </div>
+                  <div class="basic-box">
+                    <div class="basic-box-title"><span>중복상품분류</span><span class="hint">추가 노출 카테고리, 최대 2개</span></div>
+                    <div id="extraCategoryRows" class="extra-category-stack">
+                      <div class="extra-category-row">
+                        <select><option>대분류</option><option>국내여행</option><option>테마여행</option><option>지자체지원</option></select>
+                        <select><option>중분류</option><option>당일여행</option><option>체험여행</option><option>지원상품</option></select>
+                        <select><option>소분류</option><option>수도권</option><option>가족여행</option><option>만원의행복</option></select>
+                        <button class="btn green" onclick="addExtraCategory()">추가</button>
+                      </div>
+                      <div class="extra-category-row">
+                        <select><option>대분류</option><option>국내여행</option><option>테마여행</option><option>지자체지원</option></select>
+                        <select><option>중분류</option><option>당일여행</option><option>체험여행</option><option>지원상품</option></select>
+                        <select><option>소분류</option><option>수도권</option><option>가족여행</option><option>만원의행복</option></select>
+                        <button class="btn red" onclick="removeExtraCategory(this)">삭제</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="basic-row names">
+                  <div class="field"><label>상품명(홈페이지노출용)</label><input value="[팔도장터열차] 6월 27일(토) 공주 유구 색동수국정원 / 계룡산 동학사"></div>
+                  <div class="field"><label>관리자용 상품명</label><input value="[팔도장터열차] 공주/계룡산 1843석"></div>
+                </div>
+
+                <div class="basic-row info-period">
+                  <div class="field"><label>상품안내</label><input value="위동해리타고 떠나는 청도 온천과 미식투어 전동성호텔"></div>
+                  <div class="field">
+                    <label>판매기간</label>
+                    <div class="period-row">
+                      <input type="date" value="2026-06-01" title="판매기간 시작">
+                      <input type="date" value="2026-06-30" title="판매기간 종료">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="basic-policy-row">
+                  <div class="policy-cell">
+                    <div class="policy-title">라벨관리</div>
+                    <div class="policy-body"><input class="label-policy-input" value="팔도장터열차,수국정원,계룡산"></div>
+                  </div>
+                  <div class="policy-cell">
+                    <div class="policy-title">여행자 정보 설정</div>
+                    <div class="policy-body traveler-options">
+                      <span class="pay-item">모든여행자 생년월일/성별을 반드시 입력 <label class="switch"><input type="checkbox"><span class="slider"></span></label></span>
+                      <span class="pay-item">모든여행자의 모든정보를 반드시 입력 <label class="switch"><input type="checkbox"><span class="slider"></span></label></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="pricing-ops-row">
+            <!-- 대표요금: 홈페이지에 표시할 대표 가격만 관리합니다. 실제 날짜별/옵션 요금은 상단 요금설정 탭에서 관리합니다. -->
+            <section class="panel price-panel">
+              <div class="panel-head"><span>대표요금 <label class="head-toggle">단독예약가능 <span class="switch"><input type="checkbox"><span class="slider"></span></span></label></span><button class="btn small green" onclick="addPriceRow()">추가</button></div>
+              <div class="panel-body">
+                <div class="table-wrap">
+                  <table class="table compact price-table">
+                    <thead><tr><th>요금명칭</th><th>대표요금</th><th>노출</th><th>관리</th></tr></thead>
+                    <tbody id="priceBody">
+                      <tr><td><input value="대인"></td><td><input value="79,000"></td><td class="center"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td></tr>
+                      <tr><td><input value="소인"></td><td><input value="79,000"></td><td class="center"><label class="switch"><input type="checkbox"><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="hint">단독예약가능을 활성화하면 요금명칭과 관계없이 노출 중인 모든 요금명칭으로 단독 예약이 가능합니다.</p>
+              </div>
+            </section>
+
+            <!-- 예약/운영 설정: 예약 가능 조건과 홈페이지 마감 표시 기준을 관리합니다. -->
+            <section class="panel">
+              <div class="panel-head">예약/운영 설정</div>
+              <div class="panel-body">
+                <div class="ops-stack">
+                  <div class="ops-row">
+                    <div class="field"><label>상품코드</label><input placeholder="자동코드"></div>
+                    <div class="field"><label>담당자</label><select><option>장윤호</option><option>이도현</option><option>박서연</option></select></div>
+                    <div class="field"><label>여행지역</label><select><option>여행지역</option><option>수도권</option><option>충청권</option></select></div>
+                    <div class="field"><label>여행기간</label><select id="tripDuration" onchange="toggleStayTypeByDuration()"><option>1일(당일)</option><option>2일</option><option>3일</option><option>4일 이상</option></select></div>
+                  </div>
+                  <div class="ops-row">
+                    <div class="field"><label>예약최소인원</label><input type="number" value="2"></div>
+                    <div class="field"><label>최소출발인원</label><input type="number" value="2"><span class="hint">일정/회차별 수정 가능</span></div>
+                    <div class="field"><label>예약마감인원</label><input type="number" value="30"><span class="hint">도달 시 홈페이지 마감 표시</span></div>
+                    <div class="field"><label>예약마감일</label><input type="number" value="5"><span class="hint">출발 N일 전 기준</span></div>
+                  </div>
+                  <div class="ops-divider">
+                    <div class="ops-subtitle">결제/포인트 설정</div>
+                  </div>
+                  <div class="payment-row">
+                    <span class="pay-item">카드결제 사용 <label class="switch"><input type="checkbox" checked><span class="slider"></span></label></span>
+                    <span class="pay-item">1인 예약금 결제사용 <label class="switch"><input type="checkbox" onchange="toggleDeposit(this)"><span class="slider"></span></label></span>
+                    <span class="pay-item"><input id="depositInput" type="text" value="10000"> 원</span>
+                    <span class="pay-item">현금영수증 신청 <label class="switch"><input type="checkbox"><span class="slider"></span></label></span>
+                    <span class="pay-item">포인트 사용 <label class="switch"><input type="checkbox"><span class="slider"></span></label></span>
+                  </div>
+                  <div class="point-row">
+                    <div class="point-title">적립 포인트</div>
+                    <div class="point-body">
+                      <span>사용</span>
+                      <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                      <input type="text">
+                      <span>포인트</span>
+                      <label class="pay-item"><input type="radio" name="pointApplyType"> 1건당 1회적용</label>
+                      <label class="pay-item"><input type="radio" name="pointApplyType"> 예약인원 수 만큼 적용</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 숙박 Type: 2일 이상 상품에서 홈페이지 노출 숙박 타입을 관리합니다. -->
+            <section class="panel stay-panel">
+              <div class="panel-head"><span>숙박Type <em id="stayDayNote" class="stay-day-note">당일 비활성화</em></span><button id="stayAddBtn" class="btn small green" onclick="addStayRow()">추가</button></div>
+              <div class="panel-body">
+                <div id="stayTypeArea">
+                  <div class="table-wrap">
+                    <table class="table compact stay-table">
+                      <thead><tr><th>숙박타입</th><th>노출여부</th><th>관리</th></tr></thead>
+                      <tbody id="stayBody">
+                        <tr><td><input value="2인1실"></td><td class="center"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td></tr>
+                        <tr><td><input value="3인1실"></td><td class="center"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td></tr>
+                        <tr><td><input value="4인1실"></td><td class="center"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td></tr>
+                        <tr><td><input value="1인1실"></td><td class="center"><label class="switch"><input type="checkbox"><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td></tr>
+                        <tr><td><input value="다인실"></td><td class="center"><label class="switch"><input type="checkbox"><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- 상품 이미지: 홈페이지 노출 이미지를 다중 관리합니다. -->
+          <section class="panel">
+            <div class="panel-head"><span>상품 이미지</span><button class="btn small green" onclick="addImage()">이미지 등록</button></div>
+            <div class="panel-body">
+              <div id="imageGrid" class="image-grid">
+                <div class="image-item primary"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=320&q=80" alt=""><div class="image-tools"><button class="btn small" onclick="setPrimaryImage(this)">대표</button><button class="btn small" onclick="moveImage(this,-1)">←</button><button class="btn small" onclick="moveImage(this,1)">→</button><button class="btn small" onclick="removeImage(this)">삭제</button></div></div>
+                <div class="image-item">이미지</div><div class="image-item">이미지</div><div class="image-item">이미지</div><div class="image-item">이미지</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 판매점 수수료 설정: 판매점관리의 A~D 그룹 기본 수수료를 불러오고, 상품별 개별 값을 덮어쓸 수 있습니다. -->
+          <section class="panel commission-panel">
+            <div class="panel-head">
+              <span class="commission-title">판매점 수수료 설정</span>
+              <div class="commission-mode" aria-label="수수료 지급 방식">
+                <span>수수료 고정으로 지급</span>
+                <label class="switch"><input id="commissionMode" type="checkbox" onchange="toggleCommissionMode()"><span class="slider"></span></label>
+                <span>수수료 %로 가변 지급</span>
+              </div>
+              <button class="btn small green" onclick="msg('판매점 관리는 기존 관리자 메뉴에서 이용하세요.')">판매점 관리</button>
+            </div>
+            <div class="panel-body">
+              <div class="commission-body">
+                <div class="commission-groups" aria-label="판매점 그룹 목록">
+                  <div class="group-chip">A그룹 판매점</div>
+                  <div class="group-chip">B그룹 판매점</div>
+                  <div class="group-chip">C그룹 판매점</div>
+                  <div class="group-chip">D그룹 판매점</div>
+                </div>
+                <div id="commissionFixedBox" class="commission-box fixed active" aria-label="정액 수수료">
+                  <label class="commission-input">대인 <input value="0"> 원</label>
+                  <label class="commission-input">소인 <input value="0"> 원</label>
+                  <label class="commission-input">대인 <input value="0"> 원</label>
+                  <label class="commission-input">소인 <input value="0"> 원</label>
+                  <label class="commission-input">대인 <input value="0"> 원</label>
+                  <label class="commission-input">소인 <input value="0"> 원</label>
+                  <label class="commission-input">대인 <input value="0"> 원</label>
+                  <label class="commission-input">소인 <input value="0"> 원</label>
+                </div>
+                <div id="commissionRateBox" class="commission-box rate" aria-label="정률 수수료">
+                  <label class="commission-input">대인 <input value="0"> %</label>
+                  <label class="commission-input">소인 <input value="0"> %</label>
+                  <label class="commission-input">대인 <input value="0"> %</label>
+                  <label class="commission-input">소인 <input value="0"> %</label>
+                  <label class="commission-input">대인 <input value="0"> %</label>
+                  <label class="commission-input">소인 <input value="0"> %</label>
+                  <label class="commission-input">대인 <input value="0"> %</label>
+                  <label class="commission-input">소인 <input value="0"> %</label>
+                </div>
+                <p class="commission-note">판매점은 판매점관리에서 A~D 그룹을 지정하고, 그룹별 기본 수수료도 판매점관리 값을 불러옵니다. 이 화면의 입력값은 현재 상품에만 적용되는 개별 설정입니다.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 포함/불포함 사항: 템플릿 선택 시 기존 내용을 덮어쓰기합니다. -->
+          <section class="panel">
+            <div class="panel-head"><span>포함사항</span><button class="btn small green" onclick="openSimpleTemplateModal('includeEditor','include')">템플릿 선택</button></div>
+            <div class="panel-body">
+              <div class="editor-toolbar"><span>파일</span><span>편집</span><span>B</span><span>I</span><span>링크</span><span>표</span></div>
+              <textarea id="includeEditor" class="editor">🚍 왕복 팔도장터열차
+🚌 버스비
+🎫 상품권 1만원
+🍱 간장료
+🙋 가이드</textarea>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head"><span>불포함사항</span><button class="btn small green" onclick="openSimpleTemplateModal('excludeEditor','exclude')">템플릿 선택</button></div>
+            <div class="panel-body">
+              <div class="editor-toolbar"><span>파일</span><span>편집</span><span>B</span><span>I</span><span>링크</span><span>표</span></div>
+              <textarea id="excludeEditor" class="editor">🍽 제공 외 식사비
+🧳 여행자 보험
+💳 기타 개인경비</textarea>
+            </div>
+          </section>
+
+          <!-- 상세페이지 콘텐츠: 홈페이지 상세에 노출되는 탭을 상품별로 추가/삭제합니다. -->
+          <section class="panel full">
+            <div class="panel-head">
+              <span>상세페이지 콘텐츠</span>
+              <div><button class="btn small" onclick="addContentTab()">탭 추가</button></div>
+            </div>
+            <div class="panel-body">
+              <div class="detail-content">
+                <div class="detail-editor-area">
+                  <div id="contentTabs" class="content-tabs">
+                    <button class="content-tab active" onclick="selectContentTab(this)">상세안내</button>
+                    <button class="content-tab" onclick="selectContentTab(this)">이용안내</button>
+                    <button class="content-tab" onclick="selectContentTab(this)">취소/환불 규정</button>
+                    <button class="content-tab" onclick="selectContentTab(this)">선택관광/쇼핑</button>
+                    <button class="content-tab" onclick="selectContentTab(this)">숙소정보</button>
+                  </div>
+                  <div class="detail-editor-box">
+                    <div class="detail-toolbar-menu"><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span><span>도구</span><span>표</span></div>
+                    <div class="detail-toolbar-tools"><span>↶</span><span>↷</span><span class="tool-chip">− 16px +</span><strong>B</strong><em>I</em><u>A</u><span>▰</span><span>☰</span><span>≡</span><span>☷</span><span>•≡</span><span>1≡</span><span>🔗</span><span>▧</span><span>▦</span></div>
+                    <textarea id="detailEditor" class="editor">홈페이지 상세 영역에 노출되는 상세안내를 입력합니다.</textarea>
+                    <div class="editor-status">p</div>
+                  </div>
+                  <div class="detail-actions"><button class="btn small red" onclick="deleteActiveContentTab()">현재 탭 삭제</button></div>
+                </div>
+                <aside class="template-panel">
+                  <div class="template-head"><strong id="templatePanelTitle">상세안내 템플릿 선택</strong><a class="btn small green" href="#" data-unavailable="true">템플릿 등록관리</a></div>
+                  <div class="template-filter">
+                    <select id="templateCategorySelect" onchange="updateTemplatePanel()">
+                      <option>버스여행</option>
+                      <option>기차여행</option>
+                      <option>해외여행</option>
+                      <option>지자체지원</option>
+                    </select>
+                  </div>
+                  <div id="templateList" class="template-list">
+                    <div class="template-list-row active" data-content="버스여행 1박2일 상세안내 템플릿 샘플입니다.&#10;일정 소개, 포함사항, 이용안내 문구를 상품에 맞게 수정하세요."><span class="template-name">버스여행 1박2일 상세안내</span><button class="btn small" onclick="viewTemplate(this)">보기</button><button class="btn small green" onclick="applySelectedTemplate(this)">선택</button></div>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </section>
+
+          <div id="templatePreviewModal" class="modal-backdrop" onclick="closeTemplatePreview(event)">
+            <div class="modal-box" onclick="event.stopPropagation()">
+              <div class="modal-head"><span id="templatePreviewTitle">템플릿 보기</span><button class="btn small" onclick="closeTemplatePreview()">닫기</button></div>
+              <div id="templatePreviewBody" class="modal-body"></div>
+              <div class="modal-foot"><button class="btn green" onclick="applyPreviewTemplate()">선택</button></div>
+            </div>
+          </div>
+
+          <!-- 내부관리: 관리자 전용 메모와 판매점 공유 메모, 내부 파일을 분리합니다. -->
+          <div class="internal-row">
+            <section class="panel">
+              <div class="panel-head">관리자 메모</div>
+              <div class="panel-body"><textarea placeholder="내부 직원만 보는 메모"></textarea></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">판매점 전달 메모</div>
+              <div class="panel-body"><textarea placeholder="판매점 관리자에서도 보이는 메모"></textarea></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head"><span>관리자용 파일첨부</span><button class="btn small green" onclick="msg('관리자용 파일첨부 샘플입니다.')">파일첨부</button></div>
+              <div class="panel-body file-list">
+                <span class="tag">파일명.hwp <button class="btn small" onclick="removeTag(this)">삭제</button></span>
+                <span class="tag">파일명.pdf <button class="btn small" onclick="removeTag(this)">삭제</button></span>
+                <p class="hint">관리자용 파일은 고객에게 절대 노출되지 않습니다.</p>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <strong>상품 기본정보 저장</strong>
+          <div><button class="btn" onclick="msg('입력을 취소합니다.')">취소</button> <button class="btn green" onclick="saveProduct()">저장</button></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+<script>function msg(t){alert(t)}
+function saveProduct(){msg('상품등록 시연 화면입니다. 실제 상품 데이터는 저장되지 않습니다.')}
+function addExtraCategory(){
+  var rows=document.getElementById('extraCategoryRows');
+  if(rows.querySelectorAll('.extra-category-row').length>=2){msg('중복상품분류는 최대 2개까지 추가할 수 있습니다.');return}
+  var row=document.createElement('div');
+  row.className='extra-category-row';
+  row.innerHTML='<select><option>대분류</option><option>국내여행</option><option>테마여행</option><option>지자체지원</option></select><select><option>중분류</option><option>당일여행</option><option>체험여행</option><option>지원상품</option></select><select><option>소분류</option><option>수도권</option><option>가족여행</option><option>만원의행복</option></select><button class="btn red" onclick="removeExtraCategory(this)">삭제</button>';
+  rows.appendChild(row);
+}
+function removeExtraCategory(btn){btn.closest('.extra-category-row').remove()}
+function removeTag(btn){btn.closest('.tag').remove()}
+function addPriceRow(){
+  var row=document.getElementById('priceBody').insertRow();
+  row.innerHTML='<td><input value="경로"></td><td><input value="0"></td><td class="center"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td>';
+}
+function addStayRow(){
+  var row=document.getElementById('stayBody').insertRow();
+  row.innerHTML='<td><input value="숙박타입"></td><td class="center"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></td><td class="center"><button class="btn small" onclick="removeRow(this)">삭제</button></td>';
+}
+function removeRow(btn){btn.closest('tr').remove()}
+function toggleStayTypeByDuration(){
+  var isDayTrip=document.getElementById('tripDuration').value.indexOf('1일')===0;
+  document.getElementById('stayTypeArea').classList.toggle('stay-disabled',isDayTrip);
+  document.getElementById('stayAddBtn').disabled=isDayTrip;
+  document.getElementById('stayDayNote').classList.toggle('hidden',!isDayTrip);
+}
+function toggleDeposit(el){msg(el.checked?'1인 예약금 결제를 사용합니다.':'1인 예약금 결제를 사용하지 않습니다.')}
+function addImage(){
+  var item=document.createElement('div');
+  item.className='image-item';
+  item.innerHTML='신규 이미지<div class="image-tools"><button class="btn small" onclick="setPrimaryImage(this)">대표</button><button class="btn small" onclick="moveImage(this,-1)">←</button><button class="btn small" onclick="moveImage(this,1)">→</button><button class="btn small" onclick="removeImage(this)">삭제</button></div>';
+  document.getElementById('imageGrid').appendChild(item);
+}
+function setPrimaryImage(btn){document.querySelectorAll('.image-item').forEach(function(i){i.classList.remove('primary')});btn.closest('.image-item').classList.add('primary')}
+function moveImage(btn,dir){
+  var item=btn.closest('.image-item'), parent=item.parentNode;
+  if(dir<0&&item.previousElementSibling) parent.insertBefore(item,item.previousElementSibling);
+  if(dir>0&&item.nextElementSibling) parent.insertBefore(item.nextElementSibling,item);
+}
+function removeImage(btn){btn.closest('.image-item').remove()}
+function toggleCommissionMode(){
+  var isRate=document.getElementById('commissionMode').checked;
+  document.getElementById('commissionFixedBox').classList.toggle('active',!isRate);
+  document.getElementById('commissionRateBox').classList.toggle('active',isRate);
+}
+function loadProductCommissionDefaults(){
+  var defaults={
+    A:{amountAdult:10000,amountChild:8000,rateAdult:5,rateChild:5},
+    B:{amountAdult:8000,amountChild:6000,rateAdult:4,rateChild:4},
+    C:{amountAdult:5000,amountChild:4000,rateAdult:3,rateChild:3},
+    D:{amountAdult:3000,amountChild:2000,rateAdult:2,rateChild:2}
+  };
+  var groups=defaults;
+  var fixedInputs=document.querySelectorAll('#commissionFixedBox input');
+  var rateInputs=document.querySelectorAll('#commissionRateBox input');
+  ['A','B','C','D'].forEach(function(code,index){
+    var data=groups[code]||defaults[code];
+    if(fixedInputs[index*2]) fixedInputs[index*2].value=data.amountAdult||0;
+    if(fixedInputs[index*2+1]) fixedInputs[index*2+1].value=data.amountChild||0;
+    if(rateInputs[index*2]) rateInputs[index*2].value=data.rateAdult||0;
+    if(rateInputs[index*2+1]) rateInputs[index*2+1].value=data.rateChild||0;
+  });
+}
+loadProductCommissionDefaults();
+var selectedPreviewTemplate=null;
+var selectedTemplateTarget=null;
+var selectedTemplateMode='detail';
+var simpleTemplates={
+  include:[
+    {name:'버스여행 포함사항 기본',content:'왕복 교통비\n가이드\n기본 입장료'},
+    {name:'기차여행 포함사항 기본',content:'열차비\n연계버스\n현지 가이드'},
+    {name:'당일여행 포함사항',content:'식사 1회\n관광지 입장권\n여행자보험'}
+  ],
+  exclude:[
+    {name:'버스여행 불포함사항 기본',content:'개인경비\n제공 외 식사비\n여행자보험'},
+    {name:'숙박여행 불포함사항',content:'싱글룸 추가비\n개인 세면도구\n기타 개인경비'},
+    {name:'기차여행 불포함사항',content:'현지 자유식\n개별 이동비\n선택관광 비용'}
+  ]
+};
+function openSimpleTemplateModal(targetId,type){
+  selectedTemplateTarget=targetId;
+  selectedTemplateMode='simple';
+  var title=type==='include'?'포함사항 템플릿 선택':'불포함사항 템플릿 선택';
+  var items=simpleTemplates[type];
+  document.getElementById('templatePreviewTitle').textContent=title;
+  document.getElementById('templatePreviewBody').innerHTML=items.map(function(item,index){
+    return '<div class="template-list-row'+(index===0?' active':'')+'" data-content="'+item.content.replace(/"/g,'&quot;')+'"><span class="template-name">'+item.name+'</span><button class="btn small" onclick="viewSimpleTemplate(this)">보기</button><button class="btn small green" onclick="selectSimpleTemplate(this)">선택</button></div>';
+  }).join('');
+  selectedPreviewTemplate=document.querySelector('#templatePreviewBody .template-list-row');
+  document.getElementById('templatePreviewModal').classList.add('open');
+}
+function viewSimpleTemplate(btn){
+  var row=btn.closest('.template-list-row');
+  document.querySelectorAll('#templatePreviewBody .template-list-row').forEach(function(item){item.classList.remove('active')});
+  row.classList.add('active');
+  selectedPreviewTemplate=row;
+}
+function selectSimpleTemplate(btn){
+  var row=btn.closest('.template-list-row');
+  document.querySelectorAll('#templatePreviewBody .template-list-row').forEach(function(item){item.classList.remove('active')});
+  row.classList.add('active');
+  selectedPreviewTemplate=row;
+  applyPreviewTemplate();
+}
+var detailTemplates={
+  '버스여행':{
+    '상세안내':['버스여행 당일 상세안내','버스여행 1박2일 상세안내','버스여행 프리미엄 상세안내'],
+    '이용안내':['버스여행 탑승 안내','버스여행 준비물 안내','단체예약 이용안내'],
+    '취소/환불 규정':['버스여행 당일 취소규정','버스여행 숙박 취소규정'],
+    '선택관광/쇼핑':['선택관광 없음 안내','지역 쇼핑센터 방문 안내'],
+    '숙소정보':['버스여행 연계 호텔 안내','리조트 숙소정보']
+  },
+  '기차여행':{
+    '상세안내':['기차여행 당일 상세안내','기차여행 1박2일 상세안내'],
+    '이용안내':['열차 탑승 안내','역 집결 안내'],
+    '취소/환불 규정':['기차여행 취소/환불 규정'],
+    '선택관광/쇼핑':['기차여행 선택관광 안내'],
+    '숙소정보':['기차여행 숙소정보']
+  },
+  '해외여행':{
+    '상세안내':['해외여행 상세안내','해외 패키지 상세안내'],
+    '이용안내':['여권/비자 안내','해외여행 준비물 안내'],
+    '취소/환불 규정':['해외여행 특별약관','항공 포함 취소규정'],
+    '선택관광/쇼핑':['해외 선택관광 안내','쇼핑센터 방문 안내'],
+    '숙소정보':['해외 호텔 안내']
+  },
+  '지자체지원':{
+    '상세안내':['지자체 지원상품 상세안내','만원의행복 상세안내'],
+    '이용안내':['증빙서류 제출 안내','지원대상 이용안내'],
+    '취소/환불 규정':['지원상품 취소/환불 규정'],
+    '선택관광/쇼핑':['지원상품 선택관광 안내'],
+    '숙소정보':['지원상품 숙소정보']
+  }
+};
+function selectContentTab(btn){
+  document.querySelectorAll('.content-tab').forEach(function(t){t.classList.remove('active')});
+  btn.classList.add('active');
+  updateTemplatePanel();
+}
+function updateTemplatePanel(){
+  var tabName=document.querySelector('.content-tab.active').textContent.trim();
+  var category=document.getElementById('templateCategorySelect')?document.getElementById('templateCategorySelect').value:'버스여행';
+  var title=document.getElementById('templatePanelTitle');
+  var list=document.getElementById('templateList');
+  if(!title||!list) return;
+  title.textContent=tabName+' 템플릿 선택';
+  var items=(detailTemplates[category]&&detailTemplates[category][tabName])||[category+' '+tabName+' 기본 템플릿'];
+  list.innerHTML=items.map(function(item,index){
+    var content=item+' 샘플 내용입니다.\n'+category+' 카테고리의 '+tabName+' 영역에 적용되는 템플릿입니다.\n선택 시 기존 내용을 삭제하고 이 내용으로 입력합니다.';
+    return '<div class="template-list-row'+(index===0?' active':'')+'" data-content="'+content.replace(/"/g,'&quot;')+'"><span class="template-name">'+item+'</span><button class="btn small" onclick="viewTemplate(this)">보기</button><button class="btn small green" onclick="applySelectedTemplate(this)">선택</button></div>';
+  }).join('');
+}
+function applySelectedTemplate(btn){
+  var row=btn.closest('.template-list-row');
+  document.querySelectorAll('.template-list-row').forEach(function(item){item.classList.remove('active')});
+  row.classList.add('active');
+  var tab=document.querySelector('.content-tab.active').textContent.trim();
+  var name=row.querySelector('.template-name').textContent;
+  if(confirm(name+' 템플릿을 선택하면 현재 '+tab+' 내용이 삭제되고 신규 입력됩니다. 적용할까요?')){
+    document.getElementById('detailEditor').value=row.dataset.content;
+  }
+}
+function viewTemplate(btn){
+  selectedTemplateMode='detail';
+  selectedTemplateTarget=null;
+  var row=btn.closest('.template-list-row');
+  selectedPreviewTemplate=row;
+  document.getElementById('templatePreviewTitle').textContent=row.querySelector('.template-name').textContent;
+  document.getElementById('templatePreviewBody').textContent=row.dataset.content;
+  document.getElementById('templatePreviewModal').classList.add('open');
+}
+function closeTemplatePreview(event){
+  if(event&&event.target.id!=='templatePreviewModal') return;
+  document.getElementById('templatePreviewModal').classList.remove('open');
+  selectedTemplateMode='detail';
+  selectedTemplateTarget=null;
+}
+function applyPreviewTemplate(){
+  if(selectedPreviewTemplate){
+    if(selectedTemplateMode==='simple'&&selectedTemplateTarget){
+      var name=selectedPreviewTemplate.querySelector('.template-name').textContent;
+      if(confirm(name+' 템플릿을 선택하면 현재 내용이 삭제되고 신규 입력됩니다. 적용할까요?')){
+        document.getElementById(selectedTemplateTarget).value=selectedPreviewTemplate.dataset.content;
+        closeTemplatePreview();
+      }
+      return;
+    }
+    applySelectedTemplate(selectedPreviewTemplate.querySelector('.btn.green'));
+    closeTemplatePreview();
+  }
+}
+function addContentTab(){
+  var name=prompt('추가할 상세안내 탭명을 입력하세요.','상품 특전');
+  if(!name) return;
+  var btn=document.createElement('button');
+  btn.className='content-tab';
+  btn.textContent=name;
+  btn.onclick=function(){selectContentTab(btn)};
+  document.getElementById('contentTabs').appendChild(btn);
+}
+function deleteActiveContentTab(){
+  var active=document.querySelector('.content-tab.active');
+  if(!active){return}
+  if(document.querySelectorAll('.content-tab').length<=1){msg('상세안내 탭은 최소 1개 이상 필요합니다.');return}
+  active.remove();
+  selectContentTab(document.querySelector('.content-tab'));
+}
+function applyDetailTemplate(){
+  if(confirm('상품유형별 상세안내 템플릿을 적용하면 현재 상세내용이 덮어쓰기됩니다.')){
+    document.getElementById('detailEditor').value='상품유형별 상세안내 템플릿이 적용되었습니다.\\n상세안내, 이용안내, 취소/환불 규정, 선택관광/쇼핑, 숙소정보를 상품별로 수정하세요.';
+  }
+}
+toggleStayTypeByDuration();
+  function toggleNavGroup(el){el.closest('.nav-group').classList.toggle('open')}
+document.addEventListener("click",function(event){var link=event.target.closest("a[data-unavailable]");if(link){event.preventDefault();msg("이전 범위는 상품기본설정입니다. 다른 기능은 기존 관리자 메뉴에서 이용하세요.");}});
+</script></body>
+</html>
+
+
+
+
+
+

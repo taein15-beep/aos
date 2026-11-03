@@ -42,6 +42,10 @@ export function getStampTourChildPath(child: string) {
 }
 
 export function navigateAdminChild(child: string, act: (message: string) => void) {
+  if (child === "상품등록") {
+    window.location.assign("/products/register");
+    return;
+  }
   if (child === "상품목록") {
     window.location.assign("/products");
     return;

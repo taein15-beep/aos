@@ -318,7 +318,7 @@ export default function ProductListPage() {
           </section>
 
           <section className="panel product-filter" aria-label="상품 검색">
-            <button className="primary product-register" onClick={() => act("신규 상품 등록 화면을 엽니다.")}>
+            <button className="primary product-register" onClick={() => router.push("/products/register")}>
               <Plus size={16} strokeWidth={2.2} />
               신규등록
             </button>
