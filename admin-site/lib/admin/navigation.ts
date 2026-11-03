@@ -74,6 +74,10 @@ export function navigateAdminChild(child: string, act: (message: string) => void
     window.location.assign("/members/permission-groups");
     return;
   }
+  if (child === "예약달력") {
+    window.location.assign("/reservations/calendar");
+    return;
+  }
   if (child === "예약접수현황") {
     window.location.assign("/reservations");
     return;
