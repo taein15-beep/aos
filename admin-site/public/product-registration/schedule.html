@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>일정표등록</title>
+  
+  
+  
+<style>*{box-sizing:border-box}
+body[data-page="schedule_register"]{margin:0;background:#f4f6f8;color:#222;font-family:"Malgun Gothic","Noto Sans KR",Arial,sans-serif;font-size:13px}
+body[data-page="schedule_register"] h1{font-size:24px;margin:0 0 6px}
+body[data-page="schedule_register"] .desc{font-weight:700;color:#555;margin-bottom:14px}
+body[data-page="schedule_register"] .hint{font-size:12px;color:#667085;font-weight:700}
+body[data-page="schedule_register"] .app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+body[data-page="schedule_register"] .sidebar{background:#071122;color:#d7e1f0;padding:18px 0}
+body[data-page="schedule_register"] .brand{padding:0 18px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+body[data-page="schedule_register"] .brand strong{display:block;color:white;font-size:17px}
+body[data-page="schedule_register"] .nav-title{padding:18px 18px 8px;color:#8ea0bb;font-size:11px}
+body[data-page="schedule_register"] .nav a{display:block;padding:11px 18px;color:#cdd6e5;text-decoration:none;border-left:3px solid transparent}
+body[data-page="schedule_register"] .nav a.active{background:rgba(255,255,255,.08);border-left-color:#5b8cff;color:white}
+body[data-page="schedule_register"] .nav-tree{padding:8px 0 18px}
+body[data-page="schedule_register"] .nav-group{border-bottom:1px solid rgba(255,255,255,.06);padding:6px 0}
+body[data-page="schedule_register"] .nav-depth1{padding:10px 18px 8px;color:#fff;font-weight:900;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+body[data-page="schedule_register"] .nav-depth1:after{content:'▾';font-size:10px;color:#8ea0bb}
+body[data-page="schedule_register"] .nav-group:not(.open) .nav-depth1:after{content:'▸'}
+body[data-page="schedule_register"] .nav-group:not(.open) a{display:none}
+body[data-page="schedule_register"] .nav-group a{position:relative;padding:7px 18px 7px 46px;font-size:12px;color:#b9c6d8}
+body[data-page="schedule_register"] .nav-group a:before{content:'├';position:absolute;left:26px;top:7px;color:rgba(185,198,216,.7);font-size:12px;line-height:1}
+body[data-page="schedule_register"] .nav-group a.active{background:rgba(91,140,255,.18);border-left-color:#5b8cff;color:white}
+body[data-page="schedule_register"] .nav-group.open .nav-depth1{color:#8fb3ff}
+body[data-page="schedule_register"] .topbar{height:48px;background:white;border-bottom:1px solid #d9dde3;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+body[data-page="schedule_register"] .page{padding:16px;max-width:1800px}
+body[data-page="schedule_register"] .panel{background:white;border:1px solid #d9dde3;border-radius:7px;margin-bottom:12px}
+body[data-page="schedule_register"] .panel-head{background:#f1f2f4;padding:10px 14px;font-weight:900;border-bottom:1px solid #d9dde3;display:flex;align-items:center;justify-content:space-between;gap:10px}
+body[data-page="schedule_register"] .panel-body{padding:14px}
+body[data-page="schedule_register"] .save-bar{position:sticky;bottom:0;background:#fff;border:1px solid #d9dde3;border-radius:7px;padding:12px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 -4px 14px rgba(16,24,40,.06)}
+@media(max-width:1000px){body[data-page="schedule_register"] .app{grid-template-columns:1fr}
+}
+@media(max-width:1000px){body[data-page="schedule_register"] .sidebar{display:none}
+}
+@media(max-width:1000px){body[data-page="schedule_register"] .page{padding:12px}
+}
+@media(max-width:1000px){body[data-page="schedule_register"] .save-bar{position:static}
+}
+body[data-page="schedule_register"] .btn{border:1px solid #cfd5dd;background:white;border-radius:4px;padding:8px 12px;font-weight:700;cursor:pointer;white-space:nowrap}
+body[data-page="schedule_register"] .btn:hover{background:#f7f9fb}
+body[data-page="schedule_register"] .btn.green{background:#18a34a;border-color:#18a34a;color:white}
+body[data-page="schedule_register"] .btn.blue{background:#2f63f6;border-color:#2f63f6;color:white}
+body[data-page="schedule_register"] .btn.red{background:#ef3e4a;border-color:#ef3e4a;color:white}
+body[data-page="schedule_register"] .btn.purple{background:#7c3aed;border-color:#7c3aed;color:white}
+body[data-page="schedule_register"] .btn.small{padding:6px 9px;font-size:12px}
+body[data-page="schedule_register"] input,body[data-page="schedule_register"] select,body[data-page="schedule_register"] textarea{border:1px solid #d6dbe1;border-radius:4px;padding:8px 9px;min-height:36px;box-sizing:border-box;background:white}
+body[data-page="schedule_register"] textarea{width:100%;min-height:100px}
+body[data-page="schedule_register"] .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+body[data-page="schedule_register"] .tab{border:1px solid #cfd5dd;background:white;border-radius:18px;padding:8px 14px;text-decoration:none;color:#344054;font-weight:900}
+body[data-page="schedule_register"] .tab.active{background:#7c3aed;border-color:#7c3aed;color:white}
+body[data-page="schedule_register"] .toolbar-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+body[data-page="schedule_register"] .remark-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+body[data-page="schedule_register"] .remark-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+body[data-page="schedule_register"] .info-dot{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1px solid #8ec5ff;border-radius:50%;color:#2f63f6;font-size:11px;margin-right:5px}
+body[data-page="schedule_register"] .switch{position:relative;display:inline-block;width:38px;height:20px;vertical-align:middle}
+body[data-page="schedule_register"] .switch input{opacity:0;width:0;height:0}
+body[data-page="schedule_register"] .slider{position:absolute;cursor:pointer;inset:0;background:#cfd5dd;border-radius:999px;transition:.2s}
+body[data-page="schedule_register"] .slider:before{content:"";position:absolute;width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.22)}
+body[data-page="schedule_register"] .switch input:checked+.slider{background:#22a753}
+body[data-page="schedule_register"] .switch input:checked+.slider:before{transform:translateX(18px)}
+body[data-page="schedule_register"] .editor{border:1px solid #d9dde3;border-radius:8px;background:#fff;overflow:hidden}
+body[data-page="schedule_register"] .editor-menu{display:flex;gap:18px;padding:14px 18px 10px;font-weight:900;color:#111827}
+body[data-page="schedule_register"] .editor-tools{height:42px;display:flex;align-items:center;gap:13px;padding:0 18px;border-bottom:1px solid #edf0f3;box-shadow:0 4px 10px rgba(16,24,40,.07);color:#111827}
+body[data-page="schedule_register"] .tool-muted{color:#98a2b3}
+body[data-page="schedule_register"] .tool-pill{display:inline-flex;align-items:center;gap:8px;background:#f6f7f9;border-radius:4px;padding:6px 9px}
+body[data-page="schedule_register"] .editor textarea{border:0;border-radius:0;min-height:104px;padding:18px;font-size:15px;resize:vertical}
+body[data-page="schedule_register"] .whole-editor textarea{min-height:260px}
+body[data-page="schedule_register"] .day-tabs{display:flex;gap:6px;margin-bottom:8px}
+body[data-page="schedule_register"] .day-tab{border-radius:7px;padding:11px 18px;font-weight:900}
+body[data-page="schedule_register"] .day-panel{border-top:1px solid #d9dde3;background:#fff}
+body[data-page="schedule_register"] .day-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px}
+body[data-page="schedule_register"] .use-editor{display:flex;align-items:center;gap:8px;font-weight:900}
+body[data-page="schedule_register"] .meal-grid{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+body[data-page="schedule_register"] .meal-label,body[data-page="schedule_register"] .region-label{min-width:80px;background:#f4f5f7;border:1px solid #d0d5dd;text-align:center;padding:8px 10px;font-weight:900}
+body[data-page="schedule_register"] .meal-grid input{width:140px}
+body[data-page="schedule_register"] .region-row{display:flex;align-items:center;gap:6px}
+body[data-page="schedule_register"] .region-row input{width:90px}
+body[data-page="schedule_register"] .schedule-table{width:100%;border-collapse:collapse;table-layout:fixed}
+body[data-page="schedule_register"] .schedule-table th{background:#f0f1f3;border:1px solid #d0d5dd;padding:8px;text-align:center}
+body[data-page="schedule_register"] .schedule-table td{border:1px solid #edf0f3;background:white;padding:9px;vertical-align:top}
+body[data-page="schedule_register"] .schedule-table .no-col{width:42px;text-align:center}
+body[data-page="schedule_register"] .schedule-table .time-col{width:72px;text-align:center}
+body[data-page="schedule_register"] .schedule-table .time-col input{width:58px;min-width:58px;text-align:center;padding:6px 5px}
+body[data-page="schedule_register"] .schedule-table .pc-col{width:50%}
+body[data-page="schedule_register"] .schedule-table .mobile-col{width:50%}
+body[data-page="schedule_register"] .drag-handle{cursor:grab;user-select:none}
+body[data-page="schedule_register"] .dragging{opacity:.45}
+body[data-page="schedule_register"] .transport-grid{display:grid;grid-template-columns:90px 1.2fr 110px 100px 120px 90px 120px 90px 90px 40px 1.5fr auto;gap:8px;align-items:end}
+body[data-page="schedule_register"] .transport-field label{display:block;text-align:center;font-size:11px;color:#667085;margin-bottom:4px;font-weight:900}
+body[data-page="schedule_register"] .transport-field input,body[data-page="schedule_register"] .transport-field select{width:100%}
+body[data-page="schedule_register"] .time-input{width:58px!important}
+body[data-page="schedule_register"] .duration-input{width:76px!important}
+body[data-page="schedule_register"] .plus-cell{text-align:center}
+body[data-page="schedule_register"] .inline-check{display:flex;align-items:center;justify-content:center;height:36px}
+body[data-page="schedule_register"] .content-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+body[data-page="schedule_register"] .pc-schedule,body[data-page="schedule_register"] .mobile-schedule{min-width:0}
+body[data-page="schedule_register"] .schedule-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+body[data-page="schedule_register"] .time-box input{width:64px;text-align:center}
+body[data-page="schedule_register"] .mobile-option{display:flex;align-items:center;gap:8px;font-weight:900}
+body[data-page="schedule_register"] .mobile-editor:not(.open){display:none}
+body[data-page="schedule_register"] .image-slots{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+body[data-page="schedule_register"] .image-slot{width:60px;height:48px;border:1px solid #d9dde3;background:linear-gradient(145deg,transparent 49%,#d8dce2 50%,transparent 51%),linear-gradient(35deg,transparent 49%,#d8dce2 50%,transparent 51%),#f1f2f4}
+body[data-page="schedule_register"] .tour-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
+body[data-page="schedule_register"] .tour-list{margin-top:9px;display:grid;gap:7px}
+body[data-page="schedule_register"] .tour-card{border:1px solid #d9dde3;background:#fbfcfe;border-radius:6px;padding:9px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+body[data-page="schedule_register"] .row-delete{display:flex;align-items:center;justify-content:center;height:100%}
+body[data-page="schedule_register"] .whole-only{display:none}
+body[data-page="schedule_register"] .is-whole .day-only{display:none}
+body[data-page="schedule_register"] .is-whole .whole-only{display:block}
+@media(max-width:1400px){body[data-page="schedule_register"] .remark-grid,body[data-page="schedule_register"] .content-grid{grid-template-columns:1fr}
+}
+@media(max-width:1400px){body[data-page="schedule_register"] .transport-grid{grid-template-columns:repeat(4,minmax(120px,1fr))}
+}
+@media(max-width:1400px){body[data-page="schedule_register"] .transport-grid .transport-field:last-child{grid-column:span 2}
+}
+@media(max-width:1000px){body[data-page="schedule_register"] .meal-grid input,body[data-page="schedule_register"] .region-row input{width:100%}
+}
+@media(max-width:1000px){body[data-page="schedule_register"] .transport-grid{grid-template-columns:1fr}
+}
+@media(max-width:1000px){body[data-page="schedule_register"] .schedule-table{min-width:980px}
+}
+@media(max-width:1000px){body[data-page="schedule_register"] .table-scroll{overflow:auto}
+}
+body[data-page="schedule_register"] .schedule-table .pc-col{width:auto}
+body[data-page="schedule_register"] .schedule-table .mobile-col{width:300px}
+body[data-page="schedule_register"] .mobile-schedule.mobile-panel{display:flex;flex-direction:column;gap:8px;min-height:100%;align-items:stretch}
+body[data-page="schedule_register"] .mobile-panel-actions{display:grid;grid-template-columns:1fr;gap:7px}
+body[data-page="schedule_register"] .mobile-panel-actions .btn{width:100%;padding:7px 9px}
+body[data-page="schedule_register"] .tour-chip-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+body[data-page="schedule_register"] .tour-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #d0d5dd;background:#f7f9fb;border-radius:999px;padding:5px 8px;font-weight:800;font-size:12px}
+body[data-page="schedule_register"] .tour-chip button{border:0;background:transparent;color:#d92d20;font-weight:900;cursor:pointer;padding:0 2px}
+body[data-page="schedule_register"] .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(7,17,34,.45);z-index:40;align-items:center;justify-content:center;padding:20px}
+body[data-page="schedule_register"] .modal-backdrop.open{display:flex}
+body[data-page="schedule_register"] .modal-box{width:min(860px,100%);background:white;border:1px solid #d9dde3;border-radius:8px;box-shadow:0 16px 40px rgba(16,24,40,.2)}
+body[data-page="schedule_register"] .modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #edf0f3;font-weight:900}
+body[data-page="schedule_register"] .modal-body{padding:16px}
+body[data-page="schedule_register"] .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid #edf0f3}
+body[data-page="schedule_register"] .modal-check{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-weight:900}
+body[data-page="schedule_register"] .modal-check input{width:auto;min-height:auto}
+body[data-page="schedule_register"] .attraction-search-row{display:grid;grid-template-columns:180px 1fr;gap:8px;margin-bottom:12px}
+body[data-page="schedule_register"] .attraction-select-list{border:1px solid #d9dde3;border-radius:6px;max-height:360px;overflow:auto}
+body[data-page="schedule_register"] .attraction-select-item{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px 12px;border-bottom:1px solid #edf0f3;cursor:pointer}
+body[data-page="schedule_register"] .attraction-select-item:last-child{border-bottom:0}
+body[data-page="schedule_register"] .attraction-select-item:hover{background:#f7f9fb}
+body[data-page="schedule_register"] .attraction-select-item input{width:auto;min-height:auto;margin-top:3px}
+body[data-page="schedule_register"] .attraction-select-name{display:block;font-weight:900}
+body[data-page="schedule_register"] .attraction-select-meta{display:block;color:#667085;font-size:12px;margin-top:3px;line-height:1.35}
+body[data-page="schedule_register"] .attraction-empty{padding:22px;text-align:center;color:#667085;font-weight:800}
+@media(max-width:1000px){body[data-page="schedule_register"] .schedule-table .mobile-col{width:260px}
+}
+@media(max-width:700px){body[data-page="schedule_register"] .attraction-search-row{grid-template-columns:1fr}
+}
+body[data-page="schedule_register"] .app{display:block;min-width:0}body[data-page="schedule_register"] main{margin:0;width:100%;min-width:0}body[data-page="schedule_register"] .page{padding:16px}body[data-page="schedule_register"] .save-bar{position:sticky;bottom:0;left:0;width:100%;z-index:10}
+</style></head>
+<body data-page="schedule_register">
+<div class="app">
+  
+<main>
+    
+    <div class="page" id="schedulePage">
+      <h1>일정표등록</h1>
+      <div class="desc">전체 일정 에디터 또는 일자별 개별 일정표를 선택해 등록합니다.</div>
+
+      <nav class="tabs" aria-label="상품 관리 탭">
+        <a class="tab" href="./index.html">상품기본설정</a>
+        <a class="tab active" href="./schedule.html">일정표</a>
+        <a class="tab" href="#" onclick="msg('요금설정은 이번 이전 범위에 포함되지 않습니다.');return false;">요금설정</a>
+        <a class="tab" href="#" onclick="msg('판매점설정은 기존 관리자 메뉴에서 이용하세요.');return false;">판매점설정</a>
+        <a class="tab" href="#" onclick="msg('거래처설정 샘플입니다.');return false;">거래처설정</a>
+      </nav>
+
+      <p class="hint" role="note">초기 기획 화면입니다. 일차 추가와 최종 저장은 시연 기능이며 실제 상품 데이터는 저장되지 않습니다.</p><div class="toolbar-line">
+        <strong>전체 일정 등록</strong>
+        <label class="switch"><input id="wholeScheduleToggle" type="checkbox" onchange="toggleWholeSchedule()"><span class="slider"></span></label>
+        <strong>사용</strong>
+        <span class="hint">관리자가 에디터를 통해 일정표를 등록할 수 있습니다.</span>
+      </div>
+
+      <section class="remark-grid">
+        <div class="panel">
+          <div class="panel-head remark-head">
+            <span>일정표 상단 REMARK <label class="switch"><input type="checkbox" checked><span class="slider"></span></label></span>
+            <span class="hint"><span class="info-dot">i</span>일정표 맨 상단에 표시되는 내용입니다</span>
+          </div>
+          <div class="panel-body">
+            <div class="editor">
+              <div class="editor-menu"><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span><span>도구</span><span>표</span></div>
+              <div class="editor-tools"><span class="tool-muted">↶</span><span class="tool-muted">↷</span><span class="tool-pill">− 16px +</span><b>B</b><i>I</i><b>A</b><span>▾</span><b>▰</b><span>☰</span><span>☷</span><span>☱</span><b>•••</b></div>
+              <textarea>일정표 상단</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head remark-head">
+            <span>일정표 하단 REMARK <label class="switch"><input type="checkbox" checked><span class="slider"></span></label></span>
+            <span class="hint"><span class="info-dot">i</span>일정표 맨 하단에 표시되는 내용입니다</span>
+          </div>
+          <div class="panel-body">
+            <div class="editor">
+              <div class="editor-menu"><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span><span>도구</span><span>표</span></div>
+              <div class="editor-tools"><span class="tool-muted">↶</span><span class="tool-muted">↷</span><span class="tool-pill">− 16px +</span><b>B</b><i>I</i><b>A</b><span>▾</span><b>▰</b><span>☰</span><span>☷</span><span>☱</span><b>•••</b></div>
+              <textarea>일정표 하단</textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel whole-only">
+        <div class="panel-head">전체 일정표 직접등록</div>
+        <div class="panel-body">
+          <div class="editor whole-editor">
+            <div class="editor-menu"><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span><span>도구</span><span>표</span></div>
+            <div class="editor-tools"><span class="tool-muted">↶</span><span class="tool-muted">↷</span><span class="tool-pill">− 16px +</span><b>B</b><i>I</i><b>A</b><span>▾</span><b>▰</b><span>☰</span><span>☷</span><span>☱</span><b>•••</b></div>
+            <textarea>관리자가 전체 일정표를 직접 입력합니다.</textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="day-only">
+        <div class="day-tabs"><button class="btn purple day-tab">1일차</button><button class="btn day-tab">2일차</button><button class="btn green" onclick="msg('일차 추가 샘플입니다.')">일차추가</button></div>
+        <div class="day-panel">
+          <div class="day-head">
+            <label class="use-editor"><label class="switch"><input type="checkbox"><span class="slider"></span></label> 에디터 사용</label>
+            <div class="meal-grid">
+              <span class="meal-label">식사</span>
+              <input placeholder="조식">
+              <input placeholder="중식">
+              <input placeholder="석식">
+            </div>
+            <div class="region-row"><span class="region-label">지역</span><input placeholder="지역"></div>
+            <button class="btn green small" onclick="addTransportRow()">교통편추가</button>
+            <button class="btn green small" onclick="addScheduleRow()">일정추가</button>
+          </div>
+
+          <div class="table-scroll">
+            <table class="schedule-table">
+              <thead>
+                <tr><th class="no-col">No.</th><th class="time-col">시간</th><th class="pc-col">PC 일정표</th><th class="mobile-col">Mobile 일정표</th></tr>
+              </thead>
+              <tbody id="scheduleBody">
+                <tr class="transport-row">
+                  <td class="no-col"><span class="drag-handle">☰</span> 1</td>
+                  <td colspan="3">
+                    <div class="transport-grid">
+                      <div class="transport-field"><label>교통수단</label><select><option>버스</option><option>기차</option><option>항공</option><option>선박</option></select></div>
+                      <div class="transport-field"><label>교통편명</label><input value="팔도장터열차"></div>
+                      <div class="transport-field"><label>편명</label><input placeholder="편명"></div>
+                      <div class="transport-field"><label>클래스</label><select><option>일반석</option><option>우등</option><option>비즈니스</option></select></div>
+                      <div class="transport-field"><label>출발지</label><input value="서울역"></div>
+                      <div class="transport-field"><label>출발시간</label><input class="time-input depart-time" value="0800" oninput="calcDuration(this)"></div>
+                      <div class="transport-field"><label>도착지</label><input value="천안역"></div>
+                      <div class="transport-field"><label>도착시간</label><input class="time-input arrive-time" value="0920" oninput="calcDuration(this)"></div>
+                      <div class="transport-field"><label>운행시간</label><input class="duration-input duration-time" value="80" readonly></div>
+                      <div class="transport-field plus-cell"><label>+1</label><label class="inline-check"><input type="checkbox"></label></div>
+                      <div class="transport-field"><label>승하차 / 참고사항</label><input placeholder="승하차 / 참고사항"></div>
+                      <button class="btn red small" onclick="deleteNo(this)">삭제</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="schedule-row">
+                  <td class="no-col"><span class="drag-handle">☰</span> 2</td>
+                  <td class="time-col"><input value="08:00"></td>
+                  <td>
+                    <div class="pc-schedule">
+                      <div class="editor">
+                        <div class="editor-menu"><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span><span>도구</span><span>표</span></div>
+                        <div class="editor-tools"><span class="tool-muted">↶</span><span class="tool-muted">↷</span><span class="tool-pill">− 16px +</span><b>B</b><i>I</i><b>A</b><span>▾</span><b>▰</b><span>☰</span><span>☷</span><span>☱</span><b>•••</b></div>
+                        <textarea>서울역 - 영등포역 - 수원역 - 평택역 - 천안역</textarea>
+                      </div>
+                      <div class="image-slots"><span class="image-slot"></span><span class="image-slot"></span><span class="image-slot"></span><span class="image-slot"></span><span class="image-slot"></span><span class="image-slot"></span></div>
+                      <div class="tour-list"></div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="mobile-schedule mobile-panel">
+                      <div class="mobile-panel-actions">
+                        <button class="btn blue small" onclick="openMobileScheduleModalFromButton(this)">모바일일정표</button>
+                        <button class="btn green small" onclick="openTourSpotPopupFromButton(this)">관광지추가</button>
+                        <button class="btn red small" onclick="clearMobileScheduleFromButton(this)">삭제</button>
+                      </div>
+                      <textarea class="mobile-data" hidden></textarea>
+                      <div class="tour-chip-list"></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <div class="save-bar">
+        <strong>일정표 저장</strong>
+        <div><button class="btn" onclick="msg('입력을 취소합니다.')">취소</button> <button class="btn green" onclick="msg('일정표 시연 화면입니다. 실제 상품 데이터는 저장되지 않습니다.')">저장</button></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="mobileScheduleModal" role="dialog" aria-modal="true" aria-labelledby="mobileScheduleTitle">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span id="mobileScheduleTitle">모바일일정표 편집</span>
+      <button class="btn small" onclick="closeMobileScheduleModal()">닫기</button>
+    </div>
+    <div class="modal-body">
+      <label class="modal-check"><input id="mobileScheduleEnabled" type="checkbox"> 모바일일정표 별도등록</label>
+      <div class="editor">
+        <div class="editor-menu"><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span><span>도구</span><span>표</span></div>
+        <div class="editor-tools"><span class="tool-muted">↶</span><span class="tool-muted">↷</span><span class="tool-pill">− 16px +</span><b>B</b><i>I</i><b>A</b><span>▾</span><b>▰</b><span>☰</span><span>☷</span><span>☱</span><b>•••</b></div>
+        <textarea id="mobileScheduleEditor" placeholder="모바일 일정표를 별도로 입력합니다."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn green" onclick="saveMobileScheduleModal()">저장</button>
+      <button class="btn" onclick="closeMobileScheduleModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="tourSpotModal" role="dialog" aria-modal="true" aria-labelledby="tourSpotTitle">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span id="tourSpotTitle">관광지 선택</span>
+      <button class="btn small" onclick="closeTourSpotModal()">닫기</button>
+    </div>
+    <div class="modal-body">
+      <div class="attraction-search-row">
+        <select id="tourSpotCategoryFilter" onchange="renderTourSpotOptions()"></select>
+        <input id="tourSpotSearch" placeholder="관광지명 또는 설명 검색" oninput="renderTourSpotOptions()">
+      </div>
+      <div id="tourSpotOptionList" class="attraction-select-list"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn green" onclick="saveTourSpotModal()">선택추가</button>
+      <button class="btn" onclick="closeTourSpotModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+
+<script>function msg(t){alert(t)}
+function toggleNavGroup(el){el.closest('.nav-group').classList.toggle('open')}
+function toggleWholeSchedule(){document.getElementById('schedulePage').classList.toggle('is-whole',document.getElementById('wholeScheduleToggle').checked)}
+function parseTime(v){v=(v||'').replace(/[^0-9]/g,'');if(v.length<3)return null;if(v.length===3)v='0'+v;var h=parseInt(v.slice(0,2),10),m=parseInt(v.slice(2,4),10);if(h>23||m>59)return null;return h*60+m}
+function calcDuration(el){
+  var row=el.closest('.transport-row');
+  var dep=parseTime(row.querySelector('.depart-time').value);
+  var arr=parseTime(row.querySelector('.arrive-time').value);
+  if(dep===null||arr===null)return;
+  if(arr<dep)arr+=1440;
+  row.querySelector('.duration-time').value=arr-dep;
+}
+var currentMobileTarget=null;
+var currentTourSpotTarget=null;
+var ATTRACTION_STORAGE_KEY='avianext.attractions';
+var defaultAttractions=[
+  {name:'공주 유구 색동수국정원',category:'자연/공원',description:'유구천을 따라 조성된 수국정원'},
+  {name:'계룡산 동학사',category:'역사/문화',description:'계룡산 자락의 대표 사찰'},
+  {name:'공산성',category:'역사/문화',description:'백제 역사문화 관광지'}
+];
+function getScheduleRow(dayIndex,scheduleIndex){return document.querySelector('#scheduleBody tr.schedule-row[data-day-index="'+dayIndex+'"][data-schedule-index="'+scheduleIndex+'"]')}
+function getRowIndexes(btn){var row=btn.closest('tr.schedule-row');return{dayIndex:parseInt(row.dataset.dayIndex||'1',10),scheduleIndex:parseInt(row.dataset.scheduleIndex||'1',10)}}
+function openMobileScheduleModalFromButton(btn){var idx=getRowIndexes(btn);openMobileScheduleModal(idx.dayIndex,idx.scheduleIndex)}
+function openMobileScheduleModal(dayIndex,scheduleIndex){
+  var row=getScheduleRow(dayIndex,scheduleIndex);
+  if(!row)return;
+  currentMobileTarget={dayIndex:dayIndex,scheduleIndex:scheduleIndex};
+  document.getElementById('mobileScheduleEnabled').checked=row.dataset.mobileEnabled==='true';
+  document.getElementById('mobileScheduleEditor').value=row.querySelector('.mobile-data').value||'';
+  document.getElementById('mobileScheduleModal').classList.add('open');
+}
+function saveMobileScheduleModal(){
+  if(!currentMobileTarget)return;
+  var row=getScheduleRow(currentMobileTarget.dayIndex,currentMobileTarget.scheduleIndex);
+  if(row){
+    row.dataset.mobileEnabled=document.getElementById('mobileScheduleEnabled').checked?'true':'false';
+    row.querySelector('.mobile-data').value=document.getElementById('mobileScheduleEditor').value;
+  }
+  closeMobileScheduleModal();
+}
+function closeMobileScheduleModal(){document.getElementById('mobileScheduleModal').classList.remove('open')}
+function openTourSpotPopupFromButton(btn){var idx=getRowIndexes(btn);openTourSpotPopup(idx.dayIndex,idx.scheduleIndex)}
+function openTourSpotPopup(dayIndex,scheduleIndex){
+  currentTourSpotTarget={dayIndex:dayIndex,scheduleIndex:scheduleIndex};
+  document.getElementById('tourSpotSearch').value='';
+  populateTourSpotCategories();
+  renderTourSpotOptions();
+  document.getElementById('tourSpotModal').classList.add('open');
+}
+function readRegisteredAttractions(){
+  try{
+    var saved=JSON.parse(localStorage.getItem(ATTRACTION_STORAGE_KEY)||'[]');
+    if(Array.isArray(saved)&&saved.length)return saved;
+  }catch(e){}
+  return defaultAttractions;
+}
+function populateTourSpotCategories(){
+  var attractions=readRegisteredAttractions();
+  var categories=['전체'];
+  attractions.forEach(function(item){if(item.category&&categories.indexOf(item.category)<0)categories.push(item.category)});
+  var select=document.getElementById('tourSpotCategoryFilter');
+  select.innerHTML=categories.map(function(category){return '<option>'+escapeHtml(category)+'</option>'}).join('');
+}
+function renderTourSpotOptions(){
+  var category=document.getElementById('tourSpotCategoryFilter').value;
+  var keyword=document.getElementById('tourSpotSearch').value.trim().toLowerCase();
+  var list=document.getElementById('tourSpotOptionList');
+  var attractions=readRegisteredAttractions().filter(function(item){
+    var text=((item.name||'')+' '+(item.description||'')).toLowerCase();
+    return (category==='전체'||item.category===category)&&(!keyword||text.indexOf(keyword)>=0);
+  });
+  if(!attractions.length){
+    list.innerHTML='<div class="attraction-empty">선택할 관광지가 없습니다.</div>';
+    return;
+  }
+  list.innerHTML=attractions.map(function(item,index){
+    return '<label class="attraction-select-item"><input type="checkbox" value="'+index+'"><span><span class="attraction-select-name">'+escapeHtml(item.name||'')+'</span><span class="attraction-select-meta">'+escapeHtml(item.category||'미분류')+(item.description?' · '+escapeHtml(item.description):'')+'</span></span></label>';
+  }).join('');
+}
+function saveTourSpotModal(){
+  if(!currentTourSpotTarget)return;
+  var filtered=[];
+  var category=document.getElementById('tourSpotCategoryFilter').value;
+  var keyword=document.getElementById('tourSpotSearch').value.trim().toLowerCase();
+  readRegisteredAttractions().forEach(function(item){
+    var text=((item.name||'')+' '+(item.description||'')).toLowerCase();
+    if((category==='전체'||item.category===category)&&(!keyword||text.indexOf(keyword)>=0))filtered.push(item);
+  });
+  var checked=[].slice.call(document.querySelectorAll('#tourSpotOptionList input:checked'));
+  if(!checked.length){msg('추가할 관광지를 선택하세요.');return}
+  checked.forEach(function(input){
+    var item=filtered[parseInt(input.value,10)];
+    if(item)addTourSpot(currentTourSpotTarget.dayIndex,currentTourSpotTarget.scheduleIndex,item);
+  });
+  closeTourSpotModal();
+}
+function closeTourSpotModal(){document.getElementById('tourSpotModal').classList.remove('open')}
+function addTourSpot(dayIndex,scheduleIndex,spot){
+  var row=getScheduleRow(dayIndex,scheduleIndex);
+  if(!row)return;
+  var spots=row._tourSpots||[];
+  spots.push(typeof spot==='string'?{name:spot}:spot);
+  row._tourSpots=spots;
+  renderTourSpots(row,dayIndex,scheduleIndex);
+}
+function renderTourSpots(row,dayIndex,scheduleIndex){
+  var list=row.querySelector('.tour-chip-list');
+  var spots=row._tourSpots||[];
+  list.innerHTML=spots.map(function(spot,i){var name=typeof spot==='string'?spot:spot.name;return '<span class="tour-chip">'+escapeHtml(name||'')+' <button type="button" onclick="removeTourSpot('+dayIndex+','+scheduleIndex+','+i+')">X</button></span>'}).join('');
+}
+function removeTourSpot(dayIndex,scheduleIndex,spotIndex){
+  var row=getScheduleRow(dayIndex,scheduleIndex);
+  if(!row)return;
+  var spots=row._tourSpots||[];
+  spots.splice(spotIndex,1);
+  row._tourSpots=spots;
+  renderTourSpots(row,dayIndex,scheduleIndex);
+}
+function clearMobileScheduleFromButton(btn){var idx=getRowIndexes(btn);clearMobileSchedule(idx.dayIndex,idx.scheduleIndex)}
+function clearMobileSchedule(dayIndex,scheduleIndex){
+  if(!confirm('현재 일정의 모바일일정표 내용을 삭제하시겠습니까? 등록된 관광지 목록도 함께 삭제됩니다.'))return;
+  var row=getScheduleRow(dayIndex,scheduleIndex);
+  if(!row)return;
+  row.dataset.mobileEnabled='false';
+  row.querySelector('.mobile-data').value='';
+  row._tourSpots=[];
+  renderTourSpots(row,dayIndex,scheduleIndex);
+}
+function deleteNo(btn){var row=btn.closest('tr');if(row&&confirm('해당 No 일정을 삭제하시겠습니까?'))row.remove();renumberRows()}
+function renumberRows(){
+  var scheduleNo=0;
+  document.querySelectorAll('#scheduleBody tr').forEach(function(row,i){
+    row.querySelector('.no-col').innerHTML='<span class="drag-handle">☰</span> '+(i+1);
+    if(row.classList.contains('schedule-row')){
+      scheduleNo++;
+      row.dataset.dayIndex='1';
+      row.dataset.scheduleIndex=scheduleNo;
+      var panel=row.querySelector('.mobile-schedule');
+      if(panel){panel.dataset.dayIndex='1';panel.dataset.scheduleIndex=scheduleNo}
+      renderTourSpots(row,1,scheduleNo);
+    }
+  });
+}
+function addTransportRow(){
+  var body=document.getElementById('scheduleBody');
+  var row=document.createElement('tr');
+  row.className='transport-row';
+  row.innerHTML='<td class="no-col"></td><td colspan="3"><div class="transport-grid"><div class="transport-field"><label>교통수단</label><select><option>버스</option><option>기차</option><option>항공</option><option>선박</option></select></div><div class="transport-field"><label>교통편명</label><input placeholder="교통편명"></div><div class="transport-field"><label>편명</label><input placeholder="편명"></div><div class="transport-field"><label>클래스</label><select><option>일반석</option><option>우등</option><option>비즈니스</option></select></div><div class="transport-field"><label>출발지</label><input placeholder="출발지"></div><div class="transport-field"><label>출발시간</label><input class="time-input depart-time" placeholder="0800" oninput="calcDuration(this)"></div><div class="transport-field"><label>도착지</label><input placeholder="도착지"></div><div class="transport-field"><label>도착시간</label><input class="time-input arrive-time" placeholder="0920" oninput="calcDuration(this)"></div><div class="transport-field"><label>운행시간</label><input class="duration-input duration-time" readonly></div><div class="transport-field plus-cell"><label>+1</label><label class="inline-check"><input type="checkbox"></label></div><div class="transport-field"><label>승하차 / 참고사항</label><input placeholder="승하차 / 참고사항"></div><button class="btn red small" onclick="deleteNo(this)">삭제</button></div></td>';
+  body.appendChild(row);
+  renumberRows();
+}
+function addScheduleRow(){
+  var body=document.getElementById('scheduleBody');
+  var row=document.createElement('tr');
+  row.className='schedule-row';
+  row.innerHTML=`<td class="no-col"></td><td class="time-col"><input placeholder="시간"></td><td><div class="pc-schedule"><div class="editor"><div class="editor-menu"><span>파일</span><span>편집</span><span>보기</span><span>삽입</span><span>서식</span><span>도구</span><span>표</span></div><div class="editor-tools"><span class="tool-muted">↶</span><span class="tool-muted">↷</span><span class="tool-pill">− 16px +</span><b>B</b><i>I</i><b>A</b><span>▾</span><b>▰</b><span>☰</span><span>☷</span><span>☱</span><b>•••</b></div><textarea placeholder="일정 내용을 입력합니다."></textarea></div><div class="image-slots"><span class="image-slot"></span><span class="image-slot"></span><span class="image-slot"></span></div><div class="tour-list"></div></div></td><td><div class="mobile-schedule mobile-panel"><div class="mobile-panel-actions"><button class="btn blue small" onclick="openMobileScheduleModalFromButton(this)">모바일일정표</button><button class="btn green small" onclick="openTourSpotPopupFromButton(this)">관광지추가</button><button class="btn red small" onclick="clearMobileScheduleFromButton(this)">삭제</button></div><textarea class="mobile-data" hidden></textarea><div class="tour-chip-list"></div></div></td>`;
+  body.appendChild(row);
+  renumberRows();
+}
+function initRowSorting(){
+  var body=document.getElementById('scheduleBody');
+  var draggedRow=null;
+  body.addEventListener('mousedown',function(e){
+    body.querySelectorAll('tr').forEach(function(row){row.draggable=false});
+    var handle=e.target.closest('.drag-handle');
+    if(handle)handle.closest('tr').draggable=true;
+  });
+  body.addEventListener('dragstart',function(e){
+    if(e.target.tagName!=='TR')return;
+    draggedRow=e.target;
+    draggedRow.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+  });
+  body.addEventListener('dragover',function(e){
+    e.preventDefault();
+    if(!draggedRow)return;
+    var after=getDragAfterRow(body,e.clientY);
+    if(after)body.insertBefore(draggedRow,after);else body.appendChild(draggedRow);
+  });
+  body.addEventListener('dragend',function(){
+    if(draggedRow)draggedRow.classList.remove('dragging');
+    draggedRow=null;
+    renumberRows();
+  });
+}
+function getDragAfterRow(body,y){
+  var rows=[].slice.call(body.querySelectorAll('tr:not(.dragging)'));
+  return rows.reduce(function(closest,row){
+    var box=row.getBoundingClientRect();
+    var offset=y-box.top-box.height/2;
+    if(offset<0&&offset>closest.offset)return{offset:offset,element:row};
+    return closest;
+  },{offset:Number.NEGATIVE_INFINITY,element:null}).element;
+}
+function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,function(ch){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+document.addEventListener('DOMContentLoaded',function(){renumberRows();initRowSorting()});</script></body>
+</html>
+
+
+
