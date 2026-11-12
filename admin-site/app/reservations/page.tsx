@@ -2,30 +2,32 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { QrCode, RotateCcw, Search, X } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   PAYMENT_STATUS_FILTER_OPTIONS,
   RESERVE_STATUS_FILTER_OPTIONS,
-  formatReservationPeople,
   getReservationKpis,
   getReservationList,
+  type ReservationDetail,
   type ReservationListItem,
 } from "@/lib/admin/reservations-data";
 import {
   RESERVATION_SOURCE_LABELS,
   getReservationSourceType,
-  getSellerCancelReviewAction,
   isReservationVisibleTo,
   withReservationViewer,
-  type ReservationViewer,
 } from "@/lib/admin/reservation-permission";
 import {
-  ReservationOperationStageBadge,
-  ReservationSourceBadge,
   ReservationViewerSwitch,
   useReservationViewer,
 } from "@/components/reservations/ReservationSource";
+import {
+  SettlementMethodSelectModal,
+  type SettlementMethod,
+} from "@/components/reservations/SettlementMethodSelectModal";
+import { resolveReservationProductCode } from "@/lib/admin/reservation-settlement-draft";
 import { useQueryParam } from "@/components/settlements/SettlementParts";
 import { GuideOperationPhaseBadge } from "@/components/guide/GuideOperationPhaseBadge";
 import {
@@ -38,7 +40,6 @@ import {
   getOperationDepartureOverviews,
   getReservationOperationViews,
   type OperationDepartureOverview,
-  type ReservationOperationView,
 } from "@/lib/admin/operation-assignment-data";
 
 const OPERATION_PANEL_LIMIT = 3;
@@ -96,77 +97,35 @@ function matchesKeyword(reservation: ReservationListItem, keyword: string) {
     .includes(value);
 }
 
-function partyColumnTitle(viewer: ReservationViewer) {
-  if (viewer.type === "sellingAgency" || viewer.type === "seller") return "공급여행사";
-  if (viewer.type === "supplierAgency") return "판매여행사 / 판매점";
-  return "공급 / 판매여행사";
+function formatPeopleStack(reservation: ReservationDetail) {
+  const total = reservation.counts.adult + reservation.counts.child + reservation.counts.infant;
+  const parts = [
+    reservation.counts.adult ? `대인 ${reservation.counts.adult}` : "",
+    reservation.counts.child ? `소인 ${reservation.counts.child}` : "",
+    reservation.counts.infant ? `유아 ${reservation.counts.infant}` : "",
+  ].filter(Boolean);
+  return { totalLabel: `총 ${total}명`, detail: parts.join(" · ") || "-" };
 }
 
-function PartyCell({ reservation, viewer }: { reservation: ReservationListItem; viewer: ReservationViewer }) {
+function salesChannelLabel(reservation: ReservationDetail) {
   const source = reservation.source;
-  if (!source || source.type === "direct") return <span className="reservation-party-muted">자사</span>;
-  if (source.sellerCode) {
-    return (
-      <span className="reservation-party">
-        {viewer.type !== "supplierAgency" && <b>공급: {source.supplierAgencyName}</b>}
-        <b>판매점: {source.sellerName}</b>
-        <small>{source.sellerCode}</small>
-      </span>
-    );
+  if (!source || source.type === "direct") {
+    return { channel: "자사판매", seller: reservation.agency || "-" };
   }
-  const seller = source.sellerName ? <small>판매점: {source.sellerName}</small> : null;
-  if (viewer.type === "seller") {
-    return (
-      <span className="reservation-party">
-        <b>공급: {source.supplierAgencyName}</b>
-        <small>판매: {source.sellingAgencyName}</small>
-      </span>
-    );
+  if (source.type === "seller") {
+    return {
+      channel: "판매점",
+      seller: source.sellerName || source.sellingAgencyName || "-",
+    };
   }
-  if (viewer.type === "sellingAgency") {
-    return (
-      <span className="reservation-party">
-        <b>공급: {source.supplierAgencyName}</b>
-        {seller}
-      </span>
-    );
-  }
-  if (viewer.type === "supplierAgency") {
-    return (
-      <span className="reservation-party">
-        <b>{source.sellingAgencyName}</b>
-        {seller}
-      </span>
-    );
-  }
-  return (
-    <span className="reservation-party">
-      <b>공급: {source.supplierAgencyName}</b>
-      <small>판매: {source.sellingAgencyName}</small>
-      {seller}
-    </span>
-  );
+  return {
+    channel: "제휴판매",
+    seller: source.sellingAgencyName || "-",
+  };
 }
 
-function OperationCell({ view, canOpen }: { view?: ReservationOperationView; canOpen: boolean }) {
-  if (!view) return <span className="reservation-party-muted">-</span>;
-  const content = (
-    <>
-      <span className={`badge ${view.badge}`}>{view.statusLabel}</span>
-      {view.vehicleShort && <small>{view.vehicleShort}</small>}
-      {view.vehicleCount === 1 && view.guideLabel && <small>{view.guideLabel}</small>}
-    </>
-  );
-  if (!canOpen) return <span className="reservation-ops-cell">{content}</span>;
-  return (
-    <Link
-      href={getOperationAssignmentPath(view.departureKey)}
-      className="reservation-ops-cell is-link"
-      title="상품 + 출발일 운영배정 화면으로 이동"
-    >
-      {content}
-    </Link>
-  );
+function memoPreview(reservation: ReservationDetail) {
+  return reservation.adminMemo?.trim() || reservation.requestNote?.trim() || "-";
 }
 
 function OperationSummaryPanel({
@@ -258,8 +217,12 @@ export default function ReservationsPage() {
 
   const [draft, setDraft] = useState<SearchFilters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<SearchFilters>(EMPTY_FILTERS);
+  const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
+  const [settlementTarget, setSettlementTarget] = useState<ReservationListItem | null>(null);
+  const [settlementMethod, setSettlementMethod] = useState<SettlementMethod>("individual");
 
   const pageSize = 8;
+  const router = useRouter();
   const [viewer, changeViewer] = useReservationViewer();
   const [linkedKeyword, setLinkedKeyword] = useQueryParam("keyword", "");
   const [linkedDeparture, setLinkedDeparture] = useQueryParam("departure", "");
@@ -394,7 +357,7 @@ export default function ReservationsPage() {
                   {item.children.map((child) => (
                     <button
                       key={child}
-                      className={child === "예약접수현황" ? "current" : ""}
+                      className={child === "예약목록" ? "current" : ""}
                       onClick={() => navigateAdminChild(child, act)}
                     >
                       {child}
@@ -704,84 +667,126 @@ export default function ReservationsPage() {
               </div>
             </div>
             <div className="member-web-table-wrap">
-              <table className="member-web-table reservation-list-table reservation-list-table--source reservation-list-table--ops">
+              <table className="member-web-table reservation-list-table reservation-list-table--sheet">
                 <thead>
                   <tr>
-                    {[
-                      "예약번호",
-                      "예약일",
-                      "예약자",
-                      "상품명",
-                      "출발일",
-                      "인원",
-                      "예약금액",
-                      "결제상태",
-                      "예약상태",
-                      "예약출처",
-                      partyColumnTitle(viewer),
-                      "운영배정",
-                    ].map((title) => (
-                      <th key={title}>{title}</th>
-                    ))}
+                    <th className="reservation-check-col">
+                      <input
+                        type="checkbox"
+                        aria-label="현재 페이지 전체 선택"
+                        checked={rows.length > 0 && rows.every((item) => selectedCodes.includes(item.code))}
+                        onChange={(event) => {
+                          const pageCodes = rows.map((item) => item.code);
+                          setSelectedCodes((current) =>
+                            event.target.checked
+                              ? Array.from(new Set([...current, ...pageCodes]))
+                              : current.filter((code) => !pageCodes.includes(code)),
+                          );
+                        }}
+                      />
+                    </th>
+                    <th>예약번호 / 상품명</th>
+                    <th>예약일</th>
+                    <th>출발일</th>
+                    <th>예약자 / 연락처</th>
+                    <th>인원</th>
+                    <th>금액</th>
+                    <th>예약상태</th>
+                    <th>결제상태</th>
+                    <th>판매채널 / 판매사</th>
+                    <th>담당자</th>
+                    <th>알림 / 메모</th>
+                    <th>관리</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.length ? (
-                    rows.map((reservation) => (
-                      <tr key={reservation.code}>
-                        <td className="member-number">
-                          <Link
-                            href={withReservationViewer(`/reservations/${reservation.code}`, viewer)}
-                            className="reservation-code-link"
-                          >
-                            {reservation.code}
-                          </Link>
-                        </td>
-                        <td className="date-cell">{reservation.reservedAt}</td>
-                        <td className="member-name">
-                          {reservation.memberId ? (
-                            <Link href={`/members/web/${reservation.memberId}`}>
-                              <b>{reservation.bookerName}</b>
+                    rows.map((reservation) => {
+                      const productCode = resolveReservationProductCode(reservation);
+                      const people = formatPeopleStack(reservation);
+                      const channel = salesChannelLabel(reservation);
+                      const selected = selectedCodes.includes(reservation.code);
+                      return (
+                        <tr key={reservation.code} className={selected ? "is-selected-row" : undefined}>
+                          <td className="reservation-check-col">
+                            <input
+                              type="checkbox"
+                              aria-label={`${reservation.code} 선택`}
+                              checked={selected}
+                              onChange={(event) => {
+                                setSelectedCodes((current) =>
+                                  event.target.checked
+                                    ? [...current, reservation.code]
+                                    : current.filter((code) => code !== reservation.code),
+                                );
+                              }}
+                            />
+                          </td>
+                          <td className="text-left reservation-product-cell">
+                            <Link
+                              href={withReservationViewer(`/reservations/${reservation.code}`, viewer)}
+                              className="reservation-code-link"
+                            >
+                              [{reservation.code}]{productCode ? ` [${productCode}]` : ""}
                             </Link>
-                          ) : (
-                            <b>{reservation.bookerName}</b>
-                          )}
-                        </td>
-                        <td className="text-left">{reservation.productName}</td>
-                        <td className="date-cell">{reservation.departureAt}</td>
-                        <td>{formatReservationPeople(reservation)}</td>
-                        <td className="amount-cell">{reservation.totalAmount}</td>
-                        <td>
-                          <span className={`badge ${reservation.paymentStatusClass}`}>{reservation.paymentStatus}</span>
-                        </td>
-                        <td>
-                          <span className="reservation-status-stack">
+                            <span>{reservation.productName || "-"}</span>
+                          </td>
+                          <td className="date-cell">{reservation.reservedAt || "-"}</td>
+                          <td className="date-cell">{reservation.departureAt || "-"}</td>
+                          <td className="text-left reservation-booker-cell">
+                            <b>{reservation.bookerName || "-"}</b>
+                            <small>{reservation.phone || "-"}</small>
+                          </td>
+                          <td className="reservation-people-cell">
+                            <b>{people.totalLabel}</b>
+                            <small>{people.detail}</small>
+                          </td>
+                          <td className="reservation-amount-cell">
+                            <div>
+                              <span>총금액</span>
+                              <b>{reservation.totalAmount || "-"}</b>
+                            </div>
+                            <div>
+                              <span>결제금액</span>
+                              <b className="is-paid">{reservation.paidAmount || "-"}</b>
+                            </div>
+                            <div>
+                              <span>미수금</span>
+                              <b className="is-unpaid">{reservation.unpaidAmount || "-"}</b>
+                            </div>
+                          </td>
+                          <td>
                             <span className={`badge ${reservation.reserveStatusClass}`}>{reservation.reserveStatus}</span>
-                            <ReservationOperationStageBadge reservation={reservation} compact />
-                            {getSellerCancelReviewAction(reservation, viewer).allowed && (
-                              <Link
-                                href={withReservationViewer(`/reservations/${reservation.code}`, viewer)}
-                                className="small-btn reservation-cancel-review-link"
-                              >
-                                취소검토
-                              </Link>
-                            )}
-                          </span>
-                        </td>
-                        <td>
-                          <ReservationSourceBadge reservation={reservation} />
-                        </td>
-                        <td className="text-left">
-                          <PartyCell reservation={reservation} viewer={viewer} />
-                        </td>
-                        <td>
-                          <OperationCell view={operationViews[reservation.code]} canOpen={viewer.type === "integrated"} />
-                        </td>
-                      </tr>
-                    ))
+                          </td>
+                          <td>
+                            <span className={`badge ${reservation.paymentStatusClass}`}>{reservation.paymentStatus}</span>
+                          </td>
+                          <td className="text-left reservation-channel-cell">
+                            <b>{channel.channel}</b>
+                            <small>{channel.seller}</small>
+                          </td>
+                          <td className="reservation-assignee-cell">미지정</td>
+                          <td className="text-left reservation-memo-cell" title={memoPreview(reservation)}>
+                            {memoPreview(reservation)}
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="secondary reservation-sheet-btn"
+                              onClick={() => {
+                                setSettlementMethod("individual");
+                                setSettlementTarget(reservation);
+                              }}
+                            >
+                              정산서
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
-                      <td colSpan={12}>
+                      <td colSpan={13}>
                         <div className="member-web-empty">
                           <strong>
                             {linkedKeyword && filtered.length === 0
@@ -839,6 +844,24 @@ export default function ReservationsPage() {
           <span>✓</span>
           {toast}
         </div>
+      )}
+
+      {settlementTarget && (
+        <SettlementMethodSelectModal
+          reservation={settlementTarget}
+          method={settlementMethod}
+          onMethodChange={setSettlementMethod}
+          onClose={() => setSettlementTarget(null)}
+          onNext={(result) => {
+            setSettlementTarget(null);
+            router.push(
+              withReservationViewer(
+                `/reservations/${encodeURIComponent(result.reservationCode)}/settlement?method=${result.method}`,
+                viewer,
+              ),
+            );
+          }}
+        />
       )}
     </div>
   );

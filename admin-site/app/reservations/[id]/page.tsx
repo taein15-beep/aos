@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { AlertTriangle, ArrowLeft, ClipboardList, Info, Minus, Pencil, Plus, QrCode, Receipt, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ClipboardList, FileSpreadsheet, Info, Minus, Pencil, Plus, QrCode, Receipt, Wallet } from "lucide-react";
 import { ADMIN_MENU, navigateAdminChild } from "@/lib/admin/navigation";
 import {
   applySettlementCancellation,
@@ -60,21 +60,23 @@ import {
   getSellerCancelReviewAction,
   getSellerRefundAction,
   getViewerActor,
+  isReservationVisibleTo,
   withReservationViewer,
 } from "@/lib/admin/reservation-permission";
 import {
   ReservationActionDialog,
-  ReservationHistorySection,
-  ReservationOperationCard,
-  ReservationPermissionBadges,
-  ReservationPermissionNotices,
-  ReservationSourceBadge,
-  ReservationSourceCards,
   ReservationViewerSwitch,
   buildReservationActionDetails,
   useReservationViewer,
   type ReservationActionDialogState,
 } from "@/components/reservations/ReservationSource";
+import {
+  SettlementMethodSelectModal,
+  type SettlementMethod,
+  type SettlementMethodSelectResult,
+} from "@/components/reservations/SettlementMethodSelectModal";
+import { ReservationErpDetailView } from "@/components/reservations/ReservationErpDetailView";
+import { resolveReservationProductCode } from "@/lib/admin/reservation-settlement-draft";
 
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
@@ -202,6 +204,9 @@ export default function ReservationDetailPage() {
     [reservationId, reservationVersion],
   );
   const [actionDialog, setActionDialog] = useState<ReservationActionDialogState | null>(null);
+  const [settlementMethodOpen, setSettlementMethodOpen] = useState(false);
+  const [settlementMethod, setSettlementMethod] = useState<SettlementMethod>("individual");
+  const [settlementMethodSelection, setSettlementMethodSelection] = useState<SettlementMethodSelectResult | null>(null);
 
   const [collapsed, setCollapsed] = useState(false);
   const [expanded, setExpanded] = useState(["예약관리"]);
@@ -259,6 +264,7 @@ export default function ReservationDetailPage() {
     [reservation, displayReserveStatus],
   );
   const canEdit = reservation ? canEditReservation({ reservation: permissionTarget, viewer }) : false;
+  const canOpenSettlementSheet = reservation ? isReservationVisibleTo(reservation, viewer) : false;
   const paidAmountValue = reservation ? parseKrw(reservation.paidAmount) : 0;
   const totalPeople = reservation
     ? reservation.counts.adult + reservation.counts.child + reservation.counts.infant
@@ -768,96 +774,25 @@ export default function ReservationDetailPage() {
         </header>
 
         <main className="content member-web-detail-content reservation-detail-content">
-          <section className="page-head member-web-detail-page-head">
-            <div>
-              <p className="member-web-breadcrumb">예약관리 &gt; 예약상세</p>
-              <div className="member-web-detail-title-row">
-                <h1>{reservation.code}</h1>
-                <span className={`badge ${reserveDisplayClass(displayReserveStatus)}`}>{displayReserveStatus}</span>
-                <ReservationSourceBadge reservation={reservation} />
-                <ReservationPermissionBadges reservation={permissionTarget} viewer={viewer} />
-              </div>
-              <p className="member-web-detail-subtitle">{reservation.productName}</p>
-            </div>
-            <div className="member-web-detail-actions">
-              <ReservationViewerSwitch viewer={viewer} onChange={changeViewer} />
+          <div className="member-web-detail-actions" style={{ marginBottom: 8, justifyContent: "flex-end" }}>
+            <ReservationViewerSwitch viewer={viewer} onChange={changeViewer} />
+            {refundMode && (
               <button
                 type="button"
-                className="secondary"
-                onClick={() => router.push(withReservationViewer("/reservations", viewer))}
+                className={refundAction.allowed ? "primary" : "secondary"}
+                onClick={openRefundAction}
+                disabled={!refundAction.allowed || refundProcessing}
+                title={!refundAction.allowed ? refundAction.reason : undefined}
               >
-                <ArrowLeft size={14} />
-                목록
+                <Wallet size={14} />
+                {refundMode === "refund"
+                  ? "환불처리"
+                  : refundMode === "retry"
+                    ? "환불 재시도"
+                    : "취소완료 처리"}
               </button>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => router.push(withReservationViewer(`/reservations/${reservation.code}/edit`, viewer))}
-              >
-                <Pencil size={14} />
-                {canEdit ? "예약수정" : "예약정보 보기"}
-              </button>
-              {reservation.settlement && reservation.source?.type !== "direct" && (
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() =>
-                    router.push(withReservationViewer(`/settlements/${reservation.settlement?.settlementCode}`, viewer))
-                  }
-                >
-                  <Wallet size={14} />
-                  정산 상세
-                </button>
-              )}
-              {refundMode && (
-                <button
-                  type="button"
-                  className={refundAction.allowed ? "primary" : "secondary"}
-                  onClick={openRefundAction}
-                  disabled={!refundAction.allowed || refundProcessing}
-                  title={!refundAction.allowed ? refundAction.reason : undefined}
-                >
-                  <Wallet size={14} />
-                  {refundMode === "refund"
-                    ? "환불처리"
-                    : refundMode === "retry"
-                      ? "환불 재시도"
-                      : "취소완료 처리"}
-                </button>
-              )}
-              {!isSellerChannel && (
-                <button
-                  type="button"
-                  className={isCancelled || !canEdit ? "secondary" : "primary"}
-                  onClick={openCancelModal}
-                  disabled={isCancelled || !canEdit}
-                  title={!canEdit ? "예약 수정권한이 없습니다." : undefined}
-                >
-                  <Receipt size={14} />
-                  {isCancelled ? "취소완료" : "취소/환불"}
-                </button>
-              )}
-            </div>
-          </section>
-
-          <section className="panel member-web-detail-hero">
-            <div className="member-web-detail-identity">
-              <span className="member-web-detail-avatar">
-                <ClipboardList size={23} />
-              </span>
-              <div>
-                <div className="member-web-detail-code-row">
-                  <span>{reservation.code}</span>
-                  <span className={`badge ${reserveDisplayClass(displayReserveStatus)}`}>{displayReserveStatus}</span>
-                  <span className={`badge ${paymentDisplayClass(displayPaymentStatus)}`}>{displayPaymentStatus}</span>
-                </div>
-                <h2>{reservation.productName}</h2>
-                <p>
-                  {reservation.bookerName} · {reservation.phone} · 출발 {reservation.departureAt}
-                </p>
-              </div>
-            </div>
-          </section>
+            )}
+          </div>
 
           {sellerCancelRequest?.status === "검토대기" && (
             <div className="product-share-setting-alert reservation-permission-alert seller-cancel-alert" role="alert">
@@ -932,442 +867,52 @@ export default function ReservationDetailPage() {
             </div>
           )}
 
-          <ReservationOperationCard
-            reservation={permissionTarget}
-            viewer={viewer}
-            onClose={openCloseDialog}
-            onHandover={openHandoverDialog}
-            onViewSettlement={
-              reservation.settlement
-                ? () =>
-                    router.push(withReservationViewer(`/settlements/${reservation.settlement?.settlementCode}`, viewer))
+          <ReservationErpDetailView
+            reservation={reservation}
+            displayReserveStatus={displayReserveStatus}
+            displayPaymentStatus={displayPaymentStatus}
+            payments={payments}
+            history={reservationHistory}
+            productCode={resolveReservationProductCode(reservation)}
+            canEdit={canEdit}
+            canCancelRefund={
+              isSellerChannel
+                ? Boolean(
+                    (sellerCancelRequest?.status === "검토대기" && reviewAction.allowed) ||
+                      (refundMode && refundAction.allowed),
+                  )
+                : !isCancelled && canEdit
+            }
+            canSettlement={canOpenSettlementSheet}
+            lastEditLabel={
+              reservationHistory[0]
+                ? `최종 수정 내용 : ${reservationHistory[0].actor.name} / ${reservationHistory[0].at}${
+                    reservationHistory[0].summary ? ` / ${reservationHistory[0].summary}` : ""
+                  }`
                 : undefined
             }
-            assignment={operationAssignment}
-            onOpenAssignment={
-              operationAssignment && viewer.type === "integrated"
-                ? () => router.push(getOperationAssignmentPath(operationAssignment.departureKey))
-                : undefined
-            }
+            onBack={() => router.push(withReservationViewer("/reservations", viewer))}
+            onSettlement={() => {
+              setSettlementMethod("individual");
+              setSettlementMethodOpen(true);
+            }}
+            onCancelRefund={() => {
+              if (isSellerChannel) {
+                if (sellerCancelRequest?.status === "검토대기") openReview();
+                else if (refundMode) openRefundAction();
+                else act("처리할 판매점 취소/환불 요청이 없습니다.");
+                return;
+              }
+              openCancelModal();
+            }}
+            onSave={() => act("변경사항을 저장했습니다. (SAMPLE)")}
+            onAction={(message) => {
+              if (message === "print") act("예약확인서 출력을 준비합니다. (SAMPLE)");
+              else if (message === "알림톡") act("알림톡 발송 화면을 준비합니다. (SAMPLE)");
+              else if (message === "기본사항") act("기본사항 영역으로 이동합니다.");
+              else act(`${message} (SAMPLE)`);
+            }}
           />
-
-          <ReservationPermissionNotices reservation={permissionTarget} viewer={viewer} />
-
-          <div className="member-web-detail-stack">
-            <ReservationSourceCards reservation={permissionTarget} viewer={viewer} />
-
-            {sellerCancelRequest && (
-              <section className="panel member-web-detail-card seller-cancel-info-card">
-                <div className="member-web-detail-card-head">
-                  <strong>취소요청 정보</strong>
-                  <span className={`badge ${SELLER_CANCEL_STATUS_BADGE[sellerCancelRequest.status]}`}>
-                    {sellerCancelRequest.status}
-                  </span>
-                </div>
-                <div className="member-web-detail-info-grid">
-                  <InfoField label="요청 판매점" value={sellerCancelRequest.sellerName} />
-                  <InfoField label="판매점코드" value={sellerCancelRequest.sellerCode} />
-                  <InfoField label="요청일시" value={dottedDateTime(sellerCancelRequest.requestedAt)} />
-                  <InfoField label="고객명" value={sellerCancelRequest.customerName} />
-                  <InfoField label="취소사유" value={sellerCancelRequest.reason} />
-                  <InfoField label="고객 요청내용" value={sellerCancelRequest.customerNote ?? "-"} />
-                  <InfoField label="현재 처리상태" value={sellerCancelRequest.status} />
-                  <InfoField label="취소요청 전 예약상태" value={sellerCancelRequest.previousReservationStatus} />
-                  {sellerCancelRequest.approval && (
-                    <>
-                      <InfoField label="처리자" value={sellerCancelRequest.approval.processedBy.name} />
-                      <InfoField label="처리일시" value={dottedDateTime(sellerCancelRequest.approval.processedAt)} />
-                      <InfoField label="정책 기준 수수료" value={formatKrw(sellerCancelRequest.approval.recommendedFee)} />
-                      <InfoField label="적용 취소수수료" value={formatKrw(sellerCancelRequest.approval.cancellationFee)} />
-                      <InfoField label="환불예정금액" value={formatKrw(sellerCancelRequest.approval.refundAmount)} />
-                      <InfoField label="처리메모" value={sellerCancelRequest.approval.memo || "-"} />
-                    </>
-                  )}
-                  {sellerCancelRequest.rejection && (
-                    <>
-                      <InfoField label="처리자" value={sellerCancelRequest.rejection.processedBy.name} />
-                      <InfoField label="처리일시" value={dottedDateTime(sellerCancelRequest.rejection.processedAt)} />
-                      <InfoField
-                        label="거절사유"
-                        value={
-                          sellerCancelRequest.rejection.reasonDetail
-                            ? `${sellerCancelRequest.rejection.reason} · ${sellerCancelRequest.rejection.reasonDetail}`
-                            : sellerCancelRequest.rejection.reason
-                        }
-                      />
-                    </>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {refundStage && sellerCancelRequest?.approval && (
-              <section className="panel member-web-detail-card seller-refund-info-card">
-                <div className="member-web-detail-card-head">
-                  <strong>환불정보</strong>
-                  <span className={`badge ${SELLER_REFUND_STAGE_BADGE[refundStage]}`}>{refundStage}</span>
-                </div>
-                <div className="member-web-detail-info-grid">
-                  <InfoField label="환불상태" value={refundStage} />
-                  <InfoField label="환불방법" value={sellerRefund?.method ?? "-"} />
-                  <InfoField
-                    label="환불금액"
-                    value={formatKrw(sellerRefund?.status === "환불없음" ? 0 : sellerCancelRequest.approval.refundAmount)}
-                  />
-                  <InfoField label="취소수수료" value={formatKrw(sellerCancelRequest.approval.cancellationFee)} />
-                  <InfoField label="환불일시" value={sellerRefund?.refundedAt ? dottedDateTime(sellerRefund.refundedAt) : "-"} />
-                  <InfoField label="처리자" value={sellerRefund?.processedBy.name ?? "-"} />
-                  <InfoField
-                    label="취소완료일시"
-                    value={sellerRefund?.completedAt ? dottedDateTime(sellerRefund.completedAt) : "-"}
-                  />
-                  <InfoField label="환불메모" value={sellerRefund?.memo || "-"} />
-                  {sellerRefund?.bankAccount && (
-                    <InfoField
-                      label="환불계좌"
-                      value={`${sellerRefund.bankAccount.bank} ${sellerRefund.bankAccount.accountMasked} · ${sellerRefund.bankAccount.holder}`}
-                    />
-                  )}
-                </div>
-                {sellerRefund && sellerRefund.attempts.length > 0 && (
-                  <ol className="seller-cancel-timeline seller-refund-attempts" aria-label="환불처리 이력">
-                    {sellerRefund.attempts.map((attempt, index) => (
-                      <li key={`${attempt.at}-${index}`}>
-                        <time>{dottedDateTime(attempt.at)}</time>
-                        <span className={`badge ${attempt.result === "완료" ? "gray" : "danger"}`}>
-                          {attempt.result === "완료" ? "환불완료" : "환불실패"}
-                        </span>
-                        <b>{attempt.processedBy.name}</b>
-                        <small>
-                          {attempt.method} · {formatKrw(attempt.amount)}
-                        </small>
-                      </li>
-                    ))}
-                  </ol>
-                )}
-              </section>
-            )}
-
-            {sellerSettlement && (
-              <section className="panel member-web-detail-card">
-                <div className="member-web-detail-card-head">
-                  <strong>정산반영</strong>
-                  <span className={`badge ${sellerSettlementStatusBadgeClass(sellerSettlement.settlement.status)}`}>
-                    {sellerSettlement.settlement.status}
-                  </span>
-                </div>
-                <div className="member-web-detail-info-grid">
-                  <InfoField label="정산건" value={`${sellerSettlement.settlement.label} · ${sellerSettlement.settlement.code}`} />
-                  <InfoField label="반영상태" value={sellerSettlementReflectionLabel(sellerSettlement)} />
-                  <InfoField label="판매점 수익 (예약 당시)" value={formatKrw(sellerSettlement.line.originalProfit)} />
-                  <InfoField
-                    label="정산조정"
-                    value={
-                      sellerSettlement.line.reflection === "취소처리중"
-                        ? "미반영 (취소완료 후 반영)"
-                        : formatSellerSettlementSigned(
-                            sellerSettlement.line.adjustment ||
-                              sellerSettlement.line.pendingAdjustment ||
-                              (sellerSettlement.nextAdjustment?.amount ?? 0),
-                          )
-                    }
-                  />
-                  {sellerSettlement.nextAdjustment && (
-                    <InfoField label="차기정산" value={`${sellerSettlement.nextAdjustment.targetSettlementCode} · ${sellerSettlement.nextAdjustment.status}`} />
-                  )}
-                  {sellerSettlement.line.refundAmount !== null && (
-                    <InfoField label="고객 환불금액 (별도)" value={formatKrw(sellerSettlement.line.refundAmount)} />
-                  )}
-                </div>
-                <p className="seller-cancel-terms-note">
-                  정산 차감액은 예약 당시 판매점 수익 기준이며 환불금액과 다릅니다. 취소수수료의 정산 배분은 별도 정책으로 처리됩니다.{" "}
-                  {(viewer.type === "integrated" || viewer.agencyName === sellerSettlement.settlement.supplierName) && (
-                    <Link
-                      href={withReservationViewer(`/settlements?tab=seller&period=${sellerSettlement.settlement.code}`, viewer)}
-                      className="reservation-code-link"
-                    >
-                      판매점 수익 정산 보기
-                    </Link>
-                  )}
-                </p>
-              </section>
-            )}
-
-            {bookingTerms && (
-              <section className="panel member-web-detail-card seller-cancel-terms-card">
-                <div className="member-web-detail-card-head">
-                  <strong>예약 당시 판매조건</strong>
-                  <span className="badge gray">Snapshot</span>
-                </div>
-                <div className="member-web-detail-info-grid">
-                  <InfoField label="판매방식" value={bookingTerms.saleMode} />
-                  {bookingTerms.saleMode === "수수료형" ? (
-                    <InfoField label="수수료율" value={`${bookingTerms.commissionRate ?? 0}%`} />
-                  ) : (
-                    <InfoField label="입금가 (1인)" value={formatKrw(bookingTerms.depositPrice ?? 0)} />
-                  )}
-                  <InfoField label="판매점 판매가 (1인)" value={formatKrw(bookingTerms.unitPrice)} />
-                  <InfoField label="인원" value={`${bookingTerms.pax}명`} />
-                  <InfoField label="총 예약금액" value={formatKrw(bookingTerms.amount)} />
-                  <InfoField
-                    label="판매점 예상수익"
-                    value={
-                      displayReserveStatus === "취소완료"
-                        ? `0원 (취소완료 · 예약 당시 ${formatKrw(bookingTerms.sellerProfit)})`
-                        : sellerCancelRequest?.status === "취소승인"
-                          ? `${formatKrw(bookingTerms.sellerProfit)} → 0원 (취소승인 · 정산 반영 대기)`
-                          : formatKrw(bookingTerms.sellerProfit)
-                    }
-                  />
-                </div>
-                <p className="seller-cancel-terms-note">
-                  예약 접수 시점의 판매조건입니다. 이후 상품 판매가 · 입금가가 변경되어도 이 예약에는 반영되지 않습니다.
-                </p>
-              </section>
-            )}
-
-            <section className="panel member-web-detail-card">
-              <div className="member-web-detail-card-head">
-                <strong>기본정보</strong>
-              </div>
-              <div className="member-web-detail-info-grid">
-                <InfoField label="예약번호" value={reservation.code} />
-                <InfoField label="예약일" value={reservation.reservedAt} />
-                <InfoField label="예약자명" value={reservation.bookerName} />
-                <InfoField label="연락처" value={reservation.phone} />
-                <InfoField label="상품명" value={reservation.productName} />
-                <InfoField label="출발일" value={reservation.departureAt} />
-                {reservation.boardingPoint !== undefined && (
-                  <InfoField label="탑승지" value={reservation.boardingPoint} />
-                )}
-                <InfoField label="예약상태" value={displayReserveStatus} />
-                <InfoField label="결제상태" value={displayPaymentStatus} />
-              </div>
-            </section>
-
-            <section className="panel member-web-detail-card">
-              <div className="member-web-detail-card-head">
-                <strong>인원/금액</strong>
-              </div>
-              <div className="member-web-detail-info-grid">
-                <InfoField label="성인" value={`${reservation.counts.adult}명`} />
-                <InfoField label="소아" value={`${reservation.counts.child}명`} />
-                <InfoField label="유아" value={`${reservation.counts.infant}명`} />
-                <InfoField label="총 예약금액" value={reservation.totalAmount} />
-                <InfoField label="결제금액" value={reservation.paidAmount} />
-                <InfoField label="미수금" value={reservation.unpaidAmount} />
-                <InfoField label="판매점" value={reservation.agency} />
-              </div>
-            </section>
-
-            <section className="panel member-web-detail-card">
-              <div className="member-web-detail-card-head">
-                <strong>결제 요약</strong>
-              </div>
-              <div className="member-web-detail-usage-grid reservation-payment-summary">
-                <article className="member-web-detail-kpi">
-                  <span>
-                    <small>총 예약금액</small>
-                    <strong>{paymentSummary.totalReservationLabel}</strong>
-                  </span>
-                </article>
-                <article className="member-web-detail-kpi">
-                  <span>
-                    <small>총 결제금액</small>
-                    <strong>{paymentSummary.totalPaidLabel}</strong>
-                  </span>
-                </article>
-                <article className="member-web-detail-kpi">
-                  <span>
-                    <small>총 환불금액</small>
-                    <strong>{paymentSummary.totalRefundLabel}</strong>
-                  </span>
-                </article>
-                <article className="member-web-detail-kpi">
-                  <span>
-                    <small>실 결제금액</small>
-                    <strong>{paymentSummary.netPaidLabel}</strong>
-                  </span>
-                </article>
-                <article className="member-web-detail-kpi">
-                  <span>
-                    <small>미수금</small>
-                    <strong>{paymentSummary.unpaidLabel}</strong>
-                  </span>
-                </article>
-              </div>
-            </section>
-
-            <section className="panel member-web-detail-card">
-              <div className="member-web-detail-card-head">
-                <strong>결제내역</strong>
-                <span className="member-web-status-history-count">{payments.length}건</span>
-              </div>
-              {payments.length > 0 ? (
-                <div className="member-web-detail-table-wrap">
-                  <table className="member-web-detail-table member-web-detail-table--payment">
-                    <thead>
-                      <tr>
-                        <th>결제일시</th>
-                        <th>결제번호</th>
-                        <th>결제수단</th>
-                        <th>결제금액</th>
-                        <th>결제상태</th>
-                        <th>승인번호</th>
-                        <th>처리자</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {payments.map((item) => (
-                        <tr key={item.id}>
-                          <td className="date-cell">{item.paidAt}</td>
-                          <td className="member-number">{item.paymentNumber}</td>
-                          <td>{item.method}</td>
-                          <td className="amount-cell">{formatKrw(item.amount)}</td>
-                          <td>
-                            <span className={`badge ${paymentRecordBadgeClass(item.status)}`}>{item.status}</span>
-                          </td>
-                          <td>{item.approvalNumber}</td>
-                          <td>{item.processedBy}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="member-web-detail-empty">결제내역이 없습니다.</div>
-              )}
-            </section>
-
-            <section className="panel member-web-detail-card">
-              <div className="member-web-detail-card-head">
-                <strong>환불내역</strong>
-                <span className="member-web-status-history-count">{refunds.length}건</span>
-              </div>
-              {refunds.length > 0 ? (
-                <div className="member-web-detail-table-wrap">
-                  <table className="member-web-detail-table member-web-detail-table--refund">
-                    <thead>
-                      <tr>
-                        <th>환불일시</th>
-                        <th>환불번호</th>
-                        <th>원 결제번호</th>
-                        <th>환불방법</th>
-                        <th>환불금액</th>
-                        <th>환불상태</th>
-                        <th>환불사유</th>
-                        <th>처리 관리자</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {refunds.map((item) => (
-                        <tr key={item.id}>
-                          <td className="date-cell">{item.refundedAt}</td>
-                          <td className="member-number">{item.refundNumber}</td>
-                          <td className="member-number">{item.paymentNumber}</td>
-                          <td>{item.method}</td>
-                          <td className="amount-cell">{formatKrw(item.amount)}</td>
-                          <td>
-                            <span className={`badge ${refundRecordBadgeClass(item.status)}`}>{item.status}</span>
-                          </td>
-                          <td className="text-left member-web-status-history-reason">{item.reason}</td>
-                          <td>{item.processedBy}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="member-web-detail-empty">환불내역이 없습니다.</div>
-              )}
-            </section>
-
-            <section className="panel member-web-detail-card">
-              <div className="member-web-detail-card-head">
-                <strong>고객 요청사항</strong>
-              </div>
-              <div className="reservation-detail-notes">
-                <div className="member-web-detail-memo-item">
-                  <header>
-                    <span>요청사항</span>
-                  </header>
-                  <p>{reservation.requestNote || "-"}</p>
-                </div>
-                <div className="member-web-detail-memo-item">
-                  <header>
-                    <span>관리자 메모</span>
-                  </header>
-                  <p>{reservation.adminMemo || "-"}</p>
-                </div>
-              </div>
-            </section>
-
-            {statusHistory.length > 0 && (
-              <section className="panel member-web-detail-card">
-                <div className="member-web-detail-card-head">
-                  <strong>예약 상태 변경 이력</strong>
-                  <span className="member-web-status-history-count">{statusHistory.length}건</span>
-                </div>
-                <div className="member-web-detail-table-wrap">
-                  <table className="member-web-detail-table member-web-detail-table--status-history">
-                    <thead>
-                      <tr>
-                        <th>처리일시</th>
-                        <th>처리구분</th>
-                        <th>변경 전</th>
-                        <th>변경 후</th>
-                        <th>결제상태</th>
-                        <th>사유</th>
-                        <th>처리 관리자</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {statusHistory.map((item, index) => (
-                        <tr key={`${item.processedAt}-${index}`}>
-                          <td className="date-cell">{item.processedAt}</td>
-                          <td>
-                            <span className="badge danger">{item.action}</span>
-                          </td>
-                          <td>
-                            <span className={`badge ${reserveDisplayClass(item.statusBefore)}`}>{item.statusBefore}</span>
-                          </td>
-                          <td>
-                            <span className={`badge ${reserveDisplayClass(item.statusAfter)}`}>{item.statusAfter}</span>
-                          </td>
-                          <td>
-                            <span className={`badge ${paymentDisplayClass(item.paymentAfter)}`}>{item.paymentAfter}</span>
-                          </td>
-                          <td className="text-left member-web-status-history-reason">{item.reason}</td>
-                          <td>{item.actor}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            )}
-
-            {reservation.statusTimeline && reservation.statusTimeline.length > 0 && (
-              <section className="panel member-web-detail-card">
-                <div className="member-web-detail-card-head">
-                  <strong>예약 상태 Timeline</strong>
-                  <span className="member-web-status-history-count">{reservation.statusTimeline.length}건</span>
-                </div>
-                <ol className="seller-cancel-timeline">
-                  {reservation.statusTimeline.map((entry, index) => (
-                    <li key={`${entry.at}-${entry.label}-${index}`}>
-                      <time>{dottedDateTime(entry.at)}</time>
-                      <span className={`badge ${entry.tone}`}>{entry.label}</span>
-                      <b>{entry.actor}</b>
-                      {entry.note && <small>{entry.note}</small>}
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            )}
-
-            <ReservationHistorySection history={reservationHistory} />
-          </div>
         </main>
       </div>
 
@@ -1398,6 +943,25 @@ export default function ReservationDetailPage() {
       )}
 
       <ReservationActionDialog dialog={actionDialog} onClose={() => setActionDialog(null)} />
+
+      {settlementMethodOpen && (
+        <SettlementMethodSelectModal
+          reservation={reservation}
+          method={settlementMethod}
+          onMethodChange={setSettlementMethod}
+          onClose={() => setSettlementMethodOpen(false)}
+          onNext={(result) => {
+            setSettlementMethodSelection(result);
+            setSettlementMethodOpen(false);
+            router.push(
+              withReservationViewer(
+                `/reservations/${encodeURIComponent(result.reservationCode)}/settlement?method=${result.method}`,
+                viewer,
+              ),
+            );
+          }}
+        />
+      )}
 
       {cancelModalOpen && (
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="예약 취소 / 환불">

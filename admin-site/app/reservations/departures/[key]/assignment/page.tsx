@@ -91,12 +91,12 @@ export default function OperationAssignmentPage() {
   return (
     <ProductAdminShell
       activeMenu="예약관리"
-      currentChild="예약접수현황"
+      currentChild="예약목록"
       breadcrumb={
         <>
           <span>예약관리</span>
           <b>/</b>
-          <span>예약접수현황</span>
+          <span>예약목록</span>
           <b>/</b>
           <strong>운영배정</strong>
         </>
@@ -596,7 +596,7 @@ function OperationAssignmentBody({
     <>
       <section className="panel guide-ops-hero" aria-labelledby="ops-assign-title">
         <div className="guide-ops-hero-main">
-          <p className="member-web-breadcrumb">예약관리 &gt; 예약접수현황 &gt; 운영배정</p>
+          <p className="member-web-breadcrumb">예약관리 &gt; 예약목록 &gt; 운영배정</p>
           <div className="guide-ops-hero-status">
             <GuideOperationPhaseBadge departure={departure} />
             {!departure.handover && (

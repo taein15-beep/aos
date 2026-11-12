@@ -7,7 +7,7 @@ export type AdminMenuItem = {
 export const ADMIN_MENU: AdminMenuItem[] = [
   { icon: "▦", label: "대시보드" },
   { icon: "◇", label: "상품관리", children: ["상품목록", "공유받은 상품", "상품등록", "일정표관리", "요금관리"] },
-  { icon: "▤", label: "예약관리", children: ["예약접수현황", "예약달력", "운영현황", "가이드 운영"] },
+  { icon: "▤", label: "예약관리", children: ["예약목록", "예약달력", "운영현황", "가이드 운영"] },
   { icon: "₩", label: "결제관리", children: ["결제현황", "취소/환불"] },
   { icon: "⇄", label: "정산관리", children: ["정산현황", "판매점정산", "공급사정산"] },
   {
@@ -78,7 +78,7 @@ export function navigateAdminChild(child: string, act: (message: string) => void
     window.location.assign("/reservations/calendar");
     return;
   }
-  if (child === "예약접수현황") {
+  if (child === "예약목록" || child === "예약접수현황") {
     window.location.assign("/reservations");
     return;
   }
