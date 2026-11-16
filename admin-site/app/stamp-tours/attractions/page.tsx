@@ -21,19 +21,19 @@ const seed:Attraction[]=[
 ];
 
 const TOUR_NAMES: Record<number, string> = {
-  1: "철원 DMZ 평화관광 스탬프투어",
-  2: "양평 자연휴양 산책 스탬프투어",
-  3: "고양 역사문화길 스탬프투어",
-  4: "인천 개항장 시간여행 스탬프투어",
-  5: "파주 평화누리 관광 스탬프투어",
-  6: "춘천 호수길 낭만 스탬프투어",
-  7: "수원 화성 성곽길 스탬프투어",
+  107: "서울사무실 QR테스트입니다",
+  106: "철원 스탬프투어 테스트입니다",
+  105: "테스트3번째 스탬프투어",
+  104: "테스트2번째 스탬프투어",
+  103: "테스트 스탬프투어",
+  102: "철원 힐링투어",
+  101: "철원 DMZ 평화 관광 스탬프 투어",
 };
 const TOUR_LIST = Object.values(TOUR_NAMES);
 
 export default function AttractionListPage(){
   const [collapsed,setCollapsed]=useState(false);const [expanded,setExpanded]=useState(["스탬프투어 관리"]);const [toast,setToast]=useState("");const [profileOpen,setProfileOpen]=useState(false);const [noticeOpen,setNoticeOpen]=useState(false);
-  const [rows,setRows]=useState(seed);const [tour,setTour]=useState("철원 DMZ 평화관광 스탬프투어");const [query,setQuery]=useState("");const [draftQuery,setDraftQuery]=useState("");const [operation,setOperation]=useState("전체");const [draftOperation,setDraftOperation]=useState("전체");const [qr,setQr]=useState("전체");const [draftQr,setDraftQr]=useState("전체");const [required,setRequired]=useState("전체");const [draftRequired,setDraftRequired]=useState("전체");
+  const [rows,setRows]=useState(seed);const [tour,setTour]=useState(TOUR_LIST[0]);const [query,setQuery]=useState("");const [draftQuery,setDraftQuery]=useState("");const [operation,setOperation]=useState("전체");const [draftOperation,setDraftOperation]=useState("전체");const [qr,setQr]=useState("전체");const [draftQr,setDraftQr]=useState("전체");const [required,setRequired]=useState("전체");const [draftRequired,setDraftRequired]=useState("전체");
   const [qrPreview,setQrPreview]=useState<Attraction|null>(null);const [deleteTarget,setDeleteTarget]=useState<Attraction|null>(null);const [draggingId,setDraggingId]=useState<number|null>(null);const [dragTargetId,setDragTargetId]=useState<number|null>(null);
 
   useEffect(() => {

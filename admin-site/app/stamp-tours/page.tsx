@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Plus, QrCode, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Pencil, Plus, QrCode, Search } from "lucide-react";
 import LiveStampTourPanel from "./LiveStampTourPanel";
+import StampTourForm, { type StampTourFormInitial } from "./StampTourForm";
+import StampTourManageModal from "./StampTourManageModal";
 
 const menu = [
   { icon: "▦", label: "대시보드" },
@@ -23,13 +25,13 @@ const menu = [
 ];
 
 const initialTours = [
-  { id: 1, name: "철원 DMZ 평화관광 스탬프투어", region: "강원 철원군", start: "2026-07-01", end: "2026-10-31", spots: 8, condition: "8곳 중 5곳 인증", participants: 1248, finishers: 386, status: "운영 중", visible: true, created: "2026-06-18" },
-  { id: 2, name: "양평 자연휴양 산책 스탬프투어", region: "경기 양평군", start: "2026-09-01", end: "2026-11-30", spots: 10, condition: "10곳 중 7곳 인증", participants: 0, finishers: 0, status: "운영 예정", visible: true, created: "2026-08-12" },
-  { id: 3, name: "고양 역사문화길 스탬프투어", region: "경기 고양시", start: "2026-05-15", end: "2026-09-30", spots: 6, condition: "전체 관광지 인증", participants: 842, finishers: 274, status: "운영 중", visible: true, created: "2026-05-02" },
-  { id: 4, name: "인천 개항장 시간여행 스탬프투어", region: "인천 중구", start: "2026-03-01", end: "2026-08-15", spots: 7, condition: "7곳 중 5곳 인증", participants: 1560, finishers: 621, status: "운영 종료", visible: false, created: "2026-02-14" },
-  { id: 5, name: "파주 평화누리 관광 스탬프투어", region: "경기 파주시", start: "2026-08-01", end: "2026-12-20", spots: 9, condition: "9곳 중 6곳 인증", participants: 397, finishers: 81, status: "일시중지", visible: false, created: "2026-07-21" },
-  { id: 6, name: "춘천 호수길 낭만 스탬프투어", region: "강원 춘천시", start: "2026-04-10", end: "2026-10-10", spots: 8, condition: "8곳 중 6곳 인증", participants: 963, finishers: 305, status: "운영 중", visible: true, created: "2026-03-28" },
-  { id: 7, name: "수원 화성 성곽길 스탬프투어", region: "경기 수원시", start: "2026-10-01", end: "2027-02-28", spots: 12, condition: "12곳 중 8곳 인증", participants: 0, finishers: 0, status: "운영 예정", visible: false, created: "2026-08-17" },
+  { id: 107, code: "ST-2026-0107", name: "서울사무실 QR테스트입니다", start: "2026-11-11", end: "2026-11-30", spots: 6, condition: "6곳 중 5곳 이상", participants: 3, finishers: 0, status: "운영 중", visible: true, created: "2026-11-11" },
+  { id: 106, code: "ST-2026-0106", name: "철원 스탬프투어 테스트입니다", start: "2026-11-11", end: "2026-11-30", spots: 10, condition: "10곳 중 5곳 이상", participants: 0, finishers: 0, status: "운영 중", visible: true, created: "2026-11-11" },
+  { id: 105, code: "ST-2026-0105", name: "테스트3번째 스탬프투어", start: "2026-11-06", end: "2026-11-30", spots: 6, condition: "6곳 전체", participants: 1, finishers: 0, status: "운영 중", visible: true, created: "2026-11-06" },
+  { id: 104, code: "ST-2026-0104", name: "테스트2번째 스탬프투어", start: "2026-11-03", end: "2026-11-30", spots: 6, condition: "6곳 중 5곳 이상", participants: 4, finishers: 2, status: "운영 중", visible: true, created: "2026-11-03" },
+  { id: 103, code: "ST-2026-0103", name: "테스트 스탬프투어", start: "2026-11-02", end: "2026-11-30", spots: 8, condition: "8곳 전체", participants: 7, finishers: 6, status: "운영 중", visible: true, created: "2026-11-02" },
+  { id: 102, code: "ST-2026-0102", name: "철원 힐링투어", start: "2026-11-02", end: "2026-12-31", spots: 8, condition: "8곳 중 8곳 이상", participants: 1, finishers: 0, status: "운영 중", visible: true, created: "2026-11-02" },
+  { id: 101, code: "ST-2026-0101", name: "철원 DMZ 평화 관광 스탬프 투어", start: "2026-09-01", end: "2026-09-30", spots: 6, condition: "6곳 중 1곳 이상", participants: 8, finishers: 5, status: "운영 중", visible: false, created: "2026-08-24" },
 ];
 
 type Tour = (typeof initialTours)[number];
@@ -39,7 +41,7 @@ type StatusFilter = "전체 상태" | "운영 중" | "운영 중지" | "예정";
 const fmt = (n: number) => n.toLocaleString("ko-KR");
 
 function tourCode(tour: Tour) {
-  return `ST-${tour.created.slice(0, 4)}-${String(tour.id).padStart(4, "0")}`;
+  return tour.code;
 }
 
 function isStoppedStatus(status: string) {
@@ -52,12 +54,6 @@ function displayStatus(status: string) {
   return status;
 }
 
-function statusTextClass(status: string) {
-  if (status === "운영 중") return "stamp-status-live";
-  if (status === "운영 예정") return "stamp-status-scheduled";
-  return "stamp-status-stopped";
-}
-
 function matchesStatusFilter(status: string, filter: StatusFilter) {
   if (filter === "전체 상태") return true;
   if (filter === "운영 중") return status === "운영 중";
@@ -66,19 +62,45 @@ function matchesStatusFilter(status: string, filter: StatusFilter) {
 }
 
 function formatCondition(condition: string, spots: number) {
+  if (/곳\s*전체/.test(condition)) return spots ? `${spots}곳 전체` : condition;
+  if (condition.includes("전체") && spots) return `${spots}곳 전체`;
   const match = condition.match(/(\d+)곳\s*중\s*(\d+)곳/);
-  if (match) return `${match[2]}/${match[1]}`;
-  if (condition.includes("전체") && spots) return `${spots}/${spots}`;
+  if (match) return `${match[1]}곳 중 ${match[2]}곳 이상`;
   return condition || "-";
 }
 
 function formatCount(value: number) {
-  return value ? fmt(value) : "-";
+  return fmt(value);
 }
 
 function formatRate(participants: number, finishers: number) {
   if (!participants) return "-";
-  return `${((finishers / participants) * 100).toFixed(1)}%`;
+  return `${Math.round((finishers / participants) * 100)}%`;
+}
+
+const sampleTourImage =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="96" viewBox="0 0 144 96"><rect width="144" height="96" fill="#7eb6d6"/><rect y="62" width="144" height="34" fill="#6f8f55"/><rect x="92" y="28" width="10" height="38" fill="#e5e7eb"/><polygon points="84,32 110,32 97,14" fill="#d1d5db"/><rect x="95" y="40" width="4" height="8" fill="#6b7280"/><circle cx="28" cy="22" r="8" fill="#f8fafc"/></svg>`,
+  );
+
+function editInitial(tour: Tour, isPublic: boolean): StampTourFormInitial {
+  const counted = tour.condition.match(/(\d+)곳\s*중\s*(\d+)곳/);
+  const all = tour.condition.includes("전체");
+  const extras: Record<number, StampTourFormInitial> = {
+    107: { department: "서울사무실", manager: "주우석", intro: "테스트", detail: "테스트", imageUrl: sampleTourImage },
+  };
+  return {
+    code: tour.code,
+    name: tour.name,
+    startDate: tour.start,
+    endDate: tour.end,
+    status: tour.status,
+    isPublic,
+    completion: !all && counted ? "count" : "all",
+    requiredCount: !all && counted ? counted[2] : "",
+    ...extras[tour.id],
+  };
 }
 
 export default function StampTourListPage() {
@@ -101,11 +123,29 @@ export default function StampTourListPage() {
   const [visibleMap, setVisibleMap] = useState(Object.fromEntries(initialTours.map((t) => [t.id, t.visible])));
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
+  const [editingTour, setEditingTour] = useState<Tour | null>(null);
+  const [managingTour, setManagingTour] = useState<Tour | null>(null);
 
   const act = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(""), 2200);
   };
+
+  useEffect(() => {
+    if (!editingTour && !managingTour) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (managingTour) setManagingTour(null);
+      else setEditingTour(null);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [editingTour, managingTour]);
 
   const filtered = useMemo(
     () =>
@@ -375,7 +415,7 @@ export default function StampTourListPage() {
               <table className="stamp-list-table">
                 <thead>
                   <tr>
-                    {["No", "투어명", "운영기간", "관광지수", "완주조건", "참여자", "완주자", "완주율", "운영상태", "공개상태", "등록일", "관광지관리", "경품관리"].map(
+                    {["No", "투어명", "운영기간", "관광지수", "완주조건", "참여자", "완주자", "완주율", "운영상태", "공개상태", "등록일", "관광지,경품 관리"].map(
                       (title) => (
                         <th key={title}>{title}</th>
                       ),
@@ -384,15 +424,15 @@ export default function StampTourListPage() {
                 </thead>
                 <tbody>
                   {rows.length ? (
-                    rows.map((tour, index) => (
+                    rows.map((tour) => (
                       <tr key={tour.id}>
-                        <td className="center">{(page - 1) * pageSize + index + 1}</td>
+                        <td className="center stamp-list-no">{tour.id}</td>
                         <td className="stamp-list-name">
                           <a
-                            href={`/stamp-tours/${tour.id}`}
+                            href={`/stamp-tours/${tour.id}/edit`}
                             onClick={(event) => {
                               event.preventDefault();
-                              window.location.assign(`/stamp-tours/${tour.id}`);
+                              setEditingTour(tour);
                             }}
                           >
                             {tour.name}
@@ -409,7 +449,7 @@ export default function StampTourListPage() {
                         <td className="center">{formatCount(tour.finishers)}</td>
                         <td className="center">{formatRate(tour.participants, tour.finishers)}</td>
                         <td className="center">
-                          <span className={`stamp-list-status ${statusTextClass(tour.status)}`}>{displayStatus(tour.status)}</span>
+                          <span className="stamp-list-status">{displayStatus(tour.status)}</span>
                         </td>
                         <td className="center">
                           <button
@@ -431,25 +471,16 @@ export default function StampTourListPage() {
                           <button
                             type="button"
                             className="stamp-list-outline-btn"
-                            onClick={() => window.location.assign(`/stamp-tours/attractions?tourId=${tour.id}`)}
+                            onClick={() => setManagingTour(tour)}
                           >
-                            관광지관리
-                          </button>
-                        </td>
-                        <td className="center">
-                          <button
-                            type="button"
-                            className="stamp-list-outline-btn"
-                            onClick={() => window.location.assign(`/stamp-tours/prizes?tourId=${tour.id}`)}
-                          >
-                            경품관리
+                            관광지,경품 관리
                           </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={13}>
+                      <td colSpan={12}>
                         <div className="stamp-list-empty">
                           <QrCode size={34} strokeWidth={1.4} />
                           <strong>조건에 맞는 스탬프투어가 없습니다.</strong>
@@ -461,31 +492,63 @@ export default function StampTourListPage() {
                 </tbody>
               </table>
             </div>
-            <div className="stamp-list-pagination">
-              <div className="pagination">
-                <button type="button" disabled={page === 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
-                  ‹
-                </button>
-                {Array.from({ length: pages }, (_, index) => index + 1).map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    className={page === pageNumber ? "active" : ""}
-                    onClick={() => setPage(pageNumber)}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
-                <button type="button" disabled={page === pages} onClick={() => setPage((value) => Math.min(pages, value + 1))}>
-                  ›
-                </button>
-              </div>
-            </div>
           </section>
+          <div className="stamp-list-pagination">
+            <div className="pagination">
+              {Array.from({ length: pages }, (_, index) => index + 1).map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  className={page === pageNumber ? "active" : ""}
+                  onClick={() => setPage(pageNumber)}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <footer>© 2026 AOS Travel ERP · AviaNext</footer>
         </main>
       </div>
+
+      {editingTour && (
+        <div className="stamp-edit-modal-layer" role="dialog" aria-modal="true" aria-label="스탬프투어 수정">
+          <button type="button" className="stamp-edit-modal-backdrop" aria-label="닫기" onClick={() => setEditingTour(null)} />
+          <div className="stamp-edit-modal">
+            <header className="stamp-edit-modal-head">
+              <strong>
+                <Pencil size={16} />
+                스탬프투어 수정
+              </strong>
+              <button type="button" onClick={() => setEditingTour(null)} aria-label="닫기">
+                ×
+              </button>
+            </header>
+            <div className="stamp-edit-modal-scroll">
+              <StampTourForm
+                key={editingTour.id}
+                mode="edit"
+                embedded
+                initial={editInitial(editingTour, visibleMap[editingTour.id])}
+                onClose={(message) => {
+                  setEditingTour(null);
+                  if (message) act(message);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {managingTour && (
+        <StampTourManageModal
+          key={managingTour.id}
+          tour={managingTour}
+          isPublic={visibleMap[managingTour.id]}
+          onClose={() => setManagingTour(null)}
+        />
+      )}
 
       {toast && (
         <div className="toast">

@@ -1,76 +1,561 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import LiveStampTourPanel from "../LiveStampTourPanel";
-import {
-  AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Download, Gift,
-  QrCode, RotateCcw, Search, ShieldAlert,
-  Trophy, UserCheck, Users,
-} from "lucide-react";
+import { AlertTriangle, ClipboardList, Download, QrCode, Search } from "lucide-react";
 
-const menu=[
-  {icon:"▦",label:"대시보드"},{icon:"◇",label:"상품관리",children:["상품목록","상품등록","일정표관리","요금관리"]},{icon:"▤",label:"예약관리",children:["예약접수현황","예약달력"]},{icon:"₩",label:"결제관리",children:["결제현황","취소/환불"]},{icon:"⇄",label:"정산관리",children:["정산현황","판매점정산","공급사정산"]},{icon:"♙",label:"회원관리",children:["웹회원","제휴여행사","판매점관리","관리자/직원","그룹/권한"]},{icon:"⌂",label:"거래처관리"},{icon:"qr",label:"스탬프투어 관리",children:["스탬프투어 목록","관광지 관리","경품관리","참여자·진행현황","인증 이력","완주·경품 관리","통계"]},{icon:"▥",label:"통계관리"},{icon:"◎",label:"운영관리",children:["팝업관리","알림관리","알림톡"]},{icon:"⚙",label:"시스템설정",children:["홈페이지설정","결제설정","기본설정"]},
+const menu = [
+  { icon: "▦", label: "대시보드" },
+  { icon: "◇", label: "상품관리", children: ["상품목록", "상품등록", "일정표관리", "요금관리"] },
+  { icon: "▤", label: "예약관리", children: ["예약접수현황", "예약달력"] },
+  { icon: "₩", label: "결제관리", children: ["결제현황", "취소/환불"] },
+  { icon: "⇄", label: "정산관리", children: ["정산현황", "판매점정산", "공급사정산"] },
+  { icon: "♙", label: "회원관리", children: ["웹회원", "제휴여행사", "판매점관리", "관리자/직원", "그룹/권한"] },
+  { icon: "⌂", label: "거래처관리" },
+  { icon: "qr", label: "스탬프투어 관리", children: ["스탬프투어 목록", "관광지 관리", "경품관리", "참여자·진행현황", "인증 이력", "완주·경품 관리", "통계"] },
+  { icon: "▥", label: "통계관리" },
+  { icon: "◎", label: "운영관리", children: ["팝업관리", "알림관리", "알림톡"] },
+  { icon: "⚙", label: "시스템설정", children: ["홈페이지설정", "결제설정", "기본설정"] },
 ];
 
-type ProgressStatus="참여 중"|"완주"|"중도 이탈";
-type RewardStatus="신청 완료"|"미신청"|"대상 아님"|"지급 완료";
-type Participant={
-  id:number;number:string;name:string;phone:string;joined:string;recent:string;
-  authenticated:number;total:number;status:ProgressStatus;completed:string;
-  reward:RewardStatus;anomaly:boolean;anomalyText?:string;
+type ProgressStatus = "진행중" | "완주";
+type RewardStatus = "-" | "미신청";
+type SearchField = "name" | "number" | "phone";
+type Participant = {
+  id: number;
+  number: string;
+  name: string;
+  phone: string;
+  joined: string;
+  recent: string;
+  spots: number;
+  spotTotal: number;
+  rate: number;
+  rateCurrent: number;
+  rateTotal: number;
+  status: ProgressStatus;
+  completed: string;
+  reward: RewardStatus;
+  anomaly: boolean;
 };
 
-const participants:Participant[]=[
-  {id:1,number:"STP-20260815-01248",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.15 09:58",recent:"2026.08.17 15:36",authenticated:5,total:8,status:"완주",completed:"2026.08.17",reward:"신청 완료",anomaly:false},
-  {id:2,number:"PT-2026-01247",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.20 09:05",recent:"2026.08.20 13:57",authenticated:3,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
-  {id:3,number:"PT-2026-01246",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.20 08:51",recent:"2026.08.20 12:16",authenticated:4,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:true,anomalyText:"짧은 시간 내 원거리 인증"},
-  {id:4,number:"PT-2026-01245",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.19 16:32",recent:"2026.08.20 11:48",authenticated:6,total:8,status:"완주",completed:"2026.08.20",reward:"지급 완료",anomaly:false},
-  {id:5,number:"PT-2026-01244",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.19 15:10",recent:"2026.08.19 17:22",authenticated:2,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
-  {id:6,number:"PT-2026-01243",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.19 13:44",recent:"2026.08.19 16:05",authenticated:5,total:8,status:"완주",completed:"2026.08.19",reward:"미신청",anomaly:false},
-  {id:7,number:"PT-2026-01242",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.18 10:28",recent:"2026.08.18 10:31",authenticated:2,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:true,anomalyText:"동일 기기 반복 인증 의심"},
-  {id:8,number:"PT-2026-01241",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.17 14:02",recent:"2026.08.17 16:33",authenticated:1,total:8,status:"중도 이탈",completed:"-",reward:"대상 아님",anomaly:false},
-  {id:9,number:"PT-2026-01240",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.17 11:19",recent:"2026.08.19 15:20",authenticated:7,total:8,status:"완주",completed:"2026.08.19",reward:"신청 완료",anomaly:false},
-  {id:10,number:"PT-2026-01239",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.16 09:42",recent:"2026.08.18 14:09",authenticated:3,total:8,status:"참여 중",completed:"-",reward:"대상 아님",anomaly:false},
-  {id:11,number:"PT-2026-01238",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.15 13:15",recent:"2026.08.19 17:41",authenticated:5,total:8,status:"완주",completed:"2026.08.19",reward:"신청 완료",anomaly:true,anomalyText:"GPS 반경 이탈 인증"},
-  {id:12,number:"PT-2026-01237",name:"샘플 참여자",phone:"010-0000-0000",joined:"2026.08.14 10:06",recent:"2026.08.16 13:12",authenticated:2,total:8,status:"중도 이탈",completed:"-",reward:"대상 아님",anomaly:false},
+const participants: Participant[] = [
+  { id: 1, number: "PT-2026-124", name: "김병구", phone: "010-8879-0079", joined: "2026.11.13 09:24", recent: "2026.11.13 09:24", spots: 1, spotTotal: 6, rate: 20, rateCurrent: 1, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
+  { id: 2, number: "PT-2026-123", name: "김종환", phone: "010-8906-3927", joined: "2026.11.13 09:24", recent: "2026.11.13 09:24", spots: 1, spotTotal: 6, rate: 20, rateCurrent: 1, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
+  { id: 3, number: "PT-2026-122", name: "주우석테스트 1111", phone: "010-6606-3408", joined: "2026.11.11 14:11", recent: "2026.11.13 09:25", spots: 2, spotTotal: 6, rate: 40, rateCurrent: 2, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: true },
+  { id: 4, number: "PT-2026-121", name: "주우석테스트 1106", phone: "010-6606-3408", joined: "2026.11.06 11:07", recent: "2026.11.13 11:55", spots: 4, spotTotal: 6, rate: 67, rateCurrent: 4, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
+  { id: 5, number: "PT-2026-120", name: "주우석테스트 1105", phone: "010-6606-3408", joined: "2026.11.05 14:04", recent: "2026.11.05 14:07", spots: 8, spotTotal: 6, rate: 100, rateCurrent: 8, rateTotal: 8, status: "진행중", completed: "-", reward: "-", anomaly: true },
+  { id: 6, number: "PT-2026-119", name: "쭈", phone: "010-6606-3408", joined: "2026.11.05 13:48", recent: "2026.11.05 13:48", spots: 1, spotTotal: 6, rate: 100, rateCurrent: 1, rateTotal: 1, status: "진행중", completed: "-", reward: "-", anomaly: false },
+  { id: 7, number: "PT-2026-118", name: "장봉선", phone: "010-2694-9511", joined: "2026.11.05 11:16", recent: "2026.11.05 11:18", spots: 2, spotTotal: 6, rate: 40, rateCurrent: 2, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
+  { id: 8, number: "PT-2026-117", name: "이재돈", phone: "010-1111-2222", joined: "2026.11.04 16:55", recent: "2026.11.04 16:55", spots: 1, spotTotal: 6, rate: 20, rateCurrent: 1, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
+  { id: 9, number: "PT-2026-116", name: "유미진", phone: "010-8007-6371", joined: "2026.11.04 16:50", recent: "2026.11.04 16:57", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.11.04 16:58", reward: "미신청", anomaly: false },
+  { id: 10, number: "PT-2026-115", name: "이재돈", phone: "010-1111-2222", joined: "2026.11.04 16:45", recent: "2026.11.04 16:55", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.11.04 16:55", reward: "미신청", anomaly: false },
+  { id: 11, number: "PT-2026-114", name: "박서연", phone: "010-2201-1182", joined: "2026.11.03 15:20", recent: "2026.11.03 18:02", spots: 2, spotTotal: 6, rate: 40, rateCurrent: 2, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: true },
+  { id: 12, number: "PT-2026-113", name: "최민준", phone: "010-3340-2201", joined: "2026.11.03 11:08", recent: "2026.11.03 11:40", spots: 1, spotTotal: 6, rate: 20, rateCurrent: 1, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: true },
+  { id: 13, number: "PT-2026-112", name: "정하늘", phone: "010-4412-7780", joined: "2026.11.02 17:33", recent: "2026.11.03 09:12", spots: 3, spotTotal: 6, rate: 60, rateCurrent: 3, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
+  { id: 14, number: "PT-2026-111", name: "한지민", phone: "010-5520-4419", joined: "2026.11.02 10:14", recent: "2026.11.02 16:48", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.11.02 16:48", reward: "-", anomaly: false },
+  { id: 15, number: "PT-2026-110", name: "오세훈", phone: "010-6631-2290", joined: "2026.11.01 13:22", recent: "2026.11.01 18:05", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.11.01 18:05", reward: "-", anomaly: false },
+  { id: 16, number: "PT-2026-109", name: "윤가은", phone: "010-7742-3308", joined: "2026.10.31 09:41", recent: "2026.10.31 15:16", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.31 15:16", reward: "-", anomaly: false },
+  { id: 17, number: "PT-2026-108", name: "서지호", phone: "010-8853-6612", joined: "2026.10.30 14:05", recent: "2026.10.30 17:44", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.10.30 17:44", reward: "-", anomaly: false },
+  { id: 18, number: "PT-2026-107", name: "배수아", phone: "010-9964-1023", joined: "2026.10.29 11:28", recent: "2026.10.29 16:09", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.29 16:09", reward: "-", anomaly: false },
+  { id: 19, number: "PT-2026-106", name: "문태경", phone: "010-1025-7784", joined: "2026.10.28 10:16", recent: "2026.10.28 14:52", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.10.28 14:52", reward: "-", anomaly: false },
+  { id: 20, number: "PT-2026-105", name: "임도윤", phone: "010-2136-8895", joined: "2026.10.27 15:37", recent: "2026.10.27 18:21", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.27 18:21", reward: "-", anomaly: false },
+  { id: 21, number: "PT-2026-104", name: "조은별", phone: "010-3247-9906", joined: "2026.10.26 09:03", recent: "2026.10.26 13:40", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.10.26 13:40", reward: "-", anomaly: false },
+  { id: 22, number: "PT-2026-103", name: "남궁현", phone: "010-4358-1017", joined: "2026.10.25 12:19", recent: "2026.10.25 16:33", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.25 16:33", reward: "-", anomaly: false },
+  { id: 23, number: "PT-2026-102", name: "황보민", phone: "010-5469-2128", joined: "2026.10.24 08:55", recent: "2026.10.24 11:27", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.10.24 11:27", reward: "-", anomaly: false },
+  { id: 24, number: "PT-2026-101", name: "구자성", phone: "010-6570-3239", joined: "2026.10.23 17:08", recent: "2026.10.23 19:14", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.23 19:14", reward: "-", anomaly: false },
 ];
 
-const maskPhone=(phone:string)=>phone.replace(/(\d{3})-(\d{4})-(\d{4})/,"$1-****-$3");
+const joinedKey = (value: string) => value.slice(0, 10).replaceAll(".", "-");
+const dayLabel = (value: string) => value.slice(0, 10);
 
-export default function ParticipantProgressPage(){
-  const [collapsed,setCollapsed]=useState(false);const [expanded,setExpanded]=useState(["스탬프투어 관리"]);const [toast,setToast]=useState("");const [profileOpen,setProfileOpen]=useState(false);const [noticeOpen,setNoticeOpen]=useState(false);
-  const [tour,setTour]=useState("철원 DMZ 평화관광 스탬프투어");const [page,setPage]=useState(1);const [sort,setSort]=useState("최신 참여순");
-  const [name,setName]=useState("");const [phone,setPhone]=useState("");const [from,setFrom]=useState("");const [to,setTo]=useState("");const [status,setStatus]=useState("전체");const [reward,setReward]=useState("전체");const [anomaly,setAnomaly]=useState("전체");
-  const [applied,setApplied]=useState({name:"",phone:"",from:"",to:"",status:"전체",reward:"전체",anomaly:"전체"});
-  const act=(message:string)=>{if(message.startsWith("샘플 참여자 참여자 상세")){window.location.assign("/stamp-tours/participants/1");return}setToast(message);window.setTimeout(()=>setToast(""),2300)};
-  const toggleMenu=(label:string)=>setExpanded(v=>v.includes(label)?v.filter(x=>x!==label):[...v,label]);
-  const goChild=(child:string)=>child==="스탬프투어 목록"?window.location.assign("/stamp-tours"):child==="관광지 관리"?window.location.assign("/stamp-tours/attractions"):child==="경품관리"?window.location.assign("/stamp-tours/prizes"):child==="참여자·진행현황"?window.location.assign("/stamp-tours/participants"):child==="인증 이력"?window.location.assign("/stamp-tours/verifications"):child==="완주·경품 관리"?window.location.assign("/stamp-tours/rewards"):child==="통계"?window.location.assign("/stamp-tours/statistics"):child==="상품목록"?window.location.assign("/products"):act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
-  const filtered=useMemo(()=>{
-    const result=participants.filter(row=>{
-      const joined=row.joined.slice(0,10).replaceAll(".","-");
-      return (!applied.name||row.name.includes(applied.name))&&(!applied.phone||row.phone.replaceAll("-","").includes(applied.phone.replaceAll("-","")))&&(!applied.from||joined>=applied.from)&&(!applied.to||joined<=applied.to)&&(applied.status==="전체"||row.status===applied.status)&&(applied.reward==="전체"||row.reward===applied.reward)&&(applied.anomaly==="전체"||(applied.anomaly==="확인 필요"?row.anomaly:!row.anomaly));
+const bookPrizes = [
+  { name: "기프티콘 이용권", goal: 3, grade: "3등급", method: "현장수령 · 테스트 관광지1", kind: "gift" },
+  { name: "철원오대쌀 4Kg", goal: 4, grade: "2등급", method: "택배", kind: "rice" },
+  { name: "테스트 경품1", goal: 5, grade: "1등급", method: "현장수령 · 테스트 관광지2", kind: "box" },
+] as const;
+
+function StampBookModal({ row, onClose, onComplete }: { row: Participant; onClose: () => void; onComplete: () => void }) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  const collected = row.rateCurrent;
+  const goal = row.rateTotal || 1;
+  const visited = Math.min(row.spots, row.spotTotal);
+  const stamps = Array.from({ length: row.spotTotal }, (_, index) => {
+    const done = index < visited;
+    const date = index === 0 ? dayLabel(row.joined) : dayLabel(row.recent);
+    return { name: `테스트 관광지${index + 1}`, done, date };
+  });
+  const reached = [...bookPrizes].reverse().find((prize) => collected >= prize.goal);
+  const next = bookPrizes.find((prize) => collected < prize.goal);
+  const gradeText = reached
+    ? next
+      ? `현재 ${reached.grade} · ${next.goal}곳 인증 시 ${next.grade}`
+      : `현재 ${reached.grade}입니다`
+    : `아직 경품 등급이 없어요 · ${next?.goal ?? 3}곳 인증 시 ${next?.grade ?? "3등급"}`;
+
+  return (
+    <div className="sb-layer" role="presentation" onClick={onClose}>
+      <section className="sb-modal" role="dialog" aria-modal="true" aria-labelledby="stamp-book-title" onClick={(event) => event.stopPropagation()}>
+        <header className="sb-head">
+          <strong id="stamp-book-title">
+            <ClipboardList size={18} />
+            인증 결과 화면
+          </strong>
+          <button type="button" onClick={onClose} aria-label="닫기">
+            ×
+          </button>
+        </header>
+        <div className="sb-scroll">
+          <section className="sb-card sb-hero">
+            <small>STAMP BOOK</small>
+            <h2>스탬프북</h2>
+            <p>나의 여행 기록 · 수집한 스탬프를 확인하세요.</p>
+          </section>
+          <section className="sb-card sb-info">
+            <div>
+              <span>스탬프투어명</span>
+              <b>서울사무실 QR테스트입니다</b>
+            </div>
+            <div>
+              <span>참가번호</span>
+              <b>{row.number}</b>
+            </div>
+            <div>
+              <span>참여자</span>
+              <b>{row.name}</b>
+            </div>
+            <div>
+              <span>참여일</span>
+              <b>{dayLabel(row.joined)}</b>
+            </div>
+          </section>
+          <section className="sb-card sb-progress">
+            <div>
+              <b>
+                {collected} <span>/ {goal}</span>
+              </b>
+              <small>{collected >= goal ? "스탬프를 모두 모았어요" : "스탬프를 모으고 있어요"}</small>
+            </div>
+            <i>
+              <em style={{ width: `${Math.min(100, Math.round((collected / goal) * 100))}%` }} />
+            </i>
+          </section>
+          <section className="sb-card">
+            <div className="sb-stamps">
+              {stamps.map((stamp) => (
+                <article key={stamp.name} className={stamp.done ? "done" : "wait"}>
+                  <i>
+                    테{stamp.done && <em>OK</em>}
+                  </i>
+                  <b>{stamp.name}</b>
+                  <span>{stamp.done ? `${stamp.date} 인증` : "미방문"}</span>
+                </article>
+              ))}
+            </div>
+          </section>
+          <section className="sb-card sb-reward">
+            <h3>경품 등급</h3>
+            <p className="sb-grade">{gradeText}</p>
+            <div className="sb-prizes">
+              {bookPrizes.map((prize) => (
+                <article key={prize.name}>
+                  <div className={`sb-thumb ${prize.kind}`}>
+                    {prize.kind === "gift" && <span>14일권</span>}
+                    {prize.kind === "rice" && <span>오대쌀 4Kg</span>}
+                    {prize.kind === "box" && <span>경품</span>}
+                    <em>{prize.grade}</em>
+                  </div>
+                  <b>{prize.name}</b>
+                  <small>
+                    {prize.goal}곳 인증 · {Math.max(prize.goal - collected, 0)}곳 남음
+                  </small>
+                  <span>{prize.method}</span>
+                </article>
+              ))}
+            </div>
+            <button type="button" className="sb-submit" onClick={onComplete}>
+              경품 선택 완료하기
+            </button>
+            <p className="sb-hint">QR코드로 관광지를 인증하면 스탬프가 채워집니다.</p>
+          </section>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default function ParticipantProgressPage() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [expanded, setExpanded] = useState(["스탬프투어 관리"]);
+  const [toast, setToast] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [noticeOpen, setNoticeOpen] = useState(false);
+  const [tour, setTour] = useState("철원 DMZ 평화관광 스탬프투어");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [sort, setSort] = useState("최근 참여순");
+  const [searchField, setSearchField] = useState<SearchField>("name");
+  const [keyword, setKeyword] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [status, setStatus] = useState("전체");
+  const [anomaly, setAnomaly] = useState("전체");
+  const [applied, setApplied] = useState({ keyword: "", field: "name" as SearchField, from: "", to: "", status: "전체", anomaly: "전체" });
+  const [book, setBook] = useState<Participant | null>(null);
+
+  const act = (message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2300);
+  };
+  const toggleMenu = (label: string) => setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
+  const goChild = (child: string) =>
+    child === "스탬프투어 목록"
+      ? window.location.assign("/stamp-tours")
+      : child === "관광지 관리"
+        ? window.location.assign("/stamp-tours/attractions")
+        : child === "경품관리"
+          ? window.location.assign("/stamp-tours/prizes")
+          : child === "참여자·진행현황"
+            ? window.location.assign("/stamp-tours/participants")
+            : child === "인증 이력"
+              ? window.location.assign("/stamp-tours/verifications")
+              : child === "완주·경품 관리"
+                ? window.location.assign("/stamp-tours/rewards")
+                : child === "통계"
+                  ? window.location.assign("/stamp-tours/statistics")
+                  : child === "상품목록"
+                    ? window.location.assign("/products")
+                    : act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
+
+  const filtered = useMemo(() => {
+    const result = participants.filter((row) => {
+      const joined = joinedKey(row.joined);
+      const text = applied.field === "number" ? row.number : applied.field === "phone" ? row.phone : row.name;
+      return (
+        (!applied.keyword || text.replaceAll("-", "").includes(applied.keyword.replaceAll("-", ""))) &&
+        (!applied.from || joined >= applied.from) &&
+        (!applied.to || joined <= applied.to) &&
+        (applied.status === "전체" || row.status === applied.status) &&
+        (applied.anomaly === "전체" || (applied.anomaly === "이상" ? row.anomaly : !row.anomaly))
+      );
     });
-    return [...result].sort((a,b)=>sort==="진행률 높은순"?b.authenticated/b.total-a.authenticated/a.total:sort==="최근 인증순"?b.recent.localeCompare(a.recent):sort==="이름순"?a.name.localeCompare(b.name):b.joined.localeCompare(a.joined));
-  },[applied,sort]);
-  const pageSize=5,totalPages=Math.max(1,Math.ceil(filtered.length/pageSize)),visible=filtered.slice((page-1)*pageSize,page*pageSize);
-  const search=()=>{setApplied({name:name.trim(),phone:phone.trim(),from,to,status,reward,anomaly});setPage(1);act("검색 조건을 적용했습니다.")};
-  const reset=()=>{setName("");setPhone("");setFrom("");setTo("");setStatus("전체");setReward("전체");setAnomaly("전체");setApplied({name:"",phone:"",from:"",to:"",status:"전체",reward:"전체",anomaly:"전체"});setPage(1);act("검색 조건을 초기화했습니다.")};
-  const downloadExcel=()=>{const header=["참여번호","참여자명","휴대전화번호","최초 참여일","최근 인증일","인증 관광지","진행률","참여상태","완주일","경품상태","이상 여부"];const rows=filtered.map(row=>[row.number,row.name,maskPhone(row.phone),row.joined,row.recent,`${row.authenticated}/${row.total}곳`,`${Math.round(row.authenticated/row.total*100)}%`,row.status,row.completed,row.reward,row.anomaly?"확인 필요":"정상"]);const csv="\uFEFF"+[header,...rows].map(row=>row.map(value=>`"${String(value).replaceAll('"','""')}"`).join(",")).join("\n");const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));const link=document.createElement("a");link.href=url;link.download="철원-DMZ-스탬프투어-참여자현황.csv";link.click();URL.revokeObjectURL(url);act("참여자 현황 엑셀 파일을 다운로드했습니다.")};
-  const summary=[["전체 참여자","1,248명",Users,"blue"],["오늘 신규 참여","37명",UserCheck,"indigo"],["참여 중","807명",QrCode,"cyan"],["완주","386명",Trophy,"green"],["경품 신청","318명",Gift,"purple"],["확인 필요","12건",ShieldAlert,"red"]] as const;
+    return [...result].sort((a, b) =>
+      sort === "진행률 높은순" ? b.rate - a.rate : sort === "이름순" ? a.name.localeCompare(b.name, "ko") : sort === "최초 참여순" ? a.joined.localeCompare(b.joined) : b.joined.localeCompare(a.joined),
+    );
+  }, [applied, sort]);
 
-  return <div className={`app-shell ${collapsed?"is-collapsed":""}`}><aside className="sidebar"><div className="brand"><div className="brand-mark">A</div><div className="brand-copy"><strong>AOS</strong><span>TRAVEL ERP</span></div><button className="collapse" onClick={()=>setCollapsed(!collapsed)} aria-label="사이드바 접기">‹</button></div><nav aria-label="관리자 메뉴">{menu.map(item=><div className="nav-group" key={item.label}><button className={`nav-item ${item.label==="스탬프투어 관리"?"active":""}`} onClick={()=>item.label==="대시보드"?window.location.assign("/"):item.children?toggleMenu(item.label):act(`${item.label} 화면으로 이동합니다.`)}><span className="nav-icon">{item.icon==="qr"?<QrCode size={16} strokeWidth={1.8}/>:item.icon}</span><span className="nav-label">{item.label}</span>{item.children&&<span className={`chevron ${expanded.includes(item.label)?"open":""}`}>⌄</span>}</button>{item.children&&expanded.includes(item.label)&&!collapsed&&<div className="subnav">{item.children.map(child=><button key={child} className={child==="참여자·진행현황"?"current":""} onClick={()=>goChild(child)}>{child}</button>)}</div>}</div>)}</nav><div className="sidebar-help"><span className="nav-icon">?</span><div><strong>업무지원센터</strong><p>평일 09:00–18:00</p></div></div></aside>
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const summary = [
+    ["전체참여자", `${participants.length}명`, "blue"],
+    ["오늘참여", `${participants.filter((row) => joinedKey(row.joined) === "2026-11-16").length}건`, "ink"],
+    ["진행중", `${participants.filter((row) => row.status === "진행중").length}건`, "orange"],
+    ["완주", `${participants.filter((row) => row.status === "완주").length}건`, "green"],
+    ["경품신청", `${participants.filter((row) => row.reward === "미신청").length}건`, "amber"],
+    ["이상탐지", `${participants.filter((row) => row.anomaly).length}건`, "red"],
+  ] as const;
 
-    <div className="workspace"><header className="topbar"><div className="breadcrumb"><span>스탬프투어 관리</span><b>/</b><strong>참여자·진행현황</strong></div><div className="top-actions"><label className="search"><span>⌕</span><input aria-label="빠른 검색" placeholder="예약번호, 고객명, 상품명 검색"/><kbd>⌘ K</kbd></label><button className="icon-btn" onClick={()=>act("업무지원센터를 엽니다.")}>?</button><div className="dropdown-wrap"><button className="icon-btn notice" aria-label="알림" onClick={()=>{setNoticeOpen(!noticeOpen);setProfileOpen(false)}}>♢<i>5</i></button>{noticeOpen&&<div className="dropdown notice-menu"><div className="drop-head"><strong>알림</strong><button onClick={()=>setNoticeOpen(false)}>모두 읽음</button></div><button><span className="alert-dot warn"/><span>확인이 필요한 이상 인증 12건이 있습니다.<small>방금 전</small></span></button></div>}</div><div className="divider"/><div className="dropdown-wrap"><button className="profile" onClick={()=>{setProfileOpen(!profileOpen);setNoticeOpen(false)}}><span className="avatar">장</span><span><b>애비아넥스트</b><small>관리자 장윤호</small></span><em>⌄</em></button>{profileOpen&&<div className="dropdown profile-menu"><button>내 정보</button><button>환경설정</button><hr/><button className="logout">로그아웃</button></div>}</div></div></header>
+  const search = () => {
+    setApplied({ keyword: keyword.trim(), field: searchField, from, to, status, anomaly });
+    setPage(1);
+    act("검색 조건을 적용했습니다.");
+  };
+  const downloadExcel = () => {
+    const header = ["참여번호", "참여자명", "휴대전화번호", "최초참여일", "최근 인증일", "인증 관광지", "진행률", "참여상태", "완주일", "경품상태", "이상 여부"];
+    const rows = filtered.map((row) => [row.number, row.name, row.phone, row.joined, row.recent, `${row.spots} / ${row.spotTotal}곳`, `${row.rate}%`, row.status, row.completed, row.reward, row.anomaly ? "이상" : "정상"]);
+    const csv = `\uFEFF${[header, ...rows].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\n")}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "스탬프투어-참여자이력.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+    act("참여자 이력 엑셀 파일을 다운로드했습니다.");
+  };
 
-      <main className="content participant-content"><LiveStampTourPanel section="participants"/><section className="page-head participant-page-head"><div><h1>참여자·진행현황</h1><p>참여자별 관광지 인증 진행률과 완주·경품 신청 상태를 한눈에 확인합니다.</p></div><div className="participant-head-actions"><label><span>스탬프투어 선택</span><select value={tour} onChange={e=>{setTour(e.target.value);act(`${e.target.value} 참여자 현황을 불러왔습니다.`)}}><option>철원 DMZ 평화관광 스탬프투어</option><option>양평 자연휴양 산책 스탬프투어</option><option>고양 역사문화길 스탬프투어</option></select></label><button className="excel-button" onClick={downloadExcel}><Download size={14}/>엑셀 다운로드</button></div></section>
+  return (
+    <div className={`app-shell ${collapsed ? "is-collapsed" : ""}`}>
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-mark">A</div>
+          <div className="brand-copy">
+            <strong>AOS</strong>
+            <span>TRAVEL ERP</span>
+          </div>
+          <button className="collapse" onClick={() => setCollapsed(!collapsed)} aria-label="사이드바 접기">
+            ‹
+          </button>
+        </div>
+        <nav aria-label="관리자 메뉴">
+          {menu.map((item) => (
+            <div className="nav-group" key={item.label}>
+              <button className={`nav-item ${item.label === "스탬프투어 관리" ? "active" : ""}`} onClick={() => (item.label === "대시보드" ? window.location.assign("/") : item.children ? toggleMenu(item.label) : act(`${item.label} 화면으로 이동합니다.`))}>
+                <span className="nav-icon">{item.icon === "qr" ? <QrCode size={16} strokeWidth={1.8} /> : item.icon}</span>
+                <span className="nav-label">{item.label}</span>
+                {item.children && <span className={`chevron ${expanded.includes(item.label) ? "open" : ""}`}>⌄</span>}
+              </button>
+              {item.children && expanded.includes(item.label) && !collapsed && (
+                <div className="subnav">
+                  {item.children.map((child) => (
+                    <button key={child} className={child === "참여자·진행현황" ? "current" : ""} onClick={() => goChild(child)}>
+                      {child}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+        <div className="sidebar-help">
+          <span className="nav-icon">?</span>
+          <div>
+            <strong>업무지원센터</strong>
+            <p>평일 09:00–18:00</p>
+          </div>
+        </div>
+      </aside>
 
-        <section className="participant-summary">{summary.map(([title,value,Icon,color])=><div className={`participant-kpi ${color}`} key={title}><span><small>{title}</small><strong>{value}</strong></span><i><Icon size={18}/></i></div>)}</section>
+      <div className="workspace">
+        <header className="topbar">
+          <div className="breadcrumb">
+            <span>스탬프투어 관리</span>
+            <b>/</b>
+            <strong>참여자·진행현황</strong>
+          </div>
+          <div className="top-actions">
+            <label className="search">
+              <span>⌕</span>
+              <input aria-label="빠른 검색" placeholder="예약번호, 고객명, 상품명 검색" />
+              <kbd>⌘ K</kbd>
+            </label>
+            <button className="icon-btn" onClick={() => act("업무지원센터를 엽니다.")}>
+              ?
+            </button>
+            <div className="dropdown-wrap">
+              <button className="icon-btn notice" aria-label="알림" onClick={() => { setNoticeOpen(!noticeOpen); setProfileOpen(false); }}>
+                ♢<i>5</i>
+              </button>
+              {noticeOpen && (
+                <div className="dropdown notice-menu">
+                  <div className="drop-head">
+                    <strong>알림</strong>
+                    <button onClick={() => setNoticeOpen(false)}>모두 읽음</button>
+                  </div>
+                  <button>
+                    <span className="alert-dot warn" />
+                    <span>
+                      확인이 필요한 이상 인증이 있습니다.<small>방금 전</small>
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="divider" />
+            <div className="dropdown-wrap">
+              <button className="profile" onClick={() => { setProfileOpen(!profileOpen); setNoticeOpen(false); }}>
+                <span className="avatar">장</span>
+                <span>
+                  <b>애비아넥스트</b>
+                  <small>관리자 장윤호</small>
+                </span>
+                <em>⌄</em>
+              </button>
+              {profileOpen && (
+                <div className="dropdown profile-menu">
+                  <button>내 정보</button>
+                  <button>환경설정</button>
+                  <hr />
+                  <button className="logout">로그아웃</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
 
-        <section className="panel participant-filter"><div className="participant-filter-grid"><label><span>참여자명</span><input value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&search()} placeholder="이름 입력"/></label><label><span>휴대전화번호</span><input value={phone} onChange={e=>setPhone(e.target.value)} onKeyDown={e=>e.key==="Enter"&&search()} placeholder="숫자만 입력"/></label><label className="participant-period"><span>참여기간</span><div><input type="date" value={from} onChange={e=>setFrom(e.target.value)}/><em>~</em><input type="date" value={to} onChange={e=>setTo(e.target.value)}/></div></label><label><span>진행상태</span><select value={status} onChange={e=>setStatus(e.target.value)}><option>전체</option><option>참여 중</option><option>완주</option><option>중도 이탈</option></select></label><label><span>경품상태</span><select value={reward} onChange={e=>setReward(e.target.value)}><option>전체</option><option>신청 완료</option><option>미신청</option><option>지급 완료</option><option>대상 아님</option></select></label><label><span>이상 인증 여부</span><select value={anomaly} onChange={e=>setAnomaly(e.target.value)}><option>전체</option><option>확인 필요</option><option>정상</option></select></label></div><div className="participant-filter-actions"><button className="secondary" onClick={reset}><RotateCcw size={14}/>조건 초기화</button><button className="primary" onClick={search}><Search size={14}/>검색</button></div></section>
+        <main className="content participant-content">
+          <LiveStampTourPanel section="participants" />
+          <section className="page-head participant-page-head">
+            <div>
+              <h1>참여자·진행현황</h1>
+              <p>참여자별 관광지 인증 진행률과 완주·경품 신청 상태를 한눈에 확인합니다.</p>
+            </div>
+            <div className="participant-head-actions">
+              <label>
+                <span>스탬프투어 선택</span>
+                <select value={tour} onChange={(event) => { setTour(event.target.value); act(`${event.target.value} 참여자 현황을 불러왔습니다.`); }}>
+                  <option>철원 DMZ 평화관광 스탬프투어</option>
+                  <option>양평 자연휴양 산책 스탬프투어</option>
+                  <option>고양 역사문화길 스탬프투어</option>
+                </select>
+              </label>
+              <button className="excel-button" onClick={downloadExcel}>
+                <Download size={14} />
+                엑셀 다운로드
+              </button>
+            </div>
+          </section>
 
-        <section className="panel participant-list-panel"><div className="participant-list-head"><div><strong>참여자 <b>{filtered.length}</b>명</strong><span>휴대전화번호 전체 표시</span></div><label><span>정렬</span><select value={sort} onChange={e=>{setSort(e.target.value);setPage(1)}}><option>최신 참여순</option><option>진행률 높은순</option><option>최근 인증순</option><option>이름순</option></select></label></div><div className="participant-table-wrap"><table className="participant-table"><thead><tr>{["NO.","참여번호","참여자명","휴대전화번호","최초 참여일","최근 인증일","인증 관광지","진행률","참여상태","완주일","경품상태","이상 여부"].map((title,index)=><th key={title}>{title}{[4,5,7].includes(index)&&<span className="sort-chevrons"><ChevronUp size={8}/><ChevronDown size={8}/></span>}</th>)}</tr></thead><tbody>{visible.length?visible.map((row,index)=>{const progress=Math.round(row.authenticated/row.total*100);return <tr key={row.id}><td>{(page-1)*pageSize+index+1}</td><td className="participant-number">{row.number}</td><td className="participant-name"><Link href="/stamp-tours/participants/1">{row.name}</Link><small>본인인증 완료</small></td><td><span className="participant-phone">{row.phone}</span></td><td className="date-cell">{row.joined}</td><td className="date-cell">{row.recent}</td><td className="spot-count"><b>{row.authenticated}/{row.total}곳</b></td><td><div className="progress-cell"><span><b>{progress}%</b><small>{row.authenticated}/{row.total}곳</small></span><i><em style={{width:`${progress}%`}}/></i></div></td><td><span className={`badge ${row.status==="완주"?"success":row.status==="참여 중"?"info":"gray"}`}>{row.status==="완주"&&<CheckCircle2 size={11}/>} {row.status}</span></td><td className="date-cell">{row.completed}</td><td><span className={`reward-badge ${row.reward==="신청 완료"?"applied":row.reward==="지급 완료"?"paid":row.reward==="미신청"?"waiting":"none"}`}>{row.reward}</span></td><td>{row.anomaly?<button className="anomaly-badge" onClick={()=>act(row.anomalyText||"이상 인증을 확인합니다.")} title={row.anomalyText}><AlertTriangle size={12}/>확인 필요</button>:<span className="normal-status">정상</span>}</td></tr>}) : <tr><td colSpan={12}><div className="participant-empty"><Users size={29}/><strong>검색 조건에 맞는 참여자가 없습니다.</strong><p>조건을 변경하거나 초기화한 뒤 다시 검색해 주세요.</p><button className="secondary" onClick={reset}><RotateCcw size={13}/>조건 초기화</button></div></td></tr>}</tbody></table></div><div className="participant-footer"><span>총 {filtered.length}명 중 {visible.length}명 표시</span><div className="pagination"><button disabled={page===1} onClick={()=>setPage(value=>Math.max(1,value-1))}>‹</button>{Array.from({length:totalPages},(_,index)=><button key={index+1} className={page===index+1?"active":""} onClick={()=>setPage(index+1)}>{index+1}</button>)}<button disabled={page===totalPages} onClick={()=>setPage(value=>Math.min(totalPages,value+1))}>›</button></div><div/></div></section><footer>© 2026 AOS Travel ERP · AviaNext</footer>
-      </main>
-    </div>{toast&&<div className="toast"><span>✓</span>{toast}</div>}
-  </div>;
+          <section className="pp-summary">
+            {summary.map(([label, value, tone]) => (
+              <div className="pp-kpi" key={label}>
+                <span>{label}</span>
+                <strong className={tone}>{value}</strong>
+              </div>
+            ))}
+          </section>
+
+          <section className="pp-toolbar">
+            <select aria-label="페이지 표시 개수" value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <select aria-label="정렬" value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }}>
+              <option>최근 참여순</option>
+              <option>최초 참여순</option>
+              <option>진행률 높은순</option>
+              <option>이름순</option>
+            </select>
+            <label className="pp-dates">
+              <input aria-label="참여 시작일" type="date" value={from} onChange={(event) => setFrom(event.target.value)} />
+              <em>-</em>
+              <input aria-label="참여 종료일" type="date" value={to} onChange={(event) => setTo(event.target.value)} />
+            </label>
+            <select aria-label="참여상태" value={status} onChange={(event) => setStatus(event.target.value)}>
+              <option value="전체">참여상태 전체</option>
+              <option>진행중</option>
+              <option>완주</option>
+            </select>
+            <select aria-label="이상 여부" value={anomaly} onChange={(event) => setAnomaly(event.target.value)}>
+              <option value="전체">이상 여부 전체</option>
+              <option>정상</option>
+              <option>이상</option>
+            </select>
+            <select aria-label="검색 대상" value={searchField} onChange={(event) => setSearchField(event.target.value as SearchField)}>
+              <option value="name">참여자명</option>
+              <option value="number">참여번호</option>
+              <option value="phone">휴대전화번호</option>
+            </select>
+            <input aria-label="검색어" value={keyword} placeholder="검색어를 입력하세요" onChange={(event) => setKeyword(event.target.value)} onKeyDown={(event) => event.key === "Enter" && search()} />
+            <button type="button" className="pp-search" onClick={search}>
+              <Search size={14} />
+              검색
+            </button>
+          </section>
+
+          <section className="pp-panel">
+            <header>
+              <div>
+                <strong>참여자 이력 <b>{filtered.length}건</b></strong>
+                <span>{sort}</span>
+              </div>
+              <div className="pp-legend">
+                <i className="ok" />
+                완주/정상
+                <i className="ing" />
+                진행중
+                <i className="bad" />
+                이상
+              </div>
+            </header>
+            <div className="pp-table-wrap">
+              <table className="pp-table">
+                <thead>
+                  <tr>
+                    {["NO.", "참여번호", "참여자명", "휴대전화번호", "최초참여일", "최근 인증일", "인증 관광지", "진행률", "참여상태", "완주일", "경품상태", "이상 여부"].map((title) => (
+                      <th key={title}>{title}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.length ? (
+                    visible.map((row, index) => (
+                      <tr key={row.id}>
+                        <td>{(currentPage - 1) * pageSize + index + 1}</td>
+                        <td>
+                          <button type="button" className="pp-number" onClick={() => setBook(row)}>
+                            {row.number}
+                          </button>
+                        </td>
+                        <td className="pp-name">{row.name}</td>
+                        <td>{row.phone}</td>
+                        <td>{row.joined}</td>
+                        <td>{row.recent}</td>
+                        <td>
+                          {row.spots} / {row.spotTotal}곳
+                        </td>
+                        <td>
+                          <div className="pp-rate">
+                            <b>{row.rate}%</b>
+                            <small>
+                              {row.rateCurrent}/{row.rateTotal}
+                            </small>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`pp-status ${row.status === "완주" ? "done" : "ing"}`}>{row.status}</span>
+                        </td>
+                        <td>{row.completed}</td>
+                        <td>{row.reward === "미신청" ? <span className="pp-reward">미신청</span> : <span className="pp-dash">-</span>}</td>
+                        <td>
+                          {row.anomaly ? (
+                            <button type="button" className="pp-anomaly" onClick={() => act(`${row.name} 이상 인증을 확인합니다.`)}>
+                              <AlertTriangle size={13} />
+                              이상
+                            </button>
+                          ) : (
+                            <span className="pp-normal">정상</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={12} className="pp-empty">
+                        검색 조건에 맞는 참여자가 없습니다.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="pp-pager">
+              <button type="button" disabled={currentPage === 1} onClick={() => setPage(1)}>
+                처음
+              </button>
+              <button type="button" disabled={currentPage === 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                <button key={pageNumber} type="button" className={currentPage === pageNumber ? "active" : ""} onClick={() => setPage(pageNumber)}>
+                  {pageNumber}
+                </button>
+              ))}
+            </div>
+          </section>
+          <footer>© 2026 AOS Travel ERP · AviaNext</footer>
+        </main>
+      </div>
+      {book && <StampBookModal row={book} onClose={() => setBook(null)} onComplete={() => act("경품 선택을 완료했습니다.")} />}
+      {toast && (
+        <div className="toast">
+          <span>✓</span>
+          {toast}
+        </div>
+      )}
+    </div>
+  );
 }

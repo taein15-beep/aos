@@ -108,7 +108,7 @@ export default function ReservationSettlementDraftPage() {
         {!method ? (
           <section className="panel member-web-detail-not-found">
             <strong>정산방식이 없습니다.</strong>
-            <p>예약 상세에서 정산서를 눌러 개별정산 또는 통합정산을 선택해 주세요.</p>
+            <p>예약목록 또는 예약 상세에서 정산서를 눌러 개별정산 또는 통합정산을 선택해 주세요.</p>
             <button type="button" className="secondary" onClick={backToReservation}>
               <ArrowLeft size={14} />
               예약 상세로
