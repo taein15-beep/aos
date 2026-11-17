@@ -465,6 +465,101 @@
 .complete a svg {
   width: 19px;
 }
+.groupHint {
+  margin-bottom: 12px;
+  padding: 14px 15px;
+  border: 1px solid #d5e7db;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f3faf5 0%, #eaf6ee 100%);
+  display: grid;
+  gap: 12px;
+}
+.groupHint strong {
+  display: block;
+  font-size: 13px;
+  letter-spacing: -0.2px;
+}
+.groupHint p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.groupHint > button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #9fc4ad;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.groupHint > button svg {
+  width: 16px;
+}
+.unitField {
+  position: relative;
+}
+.unitField input {
+  padding-right: 42px;
+}
+.unitField em {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  color: #5f746a;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.modeSwitch {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 14px;
+  border: 1px solid #ccdcd1;
+  border-radius: 12px;
+  background: #f6faf7;
+  color: #3f5d4f;
+  font-size: 12px;
+  font-weight: 750;
+}
+.doneSummary {
+  width: 100%;
+  max-width: 310px;
+  margin: 22px 0 0;
+  padding: 16px 18px;
+  border: 1px solid #dce8df;
+  border-radius: 16px;
+  background: #fff;
+  text-align: left;
+  display: grid;
+  gap: 12px;
+}
+.doneSummary div {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+.doneSummary dt {
+  color: #6e8178;
+  font-size: 11px;
+  font-weight: 700;
+}
+.doneSummary dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 750;
+  word-break: break-word;
+}
 @keyframes spin {
   to {
     transform: rotate(360deg);

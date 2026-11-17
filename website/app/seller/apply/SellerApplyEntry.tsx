@@ -5,9 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   APPLY_SUPPLIER,
   EXISTING_SELLER_STEPS,
-  MOCK_SELLER_ACCOUNT,
   NEW_SELLER_STEPS,
-  SUPPLIER_JOIN_STATES,
   joinStateBadgeClass,
   type EntryStep,
   type SupplierJoinState,
@@ -42,7 +40,7 @@ export function SellerApplyEntry() {
   const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [joinState, setJoinState] = useState<SupplierJoinState>("미가입");
+  const joinState: SupplierJoinState = "미가입";
   const [newStage, setNewStage] = useState<NewSellerStage>("form");
   const [existingStage, setExistingStage] = useState<ExistingSellerStage>("info");
   const [toast, setToast] = useState("");
@@ -80,12 +78,6 @@ export function SellerApplyEntry() {
     setLoginError("");
     setExistingStage("info");
     setView("existingSeller");
-  };
-
-  const fillMockAccount = () => {
-    setLoginId(MOCK_SELLER_ACCOUNT.loginId);
-    setPassword(MOCK_SELLER_ACCOUNT.password);
-    setLoginError("");
   };
 
   const isExistingFlow = view === "existingLogin" || view === "existingSeller";
@@ -258,30 +250,6 @@ export function SellerApplyEntry() {
                   {loginError}
                 </p>
               ) : null}
-
-              <fieldset className="seller-entry-mock">
-                <legend>프로토타입 Mock 설정</legend>
-                <p>
-                  Mock 계정: {MOCK_SELLER_ACCOUNT.sellerName} ({MOCK_SELLER_ACCOUNT.sellerCode}){" "}
-                  <button type="button" className="seller-entry-link" onClick={fillMockAccount}>
-                    Mock 계정 입력
-                  </button>
-                </p>
-                <div className="seller-entry-mock-states" role="radiogroup" aria-label={`${supplier.name} 가입상태 Mock`}>
-                  {SUPPLIER_JOIN_STATES.map((state) => (
-                    <label key={state} className={joinState === state ? "is-selected" : undefined}>
-                      <input
-                        type="radio"
-                        name="seller-entry-join-state"
-                        checked={joinState === state}
-                        onChange={() => setJoinState(state)}
-                      />
-                      {state}
-                    </label>
-                  ))}
-                </div>
-                <small>로그인 후 표시할 {supplier.name} 가입상태를 선택합니다.</small>
-              </fieldset>
 
               <div className="seller-entry-actions">
                 <button type="button" className="button ghost dark" onClick={goChoose}>

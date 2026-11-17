@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import LiveStampTourPanel from "../LiveStampTourPanel";
+import { goStampTourChild, stampTourMenuItem } from "../_data/stampTourNav";
+import { getPrizesByTourId, getSpotsByTourId, getTourById, mockParticipants, mockStatsSummary, mockTours, type MockParticipant } from "../_data/mockStampTours";
 import { AlertTriangle, ClipboardList, Download, QrCode, Search } from "lucide-react";
 
-const menu = [
+const menu: { icon: string; label: string; children?: string[] }[] = [
   { icon: "▦", label: "대시보드" },
   { icon: "◇", label: "상품관리", children: ["상품목록", "상품등록", "일정표관리", "요금관리"] },
   { icon: "▤", label: "예약관리", children: ["예약접수현황", "예약달력"] },
@@ -12,68 +13,55 @@ const menu = [
   { icon: "⇄", label: "정산관리", children: ["정산현황", "판매점정산", "공급사정산"] },
   { icon: "♙", label: "회원관리", children: ["웹회원", "제휴여행사", "판매점관리", "관리자/직원", "그룹/권한"] },
   { icon: "⌂", label: "거래처관리" },
-  { icon: "qr", label: "스탬프투어 관리", children: ["스탬프투어 목록", "관광지 관리", "경품관리", "참여자·진행현황", "인증 이력", "완주·경품 관리", "통계"] },
+  stampTourMenuItem(),
   { icon: "▥", label: "통계관리" },
   { icon: "◎", label: "운영관리", children: ["팝업관리", "알림관리", "알림톡"] },
   { icon: "⚙", label: "시스템설정", children: ["홈페이지설정", "결제설정", "기본설정"] },
 ];
 
 type ProgressStatus = "진행중" | "완주";
-type RewardStatus = "-" | "미신청";
 type SearchField = "name" | "number" | "phone";
-type Participant = {
-  id: number;
-  number: string;
-  name: string;
-  phone: string;
-  joined: string;
-  recent: string;
-  spots: number;
+type Participant = MockParticipant & {
+  tourName: string;
   spotTotal: number;
   rate: number;
   rateCurrent: number;
   rateTotal: number;
   status: ProgressStatus;
-  completed: string;
-  reward: RewardStatus;
-  anomaly: boolean;
 };
 
-const participants: Participant[] = [
-  { id: 1, number: "PT-2026-124", name: "김병구", phone: "010-8879-0079", joined: "2026.11.13 09:24", recent: "2026.11.13 09:24", spots: 1, spotTotal: 6, rate: 20, rateCurrent: 1, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
-  { id: 2, number: "PT-2026-123", name: "김종환", phone: "010-8906-3927", joined: "2026.11.13 09:24", recent: "2026.11.13 09:24", spots: 1, spotTotal: 6, rate: 20, rateCurrent: 1, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
-  { id: 3, number: "PT-2026-122", name: "주우석테스트 1111", phone: "010-6606-3408", joined: "2026.11.11 14:11", recent: "2026.11.13 09:25", spots: 2, spotTotal: 6, rate: 40, rateCurrent: 2, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: true },
-  { id: 4, number: "PT-2026-121", name: "주우석테스트 1106", phone: "010-6606-3408", joined: "2026.11.06 11:07", recent: "2026.11.13 11:55", spots: 4, spotTotal: 6, rate: 67, rateCurrent: 4, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
-  { id: 5, number: "PT-2026-120", name: "주우석테스트 1105", phone: "010-6606-3408", joined: "2026.11.05 14:04", recent: "2026.11.05 14:07", spots: 8, spotTotal: 6, rate: 100, rateCurrent: 8, rateTotal: 8, status: "진행중", completed: "-", reward: "-", anomaly: true },
-  { id: 6, number: "PT-2026-119", name: "쭈", phone: "010-6606-3408", joined: "2026.11.05 13:48", recent: "2026.11.05 13:48", spots: 1, spotTotal: 6, rate: 100, rateCurrent: 1, rateTotal: 1, status: "진행중", completed: "-", reward: "-", anomaly: false },
-  { id: 7, number: "PT-2026-118", name: "장봉선", phone: "010-2694-9511", joined: "2026.11.05 11:16", recent: "2026.11.05 11:18", spots: 2, spotTotal: 6, rate: 40, rateCurrent: 2, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
-  { id: 8, number: "PT-2026-117", name: "이재돈", phone: "010-1111-2222", joined: "2026.11.04 16:55", recent: "2026.11.04 16:55", spots: 1, spotTotal: 6, rate: 20, rateCurrent: 1, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
-  { id: 9, number: "PT-2026-116", name: "유미진", phone: "010-8007-6371", joined: "2026.11.04 16:50", recent: "2026.11.04 16:57", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.11.04 16:58", reward: "미신청", anomaly: false },
-  { id: 10, number: "PT-2026-115", name: "이재돈", phone: "010-1111-2222", joined: "2026.11.04 16:45", recent: "2026.11.04 16:55", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.11.04 16:55", reward: "미신청", anomaly: false },
-  { id: 11, number: "PT-2026-114", name: "박서연", phone: "010-2201-1182", joined: "2026.11.03 15:20", recent: "2026.11.03 18:02", spots: 2, spotTotal: 6, rate: 40, rateCurrent: 2, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: true },
-  { id: 12, number: "PT-2026-113", name: "최민준", phone: "010-3340-2201", joined: "2026.11.03 11:08", recent: "2026.11.03 11:40", spots: 1, spotTotal: 6, rate: 20, rateCurrent: 1, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: true },
-  { id: 13, number: "PT-2026-112", name: "정하늘", phone: "010-4412-7780", joined: "2026.11.02 17:33", recent: "2026.11.03 09:12", spots: 3, spotTotal: 6, rate: 60, rateCurrent: 3, rateTotal: 5, status: "진행중", completed: "-", reward: "-", anomaly: false },
-  { id: 14, number: "PT-2026-111", name: "한지민", phone: "010-5520-4419", joined: "2026.11.02 10:14", recent: "2026.11.02 16:48", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.11.02 16:48", reward: "-", anomaly: false },
-  { id: 15, number: "PT-2026-110", name: "오세훈", phone: "010-6631-2290", joined: "2026.11.01 13:22", recent: "2026.11.01 18:05", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.11.01 18:05", reward: "-", anomaly: false },
-  { id: 16, number: "PT-2026-109", name: "윤가은", phone: "010-7742-3308", joined: "2026.10.31 09:41", recent: "2026.10.31 15:16", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.31 15:16", reward: "-", anomaly: false },
-  { id: 17, number: "PT-2026-108", name: "서지호", phone: "010-8853-6612", joined: "2026.10.30 14:05", recent: "2026.10.30 17:44", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.10.30 17:44", reward: "-", anomaly: false },
-  { id: 18, number: "PT-2026-107", name: "배수아", phone: "010-9964-1023", joined: "2026.10.29 11:28", recent: "2026.10.29 16:09", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.29 16:09", reward: "-", anomaly: false },
-  { id: 19, number: "PT-2026-106", name: "문태경", phone: "010-1025-7784", joined: "2026.10.28 10:16", recent: "2026.10.28 14:52", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.10.28 14:52", reward: "-", anomaly: false },
-  { id: 20, number: "PT-2026-105", name: "임도윤", phone: "010-2136-8895", joined: "2026.10.27 15:37", recent: "2026.10.27 18:21", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.27 18:21", reward: "-", anomaly: false },
-  { id: 21, number: "PT-2026-104", name: "조은별", phone: "010-3247-9906", joined: "2026.10.26 09:03", recent: "2026.10.26 13:40", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.10.26 13:40", reward: "-", anomaly: false },
-  { id: 22, number: "PT-2026-103", name: "남궁현", phone: "010-4358-1017", joined: "2026.10.25 12:19", recent: "2026.10.25 16:33", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.25 16:33", reward: "-", anomaly: false },
-  { id: 23, number: "PT-2026-102", name: "황보민", phone: "010-5469-2128", joined: "2026.10.24 08:55", recent: "2026.10.24 11:27", spots: 5, spotTotal: 6, rate: 100, rateCurrent: 5, rateTotal: 5, status: "완주", completed: "2026.10.24 11:27", reward: "-", anomaly: false },
-  { id: 24, number: "PT-2026-101", name: "구자성", phone: "010-6570-3239", joined: "2026.10.23 17:08", recent: "2026.10.23 19:14", spots: 6, spotTotal: 6, rate: 100, rateCurrent: 6, rateTotal: 5, status: "완주", completed: "2026.10.23 19:14", reward: "-", anomaly: false },
-];
+function toParticipant(row: MockParticipant): Participant {
+  const tour = getTourById(row.tourId);
+  const required = Math.max(tour?.requiredCount ?? 1, 1);
+  const current = Math.min(row.spots, required);
+  return {
+    ...row,
+    tourName: tour?.name ?? "-",
+    spotTotal: tour?.spots ?? 0,
+    rateCurrent: current,
+    rateTotal: required,
+    rate: row.completed ? 100 : Math.round((current / required) * 100),
+    status: row.completed ? "완주" : "진행중",
+  };
+}
+
+const participants: Participant[] = mockParticipants.map(toParticipant);
 
 const joinedKey = (value: string) => value.slice(0, 10).replaceAll(".", "-");
 const dayLabel = (value: string) => value.slice(0, 10);
 
-const bookPrizes = [
-  { name: "기프티콘 이용권", goal: 3, grade: "3등급", method: "현장수령 · 테스트 관광지1", kind: "gift" },
-  { name: "철원오대쌀 4Kg", goal: 4, grade: "2등급", method: "택배", kind: "rice" },
-  { name: "테스트 경품1", goal: 5, grade: "1등급", method: "현장수령 · 테스트 관광지2", kind: "box" },
-] as const;
+type BookPrize = { name: string; goal: number; grade: string; method: string; kind: "gift" | "rice" | "box" };
+
+function bookPrizesOf(tourId: number): BookPrize[] {
+  const prizes = [...getPrizesByTourId(tourId)].sort((a, b) => a.requiredCount - b.requiredCount);
+  return prizes.map((prize, index) => ({
+    name: prize.name,
+    goal: prize.requiredCount,
+    grade: `${prizes.length - index}등급`,
+    method: prize.method,
+    kind: prize.type === "모바일 쿠폰" ? "gift" : prize.name.includes("쌀") ? "rice" : "box",
+  }));
+}
 
 function StampBookModal({ row, onClose, onComplete }: { row: Participant; onClose: () => void; onComplete: () => void }) {
   useEffect(() => {
@@ -89,21 +77,24 @@ function StampBookModal({ row, onClose, onComplete }: { row: Participant; onClos
     };
   }, [onClose]);
 
+  const bookPrizes = bookPrizesOf(row.tourId);
   const collected = row.rateCurrent;
   const goal = row.rateTotal || 1;
   const visited = Math.min(row.spots, row.spotTotal);
-  const stamps = Array.from({ length: row.spotTotal }, (_, index) => {
+  const stamps = getSpotsByTourId(row.tourId).map((spot, index) => {
     const done = index < visited;
     const date = index === 0 ? dayLabel(row.joined) : dayLabel(row.recent);
-    return { name: `테스트 관광지${index + 1}`, done, date };
+    return { name: spot.name, done, date };
   });
   const reached = [...bookPrizes].reverse().find((prize) => collected >= prize.goal);
   const next = bookPrizes.find((prize) => collected < prize.goal);
-  const gradeText = reached
-    ? next
-      ? `현재 ${reached.grade} · ${next.goal}곳 인증 시 ${next.grade}`
-      : `현재 ${reached.grade}입니다`
-    : `아직 경품 등급이 없어요 · ${next?.goal ?? 3}곳 인증 시 ${next?.grade ?? "3등급"}`;
+  const gradeText = !bookPrizes.length
+    ? "등록된 경품이 없습니다"
+    : reached
+      ? next
+        ? `현재 ${reached.grade} · ${next.goal}곳 인증 시 ${next.grade}`
+        : `현재 ${reached.grade}입니다`
+      : `아직 경품 등급이 없어요 · ${next?.goal ?? 1}곳 인증 시 ${next?.grade ?? "1등급"}`;
 
   return (
     <div className="sb-layer" role="presentation" onClick={onClose}>
@@ -126,7 +117,7 @@ function StampBookModal({ row, onClose, onComplete }: { row: Participant; onClos
           <section className="sb-card sb-info">
             <div>
               <span>스탬프투어명</span>
-              <b>서울사무실 QR테스트입니다</b>
+              <b>{row.tourName}</b>
             </div>
             <div>
               <span>참가번호</span>
@@ -202,7 +193,7 @@ export default function ParticipantProgressPage() {
   const [toast, setToast] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
-  const [tour, setTour] = useState("철원 DMZ 평화관광 스탬프투어");
+  const [tour, setTour] = useState("전체");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [sort, setSort] = useState("최근 참여순");
@@ -220,27 +211,11 @@ export default function ParticipantProgressPage() {
     window.setTimeout(() => setToast(""), 2300);
   };
   const toggleMenu = (label: string) => setExpanded((value) => (value.includes(label) ? value.filter((item) => item !== label) : [...value, label]));
-  const goChild = (child: string) =>
-    child === "스탬프투어 목록"
-      ? window.location.assign("/stamp-tours")
-      : child === "관광지 관리"
-        ? window.location.assign("/stamp-tours/attractions")
-        : child === "경품관리"
-          ? window.location.assign("/stamp-tours/prizes")
-          : child === "참여자·진행현황"
-            ? window.location.assign("/stamp-tours/participants")
-            : child === "인증 이력"
-              ? window.location.assign("/stamp-tours/verifications")
-              : child === "완주·경품 관리"
-                ? window.location.assign("/stamp-tours/rewards")
-                : child === "통계"
-                  ? window.location.assign("/stamp-tours/statistics")
-                  : child === "상품목록"
-                    ? window.location.assign("/products")
-                    : act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
+  const goChild = (child: string) => goStampTourChild(child, act);
 
   const filtered = useMemo(() => {
     const result = participants.filter((row) => {
+      if (tour !== "전체" && String(row.tourId) !== tour) return false;
       const joined = joinedKey(row.joined);
       const text = applied.field === "number" ? row.number : applied.field === "phone" ? row.phone : row.name;
       return (
@@ -254,18 +229,20 @@ export default function ParticipantProgressPage() {
     return [...result].sort((a, b) =>
       sort === "진행률 높은순" ? b.rate - a.rate : sort === "이름순" ? a.name.localeCompare(b.name, "ko") : sort === "최초 참여순" ? a.joined.localeCompare(b.joined) : b.joined.localeCompare(a.joined),
     );
-  }, [applied, sort]);
+  }, [applied, sort, tour]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const scoped = participants.filter((row) => tour === "전체" || String(row.tourId) === tour);
+  const totalParticipants = tour === "전체" ? mockStatsSummary.participants : scoped.length;
   const summary = [
-    ["전체참여자", `${participants.length}명`, "blue"],
-    ["오늘참여", `${participants.filter((row) => joinedKey(row.joined) === "2026-11-16").length}건`, "ink"],
-    ["진행중", `${participants.filter((row) => row.status === "진행중").length}건`, "orange"],
-    ["완주", `${participants.filter((row) => row.status === "완주").length}건`, "green"],
-    ["경품신청", `${participants.filter((row) => row.reward === "미신청").length}건`, "amber"],
-    ["이상탐지", `${participants.filter((row) => row.anomaly).length}건`, "red"],
+    ["전체참여자", `${totalParticipants}명`, "blue"],
+    ["오늘참여", `${scoped.filter((row) => joinedKey(row.joined) === "2026-11-16").length}건`, "ink"],
+    ["진행중", `${scoped.filter((row) => row.status === "진행중").length}건`, "orange"],
+    ["완주", `${scoped.filter((row) => row.status === "완주").length}건`, "green"],
+    ["경품신청", `${scoped.filter((row) => row.reward === "신청완료").length}건`, "amber"],
+    ["이상탐지", `${scoped.filter((row) => row.anomaly).length}건`, "red"],
   ] as const;
 
   const search = () => {
@@ -274,8 +251,8 @@ export default function ParticipantProgressPage() {
     act("검색 조건을 적용했습니다.");
   };
   const downloadExcel = () => {
-    const header = ["참여번호", "참여자명", "휴대전화번호", "최초참여일", "최근 인증일", "인증 관광지", "진행률", "참여상태", "완주일", "경품상태", "이상 여부"];
-    const rows = filtered.map((row) => [row.number, row.name, row.phone, row.joined, row.recent, `${row.spots} / ${row.spotTotal}곳`, `${row.rate}%`, row.status, row.completed, row.reward, row.anomaly ? "이상" : "정상"]);
+    const header = ["참여번호", "참여자명", "참여 투어", "휴대전화번호", "최초참여일", "최근 인증일", "인증 관광지", "진행률", "참여상태", "완주일", "경품상태", "이상 여부"];
+    const rows = filtered.map((row) => [row.number, row.name, row.tourName, row.phone, row.joined, row.recent, `${row.spots} / ${row.spotTotal}곳`, `${row.rate}%`, row.status, row.completed, row.reward, row.anomaly ? "이상" : "정상"]);
     const csv = `\uFEFF${[header, ...rows].map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\n")}`;
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const link = document.createElement("a");
@@ -386,7 +363,6 @@ export default function ParticipantProgressPage() {
         </header>
 
         <main className="content participant-content">
-          <LiveStampTourPanel section="participants" />
           <section className="page-head participant-page-head">
             <div>
               <h1>참여자·진행현황</h1>
@@ -395,10 +371,13 @@ export default function ParticipantProgressPage() {
             <div className="participant-head-actions">
               <label>
                 <span>스탬프투어 선택</span>
-                <select value={tour} onChange={(event) => { setTour(event.target.value); act(`${event.target.value} 참여자 현황을 불러왔습니다.`); }}>
-                  <option>철원 DMZ 평화관광 스탬프투어</option>
-                  <option>양평 자연휴양 산책 스탬프투어</option>
-                  <option>고양 역사문화길 스탬프투어</option>
+                <select value={tour} onChange={(event) => { setTour(event.target.value); setPage(1); act(`${event.target.value === "전체" ? "전체 투어" : getTourById(event.target.value)?.name} 참여자 현황을 불러왔습니다.`); }}>
+                  <option value="전체">전체 투어</option>
+                  {mockTours.map((row) => (
+                    <option key={row.id} value={String(row.id)}>
+                      {row.name}
+                    </option>
+                  ))}
                 </select>
               </label>
               <button className="excel-button" onClick={downloadExcel}>
@@ -475,7 +454,7 @@ export default function ParticipantProgressPage() {
               <table className="pp-table">
                 <thead>
                   <tr>
-                    {["NO.", "참여번호", "참여자명", "휴대전화번호", "최초참여일", "최근 인증일", "인증 관광지", "진행률", "참여상태", "완주일", "경품상태", "이상 여부"].map((title) => (
+                    {["NO.", "참여번호", "참여자명", "참여 투어", "휴대전화번호", "최초참여일", "최근 인증일", "인증 관광지", "진행률", "참여상태", "완주일", "경품상태", "이상 여부"].map((title) => (
                       <th key={title}>{title}</th>
                     ))}
                   </tr>
@@ -491,6 +470,7 @@ export default function ParticipantProgressPage() {
                           </button>
                         </td>
                         <td className="pp-name">{row.name}</td>
+                        <td>{row.tourName}</td>
                         <td>{row.phone}</td>
                         <td>{row.joined}</td>
                         <td>{row.recent}</td>
@@ -509,7 +489,7 @@ export default function ParticipantProgressPage() {
                           <span className={`pp-status ${row.status === "완주" ? "done" : "ing"}`}>{row.status}</span>
                         </td>
                         <td>{row.completed}</td>
-                        <td>{row.reward === "미신청" ? <span className="pp-reward">미신청</span> : <span className="pp-dash">-</span>}</td>
+                        <td>{row.reward === "-" ? <span className="pp-dash">-</span> : <span className="pp-reward">{row.reward}</span>}</td>
                         <td>
                           {row.anomaly ? (
                             <button type="button" className="pp-anomaly" onClick={() => act(`${row.name} 이상 인증을 확인합니다.`)}>
@@ -524,7 +504,7 @@ export default function ParticipantProgressPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={12} className="pp-empty">
+                      <td colSpan={13} className="pp-empty">
                         검색 조건에 맞는 참여자가 없습니다.
                       </td>
                     </tr>

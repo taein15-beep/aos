@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -16,7 +16,9 @@ import {
   Navigation,
   ShieldCheck,
   Stamp,
+  TicketPercent,
   Trophy,
+  X,
 } from "lucide-react";
 import styles from "./verify.module.css";
 type Qr = {
@@ -70,6 +72,21 @@ type Preview =
   | "replay"
   | "success"
   | null;
+type PlaceType = "attraction" | "experience" | "restaurant";
+type SamplePlaceDiscount =
+  | { enabled: false }
+  | {
+      enabled: true;
+      type: "fixed" | "rate";
+      placeType: PlaceType;
+      placeTypeLabel: string;
+      regularPrice: number;
+      discountAmount: number;
+      discountRate: number;
+      discountedPrice: number;
+    };
+type DiscountStatus = "available" | "checking";
+
 const hero =
   "https://ojsfile.ohmynews.com/STD_IMG_FILE/2022/0930/IE003057414_STD.jpg";
 const fixture: Qr = {
@@ -88,6 +105,65 @@ const fixture: Qr = {
   tourStartsAt: "2026-01-01",
   tourEndsAt: "2027-12-31",
 };
+
+const sampleDiscountFixed: SamplePlaceDiscount = {
+  enabled: true,
+  type: "fixed",
+  placeType: "experience",
+  placeTypeLabel: "체험",
+  regularPrice: 10000,
+  discountAmount: 2000,
+  discountRate: 20,
+  discountedPrice: 8000,
+};
+
+const sampleDiscountRate: SamplePlaceDiscount = {
+  enabled: true,
+  type: "rate",
+  placeType: "restaurant",
+  placeTypeLabel: "식당",
+  regularPrice: 20000,
+  discountAmount: 2000,
+  discountRate: 10,
+  discountedPrice: 18000,
+};
+
+const sampleNoDiscount: SamplePlaceDiscount = { enabled: false };
+
+function formatWon(value: number) {
+  return `${value.toLocaleString("ko-KR")}원`;
+}
+
+function resolveSampleDiscount(qrToken: string, discountQuery: string | null): SamplePlaceDiscount {
+  const query = (discountQuery ?? "").toLowerCase();
+  if (query === "off" || query === "none" || query === "no") return sampleNoDiscount;
+  if (query === "rate") return sampleDiscountRate;
+  if (query === "fixed") return sampleDiscountFixed;
+
+  const key = qrToken.toLowerCase();
+  if (key.includes("no-discount") || key.includes("nodiscount") || key.includes("plain"))
+    return sampleNoDiscount;
+  if (key.includes("rate") || key.includes("restaurant")) return sampleDiscountRate;
+  if (key.includes("experience") || key.includes("peace")) return sampleDiscountFixed;
+  // 기본 샘플: 현장 할인 적용 장소 (정액)
+  return {
+    enabled: true,
+    type: "fixed",
+    placeType: "attraction",
+    placeTypeLabel: "관광지",
+    regularPrice: 10000,
+    discountAmount: 2000,
+    discountRate: 20,
+    discountedPrice: 8000,
+  };
+}
+
+function resolveSampleSpotName(discount: SamplePlaceDiscount, baseName: string) {
+  if (!discount.enabled) return baseName;
+  if (discount.type === "rate") return "철원 맛집식당";
+  if (discount.placeType === "experience") return "철원 평화체험관";
+  return baseName;
+}
 export default function VerifyClient({ qrToken }: { qrToken: string }) {
   const [qr, setQr] = useState<Qr | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
@@ -98,10 +174,12 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
   );
   const [result, setResult] = useState<Result | null>(null);
   const [requestId, setRequestId] = useState("");
-  const preview = useMemo<Preview>(() => {
-    if (typeof window === "undefined") return null;
-    const v = new URLSearchParams(location.search).get("preview");
-    return [
+  const [discountStatus, setDiscountStatus] = useState<DiscountStatus>("available");
+  const searchParams = useMemo(() => {
+    if (typeof window === "undefined") return { preview: null as Preview, discount: null as string | null };
+    const params = new URLSearchParams(location.search);
+    const v = params.get("preview");
+    const preview = [
       "normal",
       "invalid",
       "inactive",
@@ -120,7 +198,22 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
     ].includes(v ?? "")
       ? (v as Preview)
       : null;
+    return { preview, discount: params.get("discount") };
   }, []);
+  const preview = searchParams.preview;
+  const sampleDiscount = useMemo(
+    () => resolveSampleDiscount(qrToken, searchParams.discount),
+    [qrToken, searchParams.discount],
+  );
+  const verificationStatus: "ready" | "verified" = result ? "verified" : "ready";
+  const canUseDiscount = sampleDiscount.enabled && verificationStatus === "verified";
+  const discountSummary =
+    sampleDiscount.enabled
+      ? sampleDiscount.type === "fixed"
+        ? `현장 할인 ${formatWon(sampleDiscount.discountAmount)}`
+        : `현장 할인 ${sampleDiscount.discountRate}%`
+      : "";
+
   const load = useCallback(async () => {
     await Promise.resolve();
     setLoading(true);
@@ -139,8 +232,17 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
         setLoading(false);
         return;
       }
+      const discount = resolveSampleDiscount(qrToken, searchParams.discount);
+      const spotName = resolveSampleSpotName(discount, fixture.spotName);
       setQr({
         ...fixture,
+        spotName,
+        description:
+          discount.enabled && discount.placeType === "experience"
+            ? "철원 평화체험과 함께하는 현장 할인 체험 장소"
+            : discount.enabled && discount.placeType === "restaurant"
+              ? "철원 지역 맛집에서 방문 인증 후 현장 할인을 받을 수 있습니다."
+              : fixture.description,
         tourStatus:
           preview === "paused"
             ? "PAUSED"
@@ -156,7 +258,7 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
           verificationId: "preview",
           idempotentReplay: preview === "replay",
           spotCode: fixture.spotCode,
-          spotName: fixture.spotName,
+          spotName,
           verifiedSpotCount: 3,
           totalSpotCount: 5,
           newlyAchievedReward: {
@@ -196,11 +298,21 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
     } finally {
       setLoading(false);
     }
-  }, [preview, qrToken]);
+  }, [preview, qrToken, searchParams.discount]);
   useEffect(() => {
     const timer = setTimeout(() => void load(), 0);
     return () => clearTimeout(timer);
   }, [load]);
+
+  function openDiscountDetail() {
+    if (!canUseDiscount || !sampleDiscount.enabled) return;
+    setDiscountStatus("checking");
+  }
+
+  function closeDiscountDetail() {
+    setDiscountStatus("available");
+  }
+
   async function verify() {
     if (!qr || processing) return;
     setProcessing(true);
@@ -238,6 +350,7 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
         newlyAchievedReward: { name: "관광 기념 스티커", requiredSpotCount: 3 },
         nextReward: { name: "평화관광 에코백", requiredSpotCount: 4 },
       });
+      setDiscountStatus("available");
       setProcessing(false);
       return;
     }
@@ -264,6 +377,7 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
       const json = (await response.json()) as Api<Result>;
       if (!response.ok) throw { api: json.error };
       setResult(json.data!);
+      setDiscountStatus("available");
       setRequestId("");
     } catch (cause) {
       if (cause instanceof GeolocationPositionError)
@@ -327,6 +441,12 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
             <br />
             방문 인증 완료!
           </h1>
+          {sampleDiscount.enabled && (
+            <div className={styles.discountBadgeRow}>
+              <span className={styles.discountBadge}>현장 할인</span>
+              <em>{discountSummary}</em>
+            </div>
+          )}
           <p>
             {result.idempotentReplay
               ? "이미 서버에 저장된 성공 결과를 안전하게 불러왔어요."
@@ -356,6 +476,25 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
               더 방문하면 <b>{result.nextReward.name}</b>
             </p>
           )}
+          {sampleDiscount.enabled && (
+            <section className={styles.discountReady} aria-label="현장 할인">
+              <button
+                type="button"
+                className={styles.discountUse}
+                onClick={openDiscountDetail}
+                disabled={!canUseDiscount}
+                aria-label="현장 할인 받기"
+              >
+                <TicketPercent />
+                현장 할인 받기
+              </button>
+              <p>
+                현장 직원에게 할인 화면을 보여주세요.
+                <br />
+                직원 확인 후 할인이 적용됩니다.
+              </p>
+            </section>
+          )}
           <div className={styles.actions}>
             <Link href={`/tour/${qr.tourCode}/stampbook`}>
               <Stamp />내 스탬프북 보기
@@ -374,6 +513,13 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
             </Link>
           </div>
         </main>
+        {sampleDiscount.enabled && discountStatus === "checking" && (
+          <DiscountDetailModal
+            spotName={result.spotName}
+            discount={sampleDiscount}
+            onClose={closeDiscountDetail}
+          />
+        )}
       </Frame>
     );
   if (!qr) return null;
@@ -404,11 +550,19 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
       </header>
       <main className={styles.main}>
         <section className={styles.place}>
-          <span className={unavailable ? styles.unavailable : styles.available}>
-            <i />
-            {unavailable ? "현재 인증 불가" : "현재 인증 가능"}
-          </span>
+          <div className={styles.placeStatusRow}>
+            <span className={unavailable ? styles.unavailable : styles.available}>
+              <i />
+              {unavailable ? "현재 인증 불가" : "현재 인증 가능"}
+            </span>
+            {sampleDiscount.enabled && (
+              <span className={styles.discountBadge}>현장 할인</span>
+            )}
+          </div>
           <h1>{qr.spotName}</h1>
+          {sampleDiscount.enabled && (
+            <p className={styles.discountHint}>{discountSummary}</p>
+          )}
           <p>{qr.description}</p>
           <dl>
             <div>
@@ -496,6 +650,21 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
             </>
           )}
         </button>
+        {sampleDiscount.enabled && (
+          <section className={styles.discountLocked} aria-label="현장 할인 안내">
+            <button
+              type="button"
+              className={styles.discountLockedButton}
+              disabled
+              aria-disabled="true"
+              aria-label="방문 인증 후 할인 사용 가능"
+            >
+              <TicketPercent />
+              방문 인증 후 할인 사용 가능
+            </button>
+            <p>장소 방문 인증을 완료하면 현장 할인 버튼이 활성화됩니다.</p>
+          </section>
+        )}
         <p className={styles.secure}>
           <ShieldCheck />
           QR만으로 인증되지 않으며 서버에서 위치와 참여 상태를 다시 확인합니다.
@@ -504,7 +673,7 @@ export default function VerifyClient({ qrToken }: { qrToken: string }) {
     </Frame>
   );
 }
-function Frame({ children }: { children: React.ReactNode }) {
+function Frame({ children }: { children: ReactNode }) {
   return (
     <div className={styles.page}>
       <div className={styles.phone}>{children}</div>
@@ -517,10 +686,10 @@ function State({
   text,
   action,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   text: string;
-  action?: React.ReactNode;
+  action?: ReactNode;
 }) {
   return (
     <main className={styles.state}>
@@ -529,5 +698,86 @@ function State({
       <p>{text}</p>
       {action}
     </main>
+  );
+}
+
+function DiscountDetailModal({
+  spotName,
+  discount,
+  onClose,
+}: {
+  spotName: string;
+  discount: Extract<SamplePlaceDiscount, { enabled: true }>;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className={styles.discountModalBackdrop}
+      role="dialog"
+      aria-modal="true"
+      aria-label="현장 할인 안내"
+      onClick={onClose}
+    >
+      <div
+        className={styles.discountModal}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header>
+          <div>
+            <TicketPercent />
+            <div>
+              <strong>현장 할인 안내</strong>
+              <span>
+                {discount.placeTypeLabel} · {spotName}
+              </span>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} aria-label="할인 안내 닫기">
+            <X />
+          </button>
+        </header>
+        <dl>
+          <div>
+            <dt>정상가</dt>
+            <dd>{formatWon(discount.regularPrice)}</dd>
+          </div>
+          {discount.type === "fixed" ? (
+            <>
+              <div>
+                <dt>할인금액</dt>
+                <dd>{formatWon(discount.discountAmount)}</dd>
+              </div>
+              <div>
+                <dt>할인율</dt>
+                <dd>{discount.discountRate}%</dd>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <dt>할인율</dt>
+                <dd>{discount.discountRate}%</dd>
+              </div>
+              <div>
+                <dt>할인금액</dt>
+                <dd>{formatWon(discount.discountAmount)}</dd>
+              </div>
+            </>
+          )}
+          <div className={styles.discountFinal}>
+            <dt>최종 할인가</dt>
+            <dd>{formatWon(discount.discountedPrice)}</dd>
+          </div>
+        </dl>
+        <p className={styles.discountStaffNote}>
+          현장 직원에게 이 화면을 보여주세요.
+          <br />
+          직원 확인 후 할인이 적용됩니다.
+        </p>
+        <button type="button" className={styles.discountClose} onClick={onClose}>
+          닫기
+        </button>
+      </div>
+    </div>
   );
 }

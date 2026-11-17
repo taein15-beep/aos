@@ -1,24 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { stampTourMenuItem, goStampTourChild } from "./_data/stampTourNav";
+import { getTourById, mockTours, resolveTourStatus } from "./_data/mockStampTours";
+
+import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AlertCircle, CalendarDays, Check, FileImage, Info, QrCode, Save, ShieldCheck, UserCheck, X } from "lucide-react";
 
-const menu = [
+const menu:{icon:string;label:string;children?:string[]}[]=[
   { icon:"▦", label:"대시보드" }, { icon:"◇", label:"상품관리", children:["상품목록","상품등록","일정표관리","요금관리"] },
   { icon:"▤", label:"예약관리", children:["예약접수현황","예약달력"] }, { icon:"₩", label:"결제관리", children:["결제현황","취소/환불"] },
   { icon:"⇄", label:"정산관리", children:["정산현황","판매점정산","공급사정산"] }, { icon:"♙", label:"회원관리", children:["웹회원","제휴여행사","판매점관리","관리자/직원","그룹/권한"] },
   { icon:"⌂", label:"거래처관리" },
-  { icon:"qr", label:"스탬프투어 관리", children:["스탬프투어 목록","관광지 관리","경품관리","참여자·진행현황","인증 이력","완주·경품 관리","통계"] },
+  stampTourMenuItem(),
   { icon:"▥", label:"통계관리" }, { icon:"◎", label:"운영관리", children:["팝업관리","알림관리","알림톡"] },
   { icon:"⚙", label:"시스템설정", children:["홈페이지설정","결제설정","기본설정"] },
 ];
-
-const editSeed = {
-  name:"철원 DMZ 평화관광 스탬프투어", region:"강원 철원군", department:"관광마케팅팀", manager:"샘플 사용자",
-  intro:"철원의 역사와 자연을 따라 여행하며 모바일 스탬프를 모아보세요.", detail:"각 관광지에 비치된 QR코드를 촬영하고 인증을 완료하면 스탬프가 적립됩니다.",
-  startDate:"2026-07-01", endDate:"2026-10-31", status:"운영 중", startTime:"09:00", endTime:"18:00",
-  completion:"count", requiredCount:"5", rewardNotice:"완주 확인 후 선착순으로 철원 관광 기념품을 보내드립니다.",
-};
 
 function Toggle({checked,onChange,label,disabled=false}:{checked:boolean;onChange:(v:boolean)=>void;label:string;disabled?:boolean}) {
   return <button type="button" className={`form-switch ${checked?"on":""}`} role="switch" aria-checked={checked} aria-label={label} disabled={disabled} onClick={()=>onChange(!checked)}><i/></button>;
@@ -52,29 +49,34 @@ export type StampTourFormInitial = {
 export default function StampTourForm({mode="create",embedded=false,initial=null,onClose}:{mode?:"create"|"edit";embedded?:boolean;initial?:StampTourFormInitial|null;onClose?:(message?:string)=>void}) {
   const editing=mode==="edit";
   const useCreateLayout=!editing;
-  const seed=editing&&!embedded?editSeed:null;
+  const pathname=usePathname();
+  const routeId=editing&&!embedded?pathname.split("/")[2]:null;
+  const tour=routeId?getTourById(routeId):null;
+  const seed=tour?{name:tour.name,region:tour.region,department:tour.department,manager:tour.manager,intro:tour.intro,detail:tour.detail,startDate:tour.start,endDate:tour.end,status:resolveTourStatus(tour),startTime:"09:00",endTime:"18:00",completion:tour.completion,requiredCount:tour.completion==="count"?String(tour.requiredCount):"",rewardNotice:""}:null;
   const [collapsed,setCollapsed]=useState(false); const [expanded,setExpanded]=useState(["스탬프투어 관리"]);
   const [toast,setToast]=useState(""); const [profileOpen,setProfileOpen]=useState(false); const [noticeOpen,setNoticeOpen]=useState(false);
   const [submitted,setSubmitted]=useState(false); const [saved,setSaved]=useState(false);
   const [name,setName]=useState(initial?.name||seed?.name||""); const [region,setRegion]=useState(seed?.region||""); const [department,setDepartment]=useState(initial?.department||seed?.department||""); const [manager,setManager]=useState(initial?.manager||seed?.manager||"");
   const [intro,setIntro]=useState(initial?.intro||seed?.intro||""); const [detail,setDetail]=useState(initial?.detail||seed?.detail||""); const [imageName,setImageName]=useState(""); const [imageUrl,setImageUrl]=useState(initial?.imageUrl||"");
-  const [startDate,setStartDate]=useState(initial?.startDate||seed?.startDate||""); const [endDate,setEndDate]=useState(initial?.endDate||seed?.endDate||""); const [status,setStatus]=useState(initial?.status||seed?.status||"운영 예정"); const [isPublic,setIsPublic]=useState(initial?.isPublic??editing);
+  const [startDate,setStartDate]=useState(initial?.startDate||seed?.startDate||""); const [endDate,setEndDate]=useState(initial?.endDate||seed?.endDate||""); const [status,setStatus]=useState(initial?.status||seed?.status||"운영 예정"); const [isPublic,setIsPublic]=useState(initial?.isPublic??(tour?tour.visible:editing));
   const [startTime,setStartTime]=useState(seed?.startTime||"09:00"); const [endTime,setEndTime]=useState(seed?.endTime||"18:00"); const [afterView,setAfterView]=useState(true);
   const [oneEntry,setOneEntry]=useState(true); const [noDuplicateSpot,setNoDuplicateSpot]=useState(true); const [useLocation,setUseLocation]=useState(true); const [radius,setRadius]=useState("100"); const [under14,setUnder14]=useState(false);
   const [completion,setCompletion]=useState(initial?.completion||seed?.completion||"all"); const [requiredCount,setRequiredCount]=useState(initial?.requiredCount||seed?.requiredCount||"");
   const [rewardEnabled,setRewardEnabled]=useState(true); const [immediateReward,setImmediateReward]=useState(true); const [rewardStart,setRewardStart]=useState(embedded?(initial?.rewardStart||initial?.startDate||""):""); const [rewardEnd,setRewardEnd]=useState(embedded?(initial?.rewardEnd||initial?.endDate||""):""); const [noDuplicateReward,setNoDuplicateReward]=useState(true); const [shipping,setShipping]=useState(embedded?(initial?.shipping??false):true); const [rewardNotice,setRewardNotice]=useState(seed?.rewardNotice||"");
   const [privacy,setPrivacy]=useState("스탬프투어 참여 및 완주 확인을 위해 이름, 휴대전화번호를 수집·이용합니다."); const [locationPolicy,setLocationPolicy]=useState("관광지 현장 인증 여부 확인을 위해 인증 시점의 위치정보를 이용합니다."); const [retention,setRetention]=useState(embedded?(initial?.retention||"투어 종료 후 1개월"):"투어 종료 후 3개월"); const [optionalConsent,setOptionalConsent]=useState(embedded?(initial?.optionalConsent??true):false);
-  useEffect(()=>{if(!editing||embedded)return;const recordId=window.location.pathname.split("/")[2];void fetch(`/api/admin/stamp-tours/tours/${recordId}`).then(async response=>{if(!response.ok)return;const{data}=await response.json() as {data:Record<string,unknown>};setName(String(data.name??""));setRegion(String(data.region??""));setIntro(String(data.description??""));setDetail(String(data.detail??""));setStartDate(String(data.starts_at??"").slice(0,10));setEndDate(String(data.ends_at??"").slice(0,10));setStartTime(String(data.participation_opens_at??"09:00"));setEndTime(String(data.participation_closes_at??"18:00"));setIsPublic(Boolean(data.is_public));setUseLocation(Boolean(data.use_location));setRadius(String(data.default_radius_meters??100));setPrivacy(String(data.privacy_policy??privacy));const statusLabel:Record<string,string>={ACTIVE:"운영 중",SCHEDULED:"운영 예정",PAUSED:"일시중지",ENDED:"운영 종료",DRAFT:"운영 예정"};setStatus(statusLabel[String(data.status)]??"운영 예정")})},[editing,embedded,privacy]);
-  const code=useMemo(()=>initial?.code||(editing?"ST-2026-0001":`ST-2026-${String(8).padStart(4,"0")}`),[editing,initial?.code]);
+  const code=useMemo(()=>initial?.code||tour?.code||(editing?"-":`ST-2026-${String(Math.max(...mockTours.map(row=>row.id))+1).padStart(4,"0")}`),[editing,initial?.code,tour?.code]);
   const errors={name:submitted&&!name.trim(),region:!useCreateLayout&&editing&&submitted&&!region,department:submitted&&!department,manager:submitted&&!manager,startDate:submitted&&!startDate,endDate:submitted&&!endDate,dateOrder:submitted&&!!startDate&&!!endDate&&startDate>endDate,requiredCount:submitted&&completion==="count"&&(!requiredCount||Number(requiredCount)<1),privacy:submitted&&!privacy.trim(),location:submitted&&useLocation&&!locationPolicy.trim()};
   const hasError=Object.values(errors).some(Boolean);
   const act=(message:string)=>{setToast(message);window.setTimeout(()=>setToast(""),2200)};
   const toggleMenu=(label:string)=>setExpanded(v=>v.includes(label)?v.filter(x=>x!==label):[...v,label]);
-  const goChild=(child:string)=>child==="스탬프투어 목록"?window.location.assign("/stamp-tours"):child==="관광지 관리"?window.location.assign("/stamp-tours/attractions"):child==="경품관리"?window.location.assign("/stamp-tours/prizes"):child==="참여자·진행현황"?window.location.assign("/stamp-tours/participants"):child==="인증 이력"?window.location.assign("/stamp-tours/verifications"):child==="완주·경품 관리"?window.location.assign("/stamp-tours/rewards"):child==="통계"?window.location.assign("/stamp-tours/statistics"):child==="상품목록"?window.location.assign("/products"):act(`${child} 화면은 다음 단계에서 제공될 예정입니다.`);
+  const goChild=(child:string)=>goStampTourChild(child,act);
   const saveDraft=()=>{const draft={name,region,department,manager,intro,detail,startDate,endDate,status,completion,requiredCount};localStorage.setItem("aos-stamp-tour-draft",JSON.stringify(draft));setSaved(true);act("임시저장되었습니다.");window.setTimeout(()=>setSaved(false),2400)};
-  const submit=async()=>{setSubmitted(true);if(hasError||!name.trim()||(!useCreateLayout&&editing&&!region)||!department||!manager||!startDate||!endDate||startDate>endDate||(completion==="count"&&(!requiredCount||Number(requiredCount)<1))||!privacy.trim()||(useLocation&&!locationPolicy.trim())){act("필수 입력 항목을 확인해 주세요.");window.setTimeout(()=>document.querySelector(".field-error")?.scrollIntoView({behavior:"smooth",block:"center"}),40);return}if(embedded){onClose?.("스탬프투어 정보를 수정했습니다.");return}const statusMap:Record<string,string>={"운영 예정":"SCHEDULED","운영 중":"ACTIVE","일시중지":"PAUSED","운영 종료":"ENDED"};const payload={tour_code:editing?"CHEORWON-DMZ-2026":code,name,description:intro,detail,region,starts_at:`${startDate}T00:00:00+09:00`,ends_at:`${endDate}T23:59:59+09:00`,participation_opens_at:startTime,participation_closes_at:endTime,is_public:isPublic?1:0,status:statusMap[status]??"DRAFT",use_location:useLocation?1:0,default_radius_meters:Number(radius),participation_condition:oneEntry?"ONE_PER_PHONE":"MULTIPLE",privacy_policy:`${privacy}\n${locationPolicy}`,privacy_retention_days:retention.includes("3개월")?90:365};try{const recordId=window.location.pathname.split("/")[2];const response=await fetch(editing?`/api/admin/stamp-tours/tours/${recordId}`:"/api/admin/stamp-tours/tours",{method:editing?"PATCH":"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});const json=await response.json() as {error?:{message:string}};if(!response.ok)throw new Error(json.error?.message);setSaved(true);act(editing?"공통 데이터의 투어 정보가 수정되었습니다.":"공통 데이터에 스탬프투어가 등록되었습니다.");window.setTimeout(()=>window.location.assign("/stamp-tours?preview=linked"),900)}catch(error){act(error instanceof Error?error.message:"투어 정보를 저장하지 못했습니다.")}};
+  const submit=async()=>{setSubmitted(true);if(hasError||!name.trim()||(!useCreateLayout&&editing&&!region)||!department||!manager||!startDate||!endDate||startDate>endDate||(completion==="count"&&(!requiredCount||Number(requiredCount)<1))||!privacy.trim()||(useLocation&&!locationPolicy.trim())){act("필수 입력 항목을 확인해 주세요.");window.setTimeout(()=>document.querySelector(".field-error")?.scrollIntoView({behavior:"smooth",block:"center"}),40);return}if(embedded){onClose?.("스탬프투어 정보를 수정했습니다.");return}setSaved(true);act("샘플 화면에 반영했습니다.");if(!editing)window.setTimeout(()=>window.location.assign("/stamp-tours"),900)};
   const actionButtons=<><button type="button" className="secondary" onClick={()=>window.location.assign("/stamp-tours")}><X size={14}/>취소</button><button type="button" className="secondary draft-btn" onClick={saveDraft}><Save size={14}/>임시저장</button><button type="button" className="primary" onClick={submit}><Check size={15}/>{editing?"수정 완료":"등록 완료"}</button></>;
   const readImage=(file?:File)=>{if(!file)return;setImageName(file.name);const reader=new FileReader();reader.onload=()=>setImageUrl(String(reader.result||""));reader.readAsDataURL(file)};
+  if(editing&&!embedded&&!tour){
+    return <div className={`app-shell ${collapsed?"is-collapsed":""}`}><aside className="sidebar"><div className="brand"><div className="brand-mark">A</div><div className="brand-copy"><strong>AOS</strong><span>TRAVEL ERP</span></div><button className="collapse" onClick={()=>setCollapsed(!collapsed)} aria-label="사이드바 접기">‹</button></div><nav aria-label="관리자 메뉴">{menu.map(item=><div className="nav-group" key={item.label}><button className={`nav-item ${item.label==="스탬프투어 관리"?"active":""}`} onClick={()=>item.label==="대시보드"?window.location.assign("/"):item.children?toggleMenu(item.label):act(`${item.label} 화면으로 이동합니다.`)}><span className="nav-icon">{item.icon==="qr"?<QrCode size={16} strokeWidth={1.8}/>:item.icon}</span><span className="nav-label">{item.label}</span>{item.children&&<span className={`chevron ${expanded.includes(item.label)?"open":""}`}>⌄</span>}</button>{item.children&&expanded.includes(item.label)&&!collapsed&&<div className="subnav">{item.children.map(child=><button key={child} className={child==="스탬프투어 목록"?"current":""} onClick={()=>goChild(child)}>{child}</button>)}</div>}</div>)}</nav></aside><div className="workspace"><main className="content stamp-form-content"><section className="panel form-section"><div className="form-section-body"><h1>스탬프투어를 찾을 수 없습니다.</h1><p>요청한 투어(ID {routeId})가 샘플 데이터에 없습니다.</p><button type="button" className="primary" onClick={()=>window.location.assign("/stamp-tours")}>스탬프투어 목록으로 돌아가기</button></div></section></main></div></div>;
+  }
   if(embedded){
     return <div className="stamp-edit-embedded">
       {submitted&&hasError&&<div className="form-alert field-error"><AlertCircle size={16}/><div><strong>입력 내용을 확인해 주세요.</strong><span>필수 항목 또는 입력 형식이 올바르지 않은 항목이 있습니다.</span></div></div>}
@@ -186,7 +188,7 @@ export default function StampTourForm({mode="create",embedded=false,initial=null
         <section className="panel form-section"><header><span className="section-number">1</span><div><h2>기본정보</h2><p>스탬프투어를 구분하고 모바일 스탬프북에 노출할 정보를 입력합니다.</p></div></header><div className="form-section-body form-grid three">
           <label className={`form-field span-2 ${errors.name?"invalid":""}`}><FieldLabel required>투어명</FieldLabel><input value={name} onChange={e=>setName(e.target.value)} placeholder="예: 철원 DMZ 평화관광 스탬프투어" maxLength={60}/>{errors.name?<small className="error-text">투어명을 입력해 주세요.</small>:<small>관리자 목록과 모바일 스탬프북에 동일하게 표시됩니다. ({name.length}/60)</small>}</label>
           <label className="form-field"><FieldLabel>투어 코드</FieldLabel><div className="readonly-input"><QrCode size={14}/>{code}<em>자동 생성</em></div><small>등록 완료 시 자동으로 부여됩니다.</small></label>
-          <label className={`form-field ${errors.region?"invalid":""}`}><FieldLabel required>운영 지역</FieldLabel><select value={region} onChange={e=>setRegion(e.target.value)}><option value="">지역 선택</option><option>강원 철원군</option><option>경기 양평군</option><option>경기 고양시</option><option>인천 중구</option><option>경기 파주시</option></select>{errors.region&&<small className="error-text">운영 지역을 선택해 주세요.</small>}</label>
+          <label className={`form-field ${errors.region?"invalid":""}`}><FieldLabel required>운영 지역</FieldLabel><select value={region} onChange={e=>setRegion(e.target.value)}><option value="">지역 선택</option><option>강원 철원군</option><option>서울 금천구</option><option>경기 양평군</option><option>경기 고양시</option><option>인천 중구</option><option>경기 파주시</option></select>{errors.region&&<small className="error-text">운영 지역을 선택해 주세요.</small>}</label>
           <label className={`form-field ${errors.department?"invalid":""}`}><FieldLabel required>담당 부서</FieldLabel><input value={department} onChange={e=>setDepartment(e.target.value)} placeholder="예: 관광마케팅팀"/>{errors.department&&<small className="error-text">담당 부서를 입력해 주세요.</small>}</label>
           <label className={`form-field ${errors.manager?"invalid":""}`}><FieldLabel required>담당자</FieldLabel><input value={manager} onChange={e=>setManager(e.target.value)} placeholder="담당자 이름"/>{errors.manager&&<small className="error-text">담당자를 입력해 주세요.</small>}</label>
           <label className="form-field span-3"><FieldLabel>대표 이미지</FieldLabel><div className="image-upload"><span><FileImage size={22}/></span><div><strong>{imageName||"대표 이미지를 등록해 주세요."}</strong><small>JPG, PNG · 권장 1200×630px · 최대 5MB</small></div><input type="file" accept="image/png,image/jpeg" onChange={e=>setImageName(e.target.files?.[0]?.name||"")}/><button type="button" className="secondary">파일 선택</button></div></label>

@@ -5,8 +5,6 @@ import {
   BUSINESS_TYPES,
   EMPTY_NEW_SELLER_FORM,
   MOCK_ADDRESS_RESULTS,
-  MOCK_CERTIFICATE_FILE_NAME,
-  MOCK_NEW_SELLER_FORM,
   getNewSellerTerms,
   type ApplySupplier,
   type NewSellerForm,
@@ -26,14 +24,12 @@ const FIELD_ORDER: ErrorKey[] = [
   "loginId",
   "password",
   "passwordConfirm",
-  "sellerName",
-  "representative",
-  "phone",
-  "email",
   "businessType",
   "businessNumber",
   "companyName",
-  "businessRepresentative",
+  "representative",
+  "phone",
+  "email",
   "address",
   "certificate",
   "managerName",
@@ -126,11 +122,11 @@ export function SellerNewApplyFlow({
 }) {
   const terms = useMemo(() => getNewSellerTerms(supplier.name), [supplier.name]);
   const [form, setForm] = useState<NewSellerForm>(EMPTY_NEW_SELLER_FORM);
-  const [sameRepresentative, setSameRepresentative] = useState(false);
   const [loginIdChecked, setLoginIdChecked] = useState(false);
   const [businessChecked, setBusinessChecked] = useState(false);
   const [logo, setLogo] = useState<LogoPreview | null>(null);
   const [certificateName, setCertificateName] = useState("");
+  const [tourismLicenseName, setTourismLicenseName] = useState("");
   const [agreed, setAgreed] = useState<Record<NewSellerTermKey, boolean>>({
     service: false,
     privacy: false,
@@ -145,6 +141,7 @@ export function SellerNewApplyFlow({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const certificateInputRef = useRef<HTMLInputElement>(null);
+  const tourismInputRef = useRef<HTMLInputElement>(null);
   const logoUrlRef = useRef<string | null>(null);
 
   useEffect(
@@ -158,10 +155,12 @@ export function SellerNewApplyFlow({
     headingRef.current?.focus({ preventScroll: true });
   }, [stage]);
 
-  const businessRepresentative = sameRepresentative ? form.representative : form.businessRepresentative;
-
   const update = <K extends keyof NewSellerForm>(key: K, value: NewSellerForm[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "companyName" && typeof value === "string") next.sellerName = value;
+      return next;
+    });
     setCheckErrors((prev) => {
       if (!prev[key]) return prev;
       const next = { ...prev };
@@ -177,18 +176,16 @@ export function SellerNewApplyFlow({
     if (!form.password) next.password = "비밀번호를 입력해주세요.";
     if (!form.passwordConfirm) next.passwordConfirm = "비밀번호 확인을 입력해주세요.";
     else if (form.password !== form.passwordConfirm) next.passwordConfirm = "비밀번호가 일치하지 않습니다.";
-    if (!form.sellerName.trim()) next.sellerName = "판매점명을 입력해주세요.";
-    if (!form.representative.trim()) next.representative = "대표자명을 입력해주세요.";
-    if (!form.phone.trim()) next.phone = "대표 전화번호를 입력해주세요.";
-    if (!form.email.trim()) next.email = "이메일을 입력해주세요.";
-    else if (!EMAIL_PATTERN.test(form.email.trim())) next.email = "이메일 형식을 확인해주세요.";
     if (!form.businessType) next.businessType = "사업자 구분을 선택해주세요.";
     if (!form.businessNumber) next.businessNumber = "사업자등록번호를 입력해주세요.";
     else if (!BUSINESS_NUMBER_PATTERN.test(form.businessNumber))
       next.businessNumber = "사업자등록번호 형식(000-00-00000)을 확인해주세요.";
     if (!form.companyName.trim()) next.companyName = "상호명을 입력해주세요.";
-    if (!businessRepresentative.trim()) next.businessRepresentative = "사업자 대표자명을 입력해주세요.";
-    if (!form.zipCode || !form.address) next.address = "사업장 주소를 입력해주세요.";
+    if (!form.representative.trim()) next.representative = "대표자명을 입력해주세요.";
+    if (!form.phone.trim()) next.phone = "대표 전화번호를 입력해주세요.";
+    if (!form.email.trim()) next.email = "이메일을 입력해주세요.";
+    else if (!EMAIL_PATTERN.test(form.email.trim())) next.email = "이메일 형식을 확인해주세요.";
+    if (!form.address.trim()) next.address = "사업장 주소를 입력해주세요.";
     if (!certificateName) next.certificate = "사업자등록증을 첨부해주세요.";
     if (!form.managerName.trim()) next.managerName = "담당자명을 입력해주세요.";
     if (!form.managerPhone.trim()) next.managerPhone = "담당자 연락처를 입력해주세요.";
@@ -196,7 +193,7 @@ export function SellerNewApplyFlow({
     else if (!EMAIL_PATTERN.test(form.managerEmail.trim())) next.managerEmail = "이메일 형식을 확인해주세요.";
     if (terms.some((term) => term.required && !agreed[term.key])) next.terms = "필수 약관에 동의해주세요.";
     return next;
-  }, [form, loginIdChecked, businessRepresentative, certificateName, agreed, terms]);
+  }, [form, loginIdChecked, certificateName, agreed, terms]);
 
   const isComplete = Object.keys(errors).length === 0;
 
@@ -272,21 +269,25 @@ export function SellerNewApplyFlow({
     setCertificateName(file.name);
   };
 
+  const selectTourismLicense = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const allowed = /\.(pdf|jpe?g|png)$/i.test(file.name);
+    if (!allowed) {
+      notify("관광사업자등록증은 PDF, JPG, PNG 파일만 첨부할 수 있습니다.");
+      return;
+    }
+    setTourismLicenseName(file.name);
+  };
+
   const allTermsChecked = terms.every((term) => agreed[term.key]);
 
   const toggleAllTerms = (checked: boolean) => {
     setAgreed({ service: checked, privacy: checked, supplierPolicy: checked, marketing: checked });
   };
 
-  const fillMock = () => {
-    setForm(MOCK_NEW_SELLER_FORM);
-    setSameRepresentative(true);
-    setLoginIdChecked(true);
-    setBusinessChecked(true);
-    setCertificateName(MOCK_CERTIFICATE_FILE_NAME);
-    setAgreed({ service: true, privacy: true, supplierPolicy: true, marketing: false });
-    setCheckErrors({});
-  };
+  const displayName = form.companyName.trim() || form.sellerName.trim() || "판매점";
 
   const submitForm = (event: React.FormEvent) => {
     event.preventDefault();
@@ -328,11 +329,11 @@ export function SellerNewApplyFlow({
         <div className="seller-new-relation" aria-label="판매점 계정과 공급여행사 가입관계">
           <div className="seller-new-relation-row">
             <span className="seller-entry-logo" aria-hidden="true">
-              {logo ? <img src={logo.url} alt="" /> : form.sellerName.slice(0, 1)}
+              {logo ? <img src={logo.url} alt="" /> : displayName.slice(0, 1)}
             </span>
             <div>
               <small>판매점</small>
-              <strong>{form.sellerName}</strong>
+              <strong>{displayName}</strong>
             </div>
             <span className="seller-entry-badge is-info">판매점 계정 생성</span>
           </div>
@@ -406,43 +407,7 @@ export function SellerNewApplyFlow({
           </section>
 
           <section aria-labelledby="seller-new-review-seller">
-            <h3 id="seller-new-review-seller">판매점 정보</h3>
-            <dl>
-              <div>
-                <dt>판매점 로고</dt>
-                <dd>
-                  {logo ? (
-                    <img className="seller-new-review-logo" src={logo.url} alt={`${form.sellerName} 로고`} />
-                  ) : (
-                    <span className="seller-new-muted">등록 안 함</span>
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt>판매점명</dt>
-                <dd>{form.sellerName}</dd>
-              </div>
-              <div>
-                <dt>대표자</dt>
-                <dd>{form.representative}</dd>
-              </div>
-              <div>
-                <dt>대표전화</dt>
-                <dd>{form.phone}</dd>
-              </div>
-              <div>
-                <dt>이메일</dt>
-                <dd>{form.email}</dd>
-              </div>
-              <div>
-                <dt>홈페이지</dt>
-                <dd>{form.homepage || <span className="seller-new-muted">입력 안 함</span>}</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section aria-labelledby="seller-new-review-business">
-            <h3 id="seller-new-review-business">사업자정보</h3>
+            <h3 id="seller-new-review-seller">판매점 기본정보</h3>
             <dl>
               <div>
                 <dt>사업자 구분</dt>
@@ -457,19 +422,51 @@ export function SellerNewApplyFlow({
                 <dd>{form.companyName}</dd>
               </div>
               <div>
-                <dt>대표자</dt>
-                <dd>{businessRepresentative}</dd>
+                <dt>대표자명</dt>
+                <dd>{form.representative}</dd>
+              </div>
+              <div>
+                <dt>대표전화</dt>
+                <dd>{form.phone}</dd>
+              </div>
+              <div>
+                <dt>이메일</dt>
+                <dd>{form.email}</dd>
+              </div>
+              <div>
+                <dt>홈페이지</dt>
+                <dd>{form.homepage || <span className="seller-new-muted">입력 안 함</span>}</dd>
               </div>
               <div>
                 <dt>사업장 주소</dt>
-                <dd>
-                  ({form.zipCode}) {fullAddress}
-                </dd>
+                <dd>{fullAddress}</dd>
               </div>
               <div>
                 <dt>사업자등록증</dt>
                 <dd>
                   {certificateName} <span className="seller-entry-badge is-success">첨부완료</span>
+                </dd>
+              </div>
+              <div>
+                <dt>관광사업자등록증</dt>
+                <dd>
+                  {tourismLicenseName ? (
+                    <>
+                      {tourismLicenseName} <span className="seller-entry-badge is-success">첨부완료</span>
+                    </>
+                  ) : (
+                    <span className="seller-new-muted">첨부 안 함</span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>판매점 로고</dt>
+                <dd>
+                  {logo ? (
+                    <img className="seller-new-review-logo" src={logo.url} alt={`${displayName} 로고`} />
+                  ) : (
+                    <span className="seller-new-muted">등록 안 함</span>
+                  )}
                 </dd>
               </div>
             </dl>
@@ -489,10 +486,6 @@ export function SellerNewApplyFlow({
               <div>
                 <dt>이메일</dt>
                 <dd>{form.managerEmail}</dd>
-              </div>
-              <div>
-                <dt>부서</dt>
-                <dd>{form.department || <span className="seller-new-muted">입력 안 함</span>}</dd>
               </div>
               <div>
                 <dt>직책</dt>
@@ -547,16 +540,6 @@ export function SellerNewApplyFlow({
         있습니다.
       </p>
 
-      <fieldset className="seller-entry-mock seller-new-mock">
-        <legend>프로토타입 Mock 설정</legend>
-        <p>
-          UI 테스트용 입력값(그래가자)을 한 번에 채웁니다.{" "}
-          <button type="button" className="seller-entry-link" onClick={fillMock}>
-            테스트 데이터 입력
-          </button>
-        </p>
-      </fieldset>
-
       <form onSubmit={submitForm} noValidate>
         <section className="seller-apply-section" aria-labelledby="seller-new-sec-account">
           <div className="seller-apply-section-head">
@@ -585,7 +568,7 @@ export function SellerNewApplyFlow({
               </div>
               {loginIdChecked && !errorFor("loginId") ? (
                 <small className="seller-field-info seller-new-ok" role="status">
-                  사용 가능한 아이디입니다. (Mock)
+                  사용 가능한 아이디입니다.
                 </small>
               ) : null}
               <FieldError id={fieldId("loginId")} message={errorFor("loginId")} />
@@ -625,109 +608,6 @@ export function SellerNewApplyFlow({
         <section className="seller-apply-section" aria-labelledby="seller-new-sec-seller">
           <div className="seller-apply-section-head">
             <h3 id="seller-new-sec-seller">판매점 기본정보</h3>
-            <p>고객에게 표시되고 공급여행사가 판매점을 확인할 때 사용하는 정보입니다.</p>
-          </div>
-          <div className="seller-apply-fields">
-            <label className={invalidClass("sellerName")}>
-              <Label htmlFor={fieldId("sellerName")} text="판매점명" required />
-              <input
-                id={fieldId("sellerName")}
-                value={form.sellerName}
-                onChange={(event) => update("sellerName", event.target.value)}
-                placeholder="예) 그래가자"
-                aria-invalid={Boolean(errorFor("sellerName"))}
-                aria-describedby={describedBy("sellerName")}
-              />
-              <FieldError id={fieldId("sellerName")} message={errorFor("sellerName")} />
-            </label>
-            <label className={invalidClass("representative")}>
-              <Label htmlFor={fieldId("representative")} text="대표자명" required />
-              <input
-                id={fieldId("representative")}
-                value={form.representative}
-                onChange={(event) => update("representative", event.target.value)}
-                placeholder="대표자명을 입력해주세요."
-                aria-invalid={Boolean(errorFor("representative"))}
-                aria-describedby={describedBy("representative")}
-              />
-              <FieldError id={fieldId("representative")} message={errorFor("representative")} />
-            </label>
-            <label className={invalidClass("phone")}>
-              <Label htmlFor={fieldId("phone")} text="대표 전화번호" required />
-              <input
-                id={fieldId("phone")}
-                type="tel"
-                value={form.phone}
-                onChange={(event) => update("phone", event.target.value)}
-                placeholder="예) 02-1234-5678"
-                aria-invalid={Boolean(errorFor("phone"))}
-                aria-describedby={describedBy("phone")}
-              />
-              <FieldError id={fieldId("phone")} message={errorFor("phone")} />
-            </label>
-            <label className={invalidClass("email")}>
-              <Label htmlFor={fieldId("email")} text="이메일" required />
-              <input
-                id={fieldId("email")}
-                type="email"
-                value={form.email}
-                onChange={(event) => update("email", event.target.value)}
-                placeholder="예) seller@example.com"
-                aria-invalid={Boolean(errorFor("email"))}
-                aria-describedby={describedBy("email")}
-              />
-              <FieldError id={fieldId("email")} message={errorFor("email")} />
-            </label>
-            <label className="full">
-              <Label htmlFor={fieldId("homepage")} text="홈페이지 (선택)" />
-              <input
-                id={fieldId("homepage")}
-                value={form.homepage}
-                onChange={(event) => update("homepage", event.target.value)}
-                placeholder="홈페이지 주소가 있는 경우 입력"
-              />
-            </label>
-            <div className="full seller-file-slot seller-new-logo-slot">
-              <div className="seller-file-slot-head">
-                <Label text="판매점 로고 (선택)" />
-                <button
-                  type="button"
-                  className="button ghost dark compact"
-                  onClick={() => logoInputRef.current?.click()}
-                >
-                  파일선택
-                </button>
-              </div>
-              <input
-                ref={logoInputRef}
-                className="seller-file-input-hidden"
-                type="file"
-                accept="image/jpeg,image/png"
-                tabIndex={-1}
-                aria-hidden="true"
-                onChange={selectLogo}
-              />
-              <div className="seller-new-logo-body">
-                <span className="seller-new-logo-preview">
-                  {logo ? <img src={logo.url} alt="판매점 로고 미리보기" /> : <span aria-hidden="true">LOGO</span>}
-                </span>
-                <div className="seller-file-meta">
-                  <strong>{logo ? logo.name : "등록된 로고가 없습니다."}</strong>
-                  <span>JPG, PNG / 권장 300 × 300px · 화면 미리보기만 제공되며 서버에 업로드되지 않습니다.</span>
-                  {logo ? (
-                    <button type="button" className="seller-entry-link seller-new-remove" onClick={removeLogo}>
-                      로고 삭제
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="seller-apply-section" aria-labelledby="seller-new-sec-business">
-          <div className="seller-apply-section-head">
-            <h3 id="seller-new-sec-business">사업자정보</h3>
             <p>사업자등록증과 동일한 정보로 입력해주세요.</p>
           </div>
           <div className="seller-apply-fields">
@@ -753,139 +633,218 @@ export function SellerNewApplyFlow({
               </div>
               <FieldError id={fieldId("businessType")} message={errorFor("businessType")} />
             </fieldset>
-            <div className={invalidClass("businessNumber", "seller-field-with-action")}>
-              <Label htmlFor={fieldId("businessNumber")} text="사업자등록번호" required />
-              <div className="seller-inline-action">
-                <input
-                  id={fieldId("businessNumber")}
-                  inputMode="numeric"
-                  value={form.businessNumber}
-                  onChange={(event) => {
-                    update("businessNumber", formatBusinessNumber(event.target.value));
-                    setBusinessChecked(false);
-                  }}
-                  placeholder="예) 123-45-67890"
-                  aria-invalid={Boolean(errorFor("businessNumber"))}
-                  aria-describedby={describedBy("businessNumber")}
-                />
-                <button type="button" className="button ghost dark compact" onClick={checkBusinessNumber}>
-                  확인
-                </button>
-              </div>
-              {businessChecked && !errorFor("businessNumber") ? (
-                <small className="seller-field-info seller-new-ok" role="status">
-                  사업자등록번호 형식이 확인되었습니다. (Mock)
-                </small>
-              ) : null}
-              <FieldError id={fieldId("businessNumber")} message={errorFor("businessNumber")} />
-            </div>
-            <label className={invalidClass("companyName")}>
-              <Label htmlFor={fieldId("companyName")} text="상호명" required />
-              <input
-                id={fieldId("companyName")}
-                value={form.companyName}
-                onChange={(event) => update("companyName", event.target.value)}
-                placeholder="사업자등록증의 상호명"
-                aria-invalid={Boolean(errorFor("companyName"))}
-                aria-describedby={describedBy("companyName")}
-              />
-              <FieldError id={fieldId("companyName")} message={errorFor("companyName")} />
-            </label>
-            <div className={invalidClass("businessRepresentative", "full seller-field-with-action")}>
-              <Label htmlFor={fieldId("businessRepresentative")} text="대표자명" required />
-              <div className="seller-new-rep-row">
-                <input
-                  id={fieldId("businessRepresentative")}
-                  value={businessRepresentative}
-                  readOnly={sameRepresentative}
-                  onChange={(event) => update("businessRepresentative", event.target.value)}
-                  placeholder="사업자등록증의 대표자명"
-                  aria-invalid={Boolean(errorFor("businessRepresentative"))}
-                  aria-describedby={describedBy("businessRepresentative")}
-                />
-                <label className="seller-check-inline">
+
+            <div className="seller-row-3">
+              <div className={invalidClass("businessNumber", "seller-field-with-action")}>
+                <Label htmlFor={fieldId("businessNumber")} text="사업자등록번호" required />
+                <div className="seller-inline-action">
                   <input
-                    type="checkbox"
-                    checked={sameRepresentative}
+                    id={fieldId("businessNumber")}
+                    inputMode="numeric"
+                    value={form.businessNumber}
                     onChange={(event) => {
-                      const checked = event.target.checked;
-                      setSameRepresentative(checked);
-                      if (!checked) update("businessRepresentative", form.representative);
+                      update("businessNumber", formatBusinessNumber(event.target.value));
+                      setBusinessChecked(false);
                     }}
+                    placeholder="예) 123-45-67890"
+                    aria-invalid={Boolean(errorFor("businessNumber"))}
+                    aria-describedby={describedBy("businessNumber")}
                   />
-                  판매점 대표자와 동일
-                </label>
+                  <button type="button" className="button ghost dark compact" onClick={checkBusinessNumber}>
+                    확인
+                  </button>
+                </div>
+                {businessChecked && !errorFor("businessNumber") ? (
+                  <small className="seller-field-info seller-new-ok" role="status">
+                    사업자등록번호 형식이 확인되었습니다.
+                  </small>
+                ) : null}
+                <FieldError id={fieldId("businessNumber")} message={errorFor("businessNumber")} />
               </div>
-              <FieldError id={fieldId("businessRepresentative")} message={errorFor("businessRepresentative")} />
+              <label className={invalidClass("companyName")}>
+                <Label htmlFor={fieldId("companyName")} text="상호명" required />
+                <input
+                  id={fieldId("companyName")}
+                  value={form.companyName}
+                  onChange={(event) => update("companyName", event.target.value)}
+                  placeholder="사업자등록증의 상호명"
+                  aria-invalid={Boolean(errorFor("companyName"))}
+                  aria-describedby={describedBy("companyName")}
+                />
+                <FieldError id={fieldId("companyName")} message={errorFor("companyName")} />
+              </label>
+              <label className={invalidClass("representative")}>
+                <Label htmlFor={fieldId("representative")} text="대표자명" required />
+                <input
+                  id={fieldId("representative")}
+                  value={form.representative}
+                  onChange={(event) => update("representative", event.target.value)}
+                  placeholder="대표자명을 입력해주세요."
+                  aria-invalid={Boolean(errorFor("representative"))}
+                  aria-describedby={describedBy("representative")}
+                />
+                <FieldError id={fieldId("representative")} message={errorFor("representative")} />
+              </label>
             </div>
+
+            <div className="seller-row-3">
+              <label className={invalidClass("phone")}>
+                <Label htmlFor={fieldId("phone")} text="대표 전화번호" required />
+                <input
+                  id={fieldId("phone")}
+                  type="tel"
+                  value={form.phone}
+                  onChange={(event) => update("phone", event.target.value)}
+                  placeholder="예) 02-1234-5678"
+                  aria-invalid={Boolean(errorFor("phone"))}
+                  aria-describedby={describedBy("phone")}
+                />
+                <FieldError id={fieldId("phone")} message={errorFor("phone")} />
+              </label>
+              <label className={invalidClass("email")}>
+                <Label htmlFor={fieldId("email")} text="이메일" required />
+                <input
+                  id={fieldId("email")}
+                  type="email"
+                  value={form.email}
+                  onChange={(event) => update("email", event.target.value)}
+                  placeholder="예) seller@example.com"
+                  aria-invalid={Boolean(errorFor("email"))}
+                  aria-describedby={describedBy("email")}
+                />
+                <FieldError id={fieldId("email")} message={errorFor("email")} />
+              </label>
+              <label>
+                <Label htmlFor={fieldId("homepage")} text="홈페이지 (선택)" />
+                <input
+                  id={fieldId("homepage")}
+                  value={form.homepage}
+                  onChange={(event) => update("homepage", event.target.value)}
+                  placeholder="홈페이지 주소가 있는 경우 입력"
+                />
+              </label>
+            </div>
+
             <div className={invalidClass("address", "full seller-field-with-action")}>
               <Label htmlFor={fieldId("address")} text="사업장 주소" required />
-              <div className="seller-new-address">
-                <input value={form.zipCode} readOnly placeholder="우편번호" aria-label="우편번호" />
-                <button type="button" className="button ghost dark compact" onClick={() => setAddressOpen(true)}>
-                  주소검색
-                </button>
+              <div className="seller-new-address-inline">
                 <input
                   id={fieldId("address")}
-                  className="seller-new-address-main"
                   value={form.address}
                   readOnly
-                  placeholder="주소검색으로 기본주소를 선택해주세요."
+                  placeholder="기본주소"
                   aria-label="기본주소"
                   aria-invalid={Boolean(errorFor("address"))}
                   aria-describedby={describedBy("address")}
                 />
                 <input
-                  className="seller-new-address-main"
                   value={form.addressDetail}
                   onChange={(event) => update("addressDetail", event.target.value)}
-                  placeholder="상세주소를 입력해주세요."
+                  placeholder="상세주소"
                   aria-label="상세주소"
                 />
+                <button type="button" className="button ghost dark compact" onClick={() => setAddressOpen(true)}>
+                  주소검색
+                </button>
               </div>
               <FieldError id={fieldId("address")} message={errorFor("address")} />
             </div>
-            <div className={`full seller-file-slot${errorFor("certificate") ? " is-invalid" : ""}`}>
-              <div className="seller-file-slot-head">
-                <Label text="사업자등록증" required />
-                <button
-                  id={fieldId("certificate")}
-                  type="button"
-                  aria-describedby={describedBy("certificate")}
-                  className="button ghost dark compact"
-                  onClick={() => certificateInputRef.current?.click()}
-                >
-                  사업자등록증 첨부
-                </button>
+
+            <div className="seller-attach-row">
+              <div className={`seller-file-slot seller-attach-card${errorFor("certificate") ? " is-invalid" : ""}`}>
+                <div className="seller-file-slot-head">
+                  <Label text="사업자등록증" required />
+                  <button
+                    id={fieldId("certificate")}
+                    type="button"
+                    aria-describedby={describedBy("certificate")}
+                    className="button ghost dark compact"
+                    onClick={() => certificateInputRef.current?.click()}
+                  >
+                    첨부
+                  </button>
+                </div>
+                <input
+                  ref={certificateInputRef}
+                  className="seller-file-input-hidden"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  onChange={selectCertificate}
+                />
+                {certificateName ? (
+                  <div className="seller-attach-meta">
+                    <strong>{certificateName}</strong>
+                    <button type="button" className="seller-entry-link" onClick={() => setCertificateName("")}>
+                      삭제
+                    </button>
+                  </div>
+                ) : (
+                  <p className="seller-file-empty">PDF, JPG, PNG</p>
+                )}
+                <FieldError id={fieldId("certificate")} message={errorFor("certificate")} />
               </div>
-              <input
-                ref={certificateInputRef}
-                className="seller-file-input-hidden"
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                tabIndex={-1}
-                aria-hidden="true"
-                onChange={selectCertificate}
-              />
-              {certificateName ? (
-                <ul className="seller-file-list">
-                  <li>
-                    <div className="seller-file-meta">
-                      <strong>{certificateName}</strong>
-                      <span>Mock 첨부 · 서버에 업로드되지 않습니다.</span>
-                    </div>
-                    <span className="seller-new-file-actions">
-                      <span className="seller-entry-badge is-success">첨부완료</span>
-                      <button type="button" className="seller-entry-link" onClick={() => setCertificateName("")}>
-                        삭제
-                      </button>
-                    </span>
-                  </li>
-                </ul>
-              ) : (
-                <p className="seller-file-empty">PDF, JPG, PNG 파일을 첨부해주세요.</p>
-              )}
-              <FieldError id={fieldId("certificate")} message={errorFor("certificate")} />
+
+              <div className="seller-file-slot seller-attach-card">
+                <div className="seller-file-slot-head">
+                  <Label text="관광사업자등록증 (선택)" />
+                  <button
+                    type="button"
+                    className="button ghost dark compact"
+                    onClick={() => tourismInputRef.current?.click()}
+                  >
+                    첨부
+                  </button>
+                </div>
+                <input
+                  ref={tourismInputRef}
+                  className="seller-file-input-hidden"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  onChange={selectTourismLicense}
+                />
+                {tourismLicenseName ? (
+                  <div className="seller-attach-meta">
+                    <strong>{tourismLicenseName}</strong>
+                    <button type="button" className="seller-entry-link" onClick={() => setTourismLicenseName("")}>
+                      삭제
+                    </button>
+                  </div>
+                ) : (
+                  <p className="seller-file-empty">PDF, JPG, PNG</p>
+                )}
+              </div>
+
+              <div className="seller-file-slot seller-attach-card">
+                <div className="seller-file-slot-head">
+                  <Label text="판매점 로고 (선택)" />
+                  <button type="button" className="button ghost dark compact" onClick={() => logoInputRef.current?.click()}>
+                    첨부
+                  </button>
+                </div>
+                <input
+                  ref={logoInputRef}
+                  className="seller-file-input-hidden"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  onChange={selectLogo}
+                />
+                {logo ? (
+                  <div className="seller-attach-meta">
+                    <strong>{logo.name}</strong>
+                    <button type="button" className="seller-entry-link" onClick={removeLogo}>
+                      삭제
+                    </button>
+                  </div>
+                ) : (
+                  <p className="seller-file-empty">JPG, PNG</p>
+                )}
+              </div>
             </div>
           </div>
         </section>
@@ -896,62 +855,55 @@ export function SellerNewApplyFlow({
             <p>예약, 상품, 정산 등 공급여행사와 업무 연락을 담당할 담당자 정보를 입력해주세요.</p>
           </div>
           <div className="seller-apply-fields">
-            <label className={invalidClass("managerName")}>
-              <Label htmlFor={fieldId("managerName")} text="담당자명" required />
-              <input
-                id={fieldId("managerName")}
-                value={form.managerName}
-                onChange={(event) => update("managerName", event.target.value)}
-                placeholder="담당자명을 입력해주세요."
-                aria-invalid={Boolean(errorFor("managerName"))}
-                aria-describedby={describedBy("managerName")}
-              />
-              <FieldError id={fieldId("managerName")} message={errorFor("managerName")} />
-            </label>
-            <label className={invalidClass("managerPhone")}>
-              <Label htmlFor={fieldId("managerPhone")} text="휴대전화" required />
-              <input
-                id={fieldId("managerPhone")}
-                type="tel"
-                value={form.managerPhone}
-                onChange={(event) => update("managerPhone", event.target.value)}
-                placeholder="예) 010-1234-5678"
-                aria-invalid={Boolean(errorFor("managerPhone"))}
-                aria-describedby={describedBy("managerPhone")}
-              />
-              <FieldError id={fieldId("managerPhone")} message={errorFor("managerPhone")} />
-            </label>
-            <label className={invalidClass("managerEmail", "full")}>
-              <Label htmlFor={fieldId("managerEmail")} text="이메일" required />
-              <input
-                id={fieldId("managerEmail")}
-                type="email"
-                value={form.managerEmail}
-                onChange={(event) => update("managerEmail", event.target.value)}
-                placeholder="예) sales@example.com"
-                aria-invalid={Boolean(errorFor("managerEmail"))}
-                aria-describedby={describedBy("managerEmail")}
-              />
-              <FieldError id={fieldId("managerEmail")} message={errorFor("managerEmail")} />
-            </label>
-            <label>
-              <Label htmlFor={fieldId("department")} text="부서 (선택)" />
-              <input
-                id={fieldId("department")}
-                value={form.department}
-                onChange={(event) => update("department", event.target.value)}
-                placeholder="예) 영업팀"
-              />
-            </label>
-            <label>
-              <Label htmlFor={fieldId("position")} text="직책 (선택)" />
-              <input
-                id={fieldId("position")}
-                value={form.position}
-                onChange={(event) => update("position", event.target.value)}
-                placeholder="예) 팀장"
-              />
-            </label>
+            <div className="seller-row-4">
+              <label className={invalidClass("managerName")}>
+                <Label htmlFor={fieldId("managerName")} text="담당자명" required />
+                <input
+                  id={fieldId("managerName")}
+                  value={form.managerName}
+                  onChange={(event) => update("managerName", event.target.value)}
+                  placeholder="담당자명을 입력해주세요."
+                  aria-invalid={Boolean(errorFor("managerName"))}
+                  aria-describedby={describedBy("managerName")}
+                />
+                <FieldError id={fieldId("managerName")} message={errorFor("managerName")} />
+              </label>
+              <label className={invalidClass("managerPhone")}>
+                <Label htmlFor={fieldId("managerPhone")} text="휴대전화" required />
+                <input
+                  id={fieldId("managerPhone")}
+                  type="tel"
+                  value={form.managerPhone}
+                  onChange={(event) => update("managerPhone", event.target.value)}
+                  placeholder="예) 010-1234-5678"
+                  aria-invalid={Boolean(errorFor("managerPhone"))}
+                  aria-describedby={describedBy("managerPhone")}
+                />
+                <FieldError id={fieldId("managerPhone")} message={errorFor("managerPhone")} />
+              </label>
+              <label className={invalidClass("managerEmail")}>
+                <Label htmlFor={fieldId("managerEmail")} text="이메일" required />
+                <input
+                  id={fieldId("managerEmail")}
+                  type="email"
+                  value={form.managerEmail}
+                  onChange={(event) => update("managerEmail", event.target.value)}
+                  placeholder="예) sales@example.com"
+                  aria-invalid={Boolean(errorFor("managerEmail"))}
+                  aria-describedby={describedBy("managerEmail")}
+                />
+                <FieldError id={fieldId("managerEmail")} message={errorFor("managerEmail")} />
+              </label>
+              <label>
+                <Label htmlFor={fieldId("position")} text="직책 (선택)" />
+                <input
+                  id={fieldId("position")}
+                  value={form.position}
+                  onChange={(event) => update("position", event.target.value)}
+                  placeholder="예) 팀장"
+                />
+              </label>
+            </div>
           </div>
         </section>
 
@@ -1015,8 +967,8 @@ export function SellerNewApplyFlow({
 
       {addressOpen ? (
         <Dialog titleId="seller-new-address-title" onClose={() => setAddressOpen(false)}>
-          <h3 id="seller-new-address-title">주소검색 (Mock)</h3>
-          <p>실제 주소검색 API는 연결되지 않습니다. 테스트 주소를 선택해주세요.</p>
+          <h3 id="seller-new-address-title">주소검색</h3>
+          <p>주소를 선택해주세요.</p>
           <ul className="seller-new-address-list">
             {MOCK_ADDRESS_RESULTS.map((item) => (
               <li key={item.zipCode}>

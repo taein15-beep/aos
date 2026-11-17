@@ -413,6 +413,97 @@ export function createPrototypeApplyReceipt(form: PartnershipApplyForm): Prototy
   };
 }
 
+/** AOS 플랫폼에 이미 등록된 여행사 샘플 (프론트 확인용) */
+export type PlatformAgency = {
+  agencyName: string;
+  businessNumber: string;
+  ceoName: string;
+  address: string;
+  phone: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  tourismLicenseType: string;
+};
+
+export const PLATFORM_AGENCIES: PlatformAgency[] = [
+  {
+    agencyName: "애비아넥스트여행사",
+    businessNumber: "123-45-67890",
+    ceoName: "김대표",
+    address: "서울특별시 중구 세종대로 110",
+    phone: "02-1234-5678",
+    contactName: "이담당",
+    contactPhone: "010-1234-5678",
+    contactEmail: "partner@avianext.example.com",
+    tourismLicenseType: "종합여행업",
+  },
+  {
+    agencyName: "철원평화투어",
+    businessNumber: "234-56-78901",
+    ceoName: "박평화",
+    address: "강원특별자치도 철원군 동송읍 이평로 00",
+    phone: "033-450-0000",
+    contactName: "최담당",
+    contactPhone: "010-2222-3333",
+    contactEmail: "cheorwon@peace.example.com",
+    tourismLicenseType: "국내외여행업",
+  },
+  {
+    agencyName: "한탄강여행",
+    businessNumber: "345-67-89012",
+    ceoName: "정해리",
+    address: "강원특별자치도 철원군 갈말읍 명성로 00",
+    phone: "033-452-1000",
+    contactName: "윤매니저",
+    contactPhone: "010-5555-6666",
+    contactEmail: "hantan@tour.example.com",
+    tourismLicenseType: "국내여행업",
+  },
+];
+
+export function normalizeBusinessNumberDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+/** 사업자등록번호로 플랫폼 등록 여행사 조회 (샘플) */
+export function findPlatformAgencyByBusinessNumber(businessNumber: string): PlatformAgency | null {
+  const digits = normalizeBusinessNumberDigits(businessNumber);
+  if (digits.length !== 10) return null;
+  return (
+    PLATFORM_AGENCIES.find((agency) => normalizeBusinessNumberDigits(agency.businessNumber) === digits) ??
+    null
+  );
+}
+
+/** 플랫폼 여행사 정보로 제휴 가입신청 프로토타입 접수 생성 */
+export function createPrototypeApplyReceiptFromAgency(agency: PlatformAgency): PrototypeApplyReceipt {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const rand = String(Math.floor(Math.random() * 9000) + 1000);
+  const summary: ApplyFormSummary = {
+    agencyName: agency.agencyName,
+    businessNumber: agency.businessNumber,
+    ceoName: agency.ceoName,
+    contactName: agency.contactName,
+    contactPhone: agency.contactPhone,
+    contactEmail: agency.contactEmail,
+    requiredDocsAttached: true,
+    requiredTermsAgreed: true,
+  };
+  return {
+    prototype: true,
+    applicationNumber: `AOS-P-${y}${m}${d}-${rand}`,
+    submittedAt: now.toISOString(),
+    status: "승인대기",
+    agencyName: agency.agencyName,
+    contactEmail: agency.contactEmail,
+    summary,
+  };
+}
+
 export function savePrototypeApplyReceipt(receipt: PrototypeApplyReceipt) {
   if (typeof window === "undefined") return;
   window.sessionStorage.setItem(PROTOTYPE_APPLY_RECEIPT_STORAGE_KEY, JSON.stringify(receipt));

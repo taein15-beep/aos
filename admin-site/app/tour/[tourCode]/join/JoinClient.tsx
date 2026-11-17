@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   Check,
@@ -11,14 +11,26 @@ import {
   MessageSquareText,
   ShieldCheck,
   UserRound,
+  Users,
 } from "lucide-react";
 import styles from "./join.module.css";
+
 type ConsentType =
   | "TERMS"
   | "PRIVACY"
   | "LOCATION"
   | "AGE_OVER_14"
   | "MARKETING";
+
+type JoinMode = "individual" | "group";
+
+type GroupDone = {
+  groupName: string;
+  representative: string;
+  phone: string;
+  headcount: number;
+};
+
 const consents: Array<{
   type: ConsentType;
   label: string;
@@ -61,6 +73,7 @@ const consents: Array<{
       "철원 관광 소식과 이벤트 안내를 받을 수 있습니다. 동의하지 않아도 투어 참여가 가능합니다.",
   },
 ];
+
 function formatPhone(value: string) {
   const n = value.replace(/\D/g, "").slice(0, 11);
   return n.length > 7
@@ -69,6 +82,14 @@ function formatPhone(value: string) {
       ? `${n.slice(0, 3)}-${n.slice(3)}`
       : n;
 }
+
+function maskPhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length < 7) return value;
+  const tail = digits.slice(-4);
+  return `${digits.slice(0, 3)}-****-${tail}`;
+}
+
 function safeReturn(tourCode: string) {
   if (typeof window === "undefined") return `/tour/${tourCode}`;
   const value = new URLSearchParams(window.location.search).get("returnTo");
@@ -82,6 +103,7 @@ function safeReturn(tourCode: string) {
     return value;
   return `/tour/${tourCode}`;
 }
+
 function previewReturn(tourCode: string) {
   const target = safeReturn(tourCode);
   const url = new URL(target, window.location.origin);
@@ -92,9 +114,13 @@ function previewReturn(tourCode: string) {
   else url.searchParams.set("preview", "progress");
   return `${url.pathname}${url.search}`;
 }
+
 export default function JoinClient({ tourCode }: { tourCode: string }) {
+  const [mode, setMode] = useState<JoinMode>("individual");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [groupName, setGroupName] = useState("");
+  const [headcount, setHeadcount] = useState("");
   const [checked, setChecked] = useState<Record<ConsentType, boolean>>({
     TERMS: false,
     PRIVACY: false,
@@ -104,10 +130,22 @@ export default function JoinClient({ tourCode }: { tourCode: string }) {
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [groupDone, setGroupDone] = useState<GroupDone | null>(null);
   const all = consents.every((c) => checked[c.type]);
   const required = consents
     .filter((c) => c.required)
     .every((c) => checked[c.type]);
+
+  function switchToGroup() {
+    setError("");
+    setMode("group");
+  }
+
+  function switchToIndividual() {
+    setError("");
+    setMode("individual");
+  }
+
   function validateIdentity() {
     if (name.trim().length < 2) {
       setError("이름을 2자 이상 입력해 주세요.");
@@ -119,7 +157,37 @@ export default function JoinClient({ tourCode }: { tourCode: string }) {
     }
     return true;
   }
-  async function submit() {
+
+  function validateGroup() {
+    if (!groupName.trim()) {
+      setError("단체명을 입력해 주세요.");
+      return false;
+    }
+    if (!name.trim()) {
+      setError("대표자명을 입력해 주세요.");
+      return false;
+    }
+    if (!/^01[016789]-?\d{3,4}-?\d{4}$/.test(phone)) {
+      setError("연락처를 확인해 주세요.");
+      return false;
+    }
+    if (!headcount.trim()) {
+      setError("참여 인원을 입력해 주세요.");
+      return false;
+    }
+    if (!/^\d+$/.test(headcount.trim())) {
+      setError("참여 인원은 정수로 입력해 주세요.");
+      return false;
+    }
+    const count = Number(headcount);
+    if (!Number.isInteger(count) || count < 2) {
+      setError("단체 참여 인원은 2명 이상이어야 합니다.");
+      return false;
+    }
+    return true;
+  }
+
+  async function submitIndividual() {
     if (busy || !validateIdentity()) return;
     if (!required) {
       setError("필수 약관에 모두 동의해 주세요.");
@@ -129,8 +197,59 @@ export default function JoinClient({ tourCode }: { tourCode: string }) {
     setError("");
     await new Promise((r) => setTimeout(r, 350));
     window.location.assign(previewReturn(tourCode));
-    return;
   }
+
+  function submitGroup() {
+    if (busy || !validateGroup()) return;
+    setBusy(true);
+    setError("");
+    window.setTimeout(() => {
+      setGroupDone({
+        groupName: groupName.trim(),
+        representative: name.trim(),
+        phone,
+        headcount: Number(headcount),
+      });
+      setBusy(false);
+    }, 280);
+  }
+
+  if (groupDone) {
+    return (
+      <Frame tourCode={tourCode}>
+        <section className={styles.complete} aria-live="polite">
+          <span>
+            <Check />
+          </span>
+          <h1>단체 참여 등록이 완료되었습니다.</h1>
+          <p>입력하신 단체정보로 샘플 참여가 등록되었습니다.</p>
+          <dl className={styles.doneSummary}>
+            <div>
+              <dt>단체명</dt>
+              <dd>{groupDone.groupName}</dd>
+            </div>
+            <div>
+              <dt>대표자</dt>
+              <dd>{groupDone.representative}</dd>
+            </div>
+            <div>
+              <dt>연락처</dt>
+              <dd>{maskPhone(groupDone.phone)}</dd>
+            </div>
+            <div>
+              <dt>참여 인원</dt>
+              <dd>{groupDone.headcount}명</dd>
+            </div>
+          </dl>
+          <Link href={`/tour/${tourCode}/stampbook?preview=eligible`}>
+            스탬프북 보기
+            <ChevronRight />
+          </Link>
+        </section>
+      </Frame>
+    );
+  }
+
   return (
     <Frame tourCode={tourCode}>
       <main className={styles.main}>
@@ -141,136 +260,235 @@ export default function JoinClient({ tourCode }: { tourCode: string }) {
             <br />
             스탬프투어
           </h1>
-          <p>이름과 휴대전화번호를 입력하면 준비된 여행 기록을 확인할 수 있어요.</p>
-          <ol aria-label="참여 등록 진행 단계">
-            <li className={name ? styles.done : styles.current}>정보 입력</li>
-            <li>번호 인증 준비 중</li>
-            <li className={name && phone ? styles.current : ""}>약관 동의</li>
-          </ol>
+          <p>
+            {mode === "group"
+              ? "대표자 한 분만 정보를 입력해 주세요. 단체 구성원은 각각 등록할 필요가 없습니다."
+              : "이름과 휴대전화번호를 입력하면 준비된 여행 기록을 확인할 수 있어요."}
+          </p>
+          {mode === "individual" && (
+            <ol aria-label="참여 등록 진행 단계">
+              <li className={name ? styles.done : styles.current}>정보 입력</li>
+              <li>번호 인증 준비 중</li>
+              <li className={name && phone ? styles.current : ""}>약관 동의</li>
+            </ol>
+          )}
         </section>
+
+        {mode === "individual" && (
+          <section className={styles.groupHint} aria-label="단체 참여 안내">
+            <div>
+              <strong>단체로 방문하셨나요?</strong>
+              <p>대표자 한 분이 단체정보를 입력할 수 있습니다.</p>
+            </div>
+            <button type="button" onClick={switchToGroup}>
+              <Users />
+              단체로 참여하기
+            </button>
+          </section>
+        )}
+
         <section className={styles.card}>
           <header>
-            <span>
-              <UserRound />
-            </span>
+            <span>{mode === "group" ? <Users /> : <UserRound />}</span>
             <div>
-              <small>STEP 1</small>
-              <h2>참여자 정보</h2>
+              <small>{mode === "group" ? "단체 참여" : "STEP 1"}</small>
+              <h2>{mode === "group" ? "단체 참여정보" : "참여자 정보"}</h2>
             </div>
           </header>
-          <label>
-            <span>
-              이름 <b>필수</b>
-            </span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              placeholder="이름을 입력해 주세요"
-              maxLength={30}
-            />
-          </label>
-          <label>
-            <span>
-              휴대전화번호 <b>필수</b>
-            </span>
-            <div className={styles.phoneRow}>
-              <input
-                value={phone}
-                onChange={(e) => {
-                  setPhone(formatPhone(e.target.value));
-                }}
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="010-0000-0000"
-              />
-              <button
-                type="button"
-                aria-disabled="true"
-                title="문자 인증 연동 전까지는 입력한 정보로 미리보기를 진행합니다."
-              >
-                <MessageSquareText />
-                인증번호 요청
+
+          {mode === "group" ? (
+            <>
+              <label>
+                <span>
+                  단체명 <b>필수</b>
+                </span>
+                <input
+                  value={groupName}
+                  onChange={(e) => {
+                    setGroupName(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="예: 철원행복투어"
+                  maxLength={60}
+                  autoComplete="organization"
+                />
+              </label>
+              <label>
+                <span>
+                  대표자 <b>필수</b>
+                </span>
+                <input
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setError("");
+                  }}
+                  autoComplete="name"
+                  placeholder="대표자명을 입력해 주세요"
+                  maxLength={30}
+                />
+              </label>
+              <label>
+                <span>
+                  연락처 <b>필수</b>
+                </span>
+                <input
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(formatPhone(e.target.value));
+                    setError("");
+                  }}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="010-0000-0000"
+                />
+              </label>
+              <label>
+                <span>
+                  인원 <b>필수</b>
+                </span>
+                <div className={styles.unitField}>
+                  <input
+                    value={headcount}
+                    onChange={(e) => {
+                      setHeadcount(e.target.value.replace(/\D/g, "").slice(0, 4));
+                      setError("");
+                    }}
+                    inputMode="numeric"
+                    placeholder="2"
+                    aria-label="참여 인원"
+                  />
+                  <em>명</em>
+                </div>
+              </label>
+              <button type="button" className={styles.modeSwitch} onClick={switchToIndividual}>
+                개인으로 변경하기
               </button>
-            </div>
-          </label>
+            </>
+          ) : (
+            <>
+              <label>
+                <span>
+                  이름 <b>필수</b>
+                </span>
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  placeholder="이름을 입력해 주세요"
+                  maxLength={30}
+                />
+              </label>
+              <label>
+                <span>
+                  휴대전화번호 <b>필수</b>
+                </span>
+                <div className={styles.phoneRow}>
+                  <input
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(formatPhone(e.target.value));
+                    }}
+                    inputMode="tel"
+                    autoComplete="tel"
+                    placeholder="010-0000-0000"
+                  />
+                  <button
+                    type="button"
+                    aria-disabled="true"
+                    title="문자 인증 연동 전까지는 입력한 정보로 미리보기를 진행합니다."
+                  >
+                    <MessageSquareText />
+                    인증번호 요청
+                  </button>
+                </div>
+              </label>
+            </>
+          )}
         </section>
-        <section className={styles.card}>
-          <header>
-            <span>
-              <ShieldCheck />
-            </span>
-            <div>
-              <small>STEP 2</small>
-              <h2>약관 동의</h2>
+
+        {mode === "individual" && (
+          <section className={styles.card}>
+            <header>
+              <span>
+                <ShieldCheck />
+              </span>
+              <div>
+                <small>STEP 2</small>
+                <h2>약관 동의</h2>
+              </div>
+            </header>
+            <label className={styles.allCheck}>
+              <input
+                type="checkbox"
+                checked={all}
+                onChange={(e) =>
+                  setChecked(
+                    Object.fromEntries(
+                      consents.map((c) => [c.type, e.target.checked]),
+                    ) as Record<ConsentType, boolean>,
+                  )
+                }
+              />
+              <i>
+                <Check />
+              </i>
+              <span>
+                <strong>약관 전체 동의</strong>
+                <small>필수 및 선택 약관을 모두 확인했어요</small>
+              </span>
+            </label>
+            <div className={styles.consentList}>
+              {consents.map((c) => (
+                <details key={c.type}>
+                  <summary>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={checked[c.type]}
+                        onChange={(e) =>
+                          setChecked((v) => ({
+                            ...v,
+                            [c.type]: e.target.checked,
+                          }))
+                        }
+                      />
+                      <i>
+                        <Check />
+                      </i>
+                      <span>
+                        {c.required ? <b>필수</b> : <em>선택</em>} {c.label}
+                      </span>
+                    </label>
+                    <ChevronRight aria-label={`${c.label} 전문 펼치기`} />
+                  </summary>
+                  <p>{c.detail}</p>
+                </details>
+              ))}
             </div>
-          </header>
-          <label className={styles.allCheck}>
-            <input
-              type="checkbox"
-              checked={all}
-              onChange={(e) =>
-                setChecked(
-                  Object.fromEntries(
-                    consents.map((c) => [c.type, e.target.checked]),
-                  ) as Record<ConsentType, boolean>,
-                )
-              }
-            />
-            <i>
-              <Check />
-            </i>
-            <span>
-              <strong>약관 전체 동의</strong>
-              <small>필수 및 선택 약관을 모두 확인했어요</small>
-            </span>
-          </label>
-          <div className={styles.consentList}>
-            {consents.map((c) => (
-              <details key={c.type}>
-                <summary>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={checked[c.type]}
-                      onChange={(e) =>
-                        setChecked((v) => ({
-                          ...v,
-                          [c.type]: e.target.checked,
-                        }))
-                      }
-                    />
-                    <i>
-                      <Check />
-                    </i>
-                    <span>
-                      {c.required ? <b>필수</b> : <em>선택</em>} {c.label}
-                    </span>
-                  </label>
-                  <ChevronRight aria-label={`${c.label} 전문 펼치기`} />
-                </summary>
-                <p>{c.detail}</p>
-              </details>
-            ))}
-          </div>
-        </section>
+          </section>
+        )}
+
         {error && (
           <p className={styles.error} role="alert">
             <Info />
             {error}
           </p>
         )}
+
         <button
           className={styles.submit}
           type="button"
-          onClick={() => void submit()}
-          disabled={busy || !required}
+          onClick={() => (mode === "group" ? submitGroup() : void submitIndividual())}
+          disabled={busy || (mode === "individual" && !required)}
         >
           {busy ? (
             <>
               <LoaderCircle className={styles.spin} />
               처리 중이에요
             </>
+          ) : mode === "group" ? (
+            "단체로 참여하기"
           ) : (
             "동의하고 투어 시작하기"
           )}
@@ -283,12 +501,13 @@ export default function JoinClient({ tourCode }: { tourCode: string }) {
     </Frame>
   );
 }
+
 function Frame({
   tourCode,
   children,
 }: {
   tourCode: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className={styles.page}>

@@ -130,7 +130,7 @@ export function PartnershipApplyComplete() {
           <span className="section-kicker">APPLICATION COMPLETE</span>
           <h1 id="complete-title">제휴여행사 가입신청이 완료되었습니다.</h1>
           <p className="partnership-complete-lead">
-            관리자가 신청정보와 증빙서류를 검토한 후 담당자 이메일로 결과를 안내합니다.
+            관리자가 플랫폼 등록 여행사 정보를 기준으로 신청을 검토한 후 담당자 이메일로 결과를 안내합니다.
           </p>
           <p className="partnership-apply-temp-note" role="note">
             프론트엔드 프로토타입 접수입니다. 실제 신청 레코드·이메일·알림톡은 생성·발송되지 않았습니다.
@@ -190,12 +190,8 @@ export function PartnershipApplyComplete() {
                 <dd className="partnership-complete-break">{summary.contactEmail || "미입력"}</dd>
               </div>
               <div>
-                <dt>필수서류</dt>
-                <dd>{summary.requiredDocsAttached ? "첨부 완료" : "첨부 필요"}</dd>
-              </div>
-              <div>
-                <dt>필수약관</dt>
-                <dd>{summary.requiredTermsAgreed ? "동의 완료" : "동의 필요"}</dd>
+                <dt>신청 방식</dt>
+                <dd>사업자등록번호 확인 · 플랫폼 등록 정보 사용</dd>
               </div>
             </dl>
           </section>
