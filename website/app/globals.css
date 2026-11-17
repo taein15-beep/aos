@@ -1197,6 +1197,88 @@ footer { color: #8798aa; background: #051426; }
   justify-content: flex-end;
   gap: 10px;
 }
+.partnership-agency-sample-badge {
+  display: inline-flex;
+  margin: 0 0 10px !important;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef5ff;
+  color: #1767c9 !important;
+  font-size: 11px !important;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+.partnership-guide-link {
+  color: #1767c9;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.partnership-sample-numbers {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+.partnership-sample-numbers > span {
+  color: #4d6078;
+  font-size: 12px;
+  font-weight: 700;
+}
+.partnership-sample-numbers > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.partnership-sample-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 148px;
+  padding: 10px 12px;
+  border: 1px solid #d6e6fb;
+  border-radius: 10px;
+  background: #f5f9ff;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.partnership-sample-chip:hover {
+  border-color: #318dff;
+  background: #eef5ff;
+}
+.partnership-sample-chip strong {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.partnership-sample-chip em {
+  color: #35557a;
+  font-size: 12px;
+  font-style: normal;
+}
+.partnership-sample-modal-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+.partnership-sample-modal-actions .button {
+  min-height: 64px;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  text-align: left;
+  padding: 12px 14px;
+}
+.partnership-sample-modal-actions .button small {
+  color: inherit;
+  opacity: .78;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 720px) {
+  .partnership-sample-modal-actions { grid-template-columns: 1fr; }
+}
 .partnership-apply-panel { border: 1px solid var(--line); border-radius: 14px; background: #fff; padding: 28px; box-shadow: 0 10px 30px rgba(16, 45, 84, .04); }
 .partnership-apply-panel-head { margin-bottom: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .partnership-apply-panel-head > span { color: #1779df; font-size: 11px; font-weight: 800; letter-spacing: .16em; }

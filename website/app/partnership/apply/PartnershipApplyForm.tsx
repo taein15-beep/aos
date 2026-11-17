@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AgencyConfirmModal } from "./AgencyConfirmModal";
 import {
+  PLATFORM_AGENCIES,
   createPrototypeApplyReceiptFromAgency,
   findPlatformAgencyByBusinessNumber,
   formatBusinessNumberInput,
@@ -21,97 +23,6 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-function useEscape(onClose: () => void, enabled: boolean) {
-  useEffect(() => {
-    if (!enabled) return;
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose, enabled]);
-}
-
-function AgencyConfirmDialog({
-  agency,
-  onClose,
-  onConfirm,
-  submitting,
-}: {
-  agency: PlatformAgency;
-  onClose: () => void;
-  onConfirm: () => void;
-  submitting: boolean;
-}) {
-  useEscape(onClose, true);
-
-  return (
-    <div className="partnership-apply-dialog" role="presentation">
-      <button type="button" className="partnership-apply-dialog-backdrop" aria-label="닫기" onClick={onClose} />
-      <div
-        className="partnership-apply-dialog-panel partnership-agency-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="partnership-agency-dialog-title"
-      >
-        <h3 id="partnership-agency-dialog-title">플랫폼 등록 여행사 확인</h3>
-        <p className="partnership-agency-dialog-lead">
-          입력하신 사업자등록번호로 AOS 플랫폼에 등록된 여행사를 찾았습니다. 아래 정보가 맞다면 제휴여행사
-          가입을 신청해 주세요.
-        </p>
-
-        <dl className="partnership-agency-summary">
-          <div>
-            <dt>여행사명</dt>
-            <dd>{agency.agencyName}</dd>
-          </div>
-          <div>
-            <dt>사업자등록번호</dt>
-            <dd>{agency.businessNumber}</dd>
-          </div>
-          <div>
-            <dt>대표자명</dt>
-            <dd>{agency.ceoName}</dd>
-          </div>
-          <div>
-            <dt>여행업 종류</dt>
-            <dd>{agency.tourismLicenseType}</dd>
-          </div>
-          <div>
-            <dt>대표 전화</dt>
-            <dd>{agency.phone}</dd>
-          </div>
-          <div>
-            <dt>사업장 주소</dt>
-            <dd>{agency.address}</dd>
-          </div>
-          <div>
-            <dt>담당자</dt>
-            <dd>
-              {agency.contactName} · {agency.contactPhone}
-            </dd>
-          </div>
-          <div>
-            <dt>담당자 이메일</dt>
-            <dd>{agency.contactEmail}</dd>
-          </div>
-        </dl>
-
-        <p className="partnership-agency-confirm-question">이 여행사로 제휴여행사 가입을 신청하시겠습니까?</p>
-
-        <div className="partnership-agency-dialog-actions">
-          <button type="button" className="button ghost dark compact" onClick={onClose} disabled={submitting}>
-            취소
-          </button>
-          <button type="button" className="button primary compact" onClick={onConfirm} disabled={submitting}>
-            {submitting ? "신청 중…" : "가입신청"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function PartnershipApplyForm() {
   const router = useRouter();
   const [businessNumber, setBusinessNumber] = useState("");
@@ -124,6 +35,14 @@ export function PartnershipApplyForm() {
   const closeModal = () => {
     if (submitting) return;
     setModalOpen(false);
+  };
+
+  const openAgencyModal = (agency: PlatformAgency) => {
+    setBusinessNumber(agency.businessNumber);
+    setError("");
+    setLookupNote("");
+    setFoundAgency(agency);
+    setModalOpen(true);
   };
 
   const checkBusinessNumber = () => {
@@ -191,8 +110,11 @@ export function PartnershipApplyForm() {
             <li>사업자등록번호만 입력해 플랫폼 사용 여행사인지 확인해 주세요.</li>
             <li>확인된 여행사 정보가 맞다면 모달에서 가입신청을 진행할 수 있습니다.</li>
             <li>
-              샘플 확인용 사업자등록번호: <strong>123-45-67890</strong>, <strong>234-56-78901</strong>,{" "}
-              <strong>345-67-89012</strong>
+              모달 화면만 바로 보려면{" "}
+              <Link href="/partnership/apply/sample-modal" className="partnership-guide-link">
+                모달 샘플 페이지
+              </Link>
+              를 열어 주세요.
             </li>
           </ul>
         </section>
@@ -239,6 +161,23 @@ export function PartnershipApplyForm() {
               <FieldError message={error} />
             </label>
 
+            <div className="partnership-sample-numbers" aria-label="샘플 사업자등록번호">
+              <span>샘플 번호로 모달 열기</span>
+              <div>
+                {PLATFORM_AGENCIES.map((agency) => (
+                  <button
+                    key={agency.businessNumber}
+                    type="button"
+                    className="partnership-sample-chip"
+                    onClick={() => openAgencyModal(agency)}
+                  >
+                    <strong>{agency.businessNumber}</strong>
+                    <em>{agency.agencyName}</em>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {lookupNote ? (
               <p className="partnership-biz-lookup-note" role="status">
                 {lookupNote}
@@ -250,12 +189,15 @@ export function PartnershipApplyForm() {
             <Link className="button ghost dark" href="/partnership">
               취소
             </Link>
+            <Link className="button ghost dark" href="/partnership/apply/sample-modal">
+              모달 샘플 보기
+            </Link>
           </div>
         </section>
       </div>
 
       {modalOpen && foundAgency ? (
-        <AgencyConfirmDialog
+        <AgencyConfirmModal
           agency={foundAgency}
           onClose={closeModal}
           onConfirm={submitApplication}
