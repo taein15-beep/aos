@@ -1,5 +1,5 @@
 /**
- * 정산서 STEP 5 — 지출·비용 (화면 임시 상태 / 저장 없음)
+ * 정산서 STEP 5 — 통합출금관리 (화면 임시 상태 / 저장 없음)
  * - 상품 예상원가 Mock이 없으므로 자동 시드는 하지 않습니다.
  * - 행사 공통비용은 비용 ID 기준 1회만 집계합니다.
  */
@@ -41,6 +41,12 @@ export type SettlementExpenseLine = {
   note: string;
   sourceType: SettlementExpenseSourceType;
   removable: boolean;
+  /** 출금 라인 수량. 미지정 시 1 */
+  quantity?: number;
+  /** 단가. 미지정 시 actual/expected 금액 사용 */
+  unitPrice?: number | null;
+  approvalNumber?: string | null;
+  expenseDate?: string | null;
 };
 
 export type SettlementExpenseDraftInput = {
@@ -52,6 +58,11 @@ export type SettlementExpenseDraftInput = {
   actualAmount: number | null;
   confirmed: boolean;
   note: string;
+  quantity?: number;
+  unitPrice?: number | null;
+  approvalNumber?: string | null;
+  expenseDate?: string | null;
+  voucherNumber?: string | null;
 };
 
 export type SettlementExpenseSummary = {
@@ -209,8 +220,8 @@ export function buildSettlementExpenseView(input: {
     method: input.method,
     lines,
     summary: summarizeSettlementExpenses(lines),
-    expectedSeedNote: "등록된 예상원가 없음 (상품 원가 Mock 미연동)",
-    stateNote: "화면 임시 입력 상태입니다. DB에 저장되지 않습니다.",
+    expectedSeedNote: "",
+    stateNote: "",
   };
 }
 
@@ -235,6 +246,10 @@ export function upsertSettlementExpense(
   },
 ): SettlementExpenseLine[] {
   const name = draft.name.trim() || draft.category;
+  const quantity = draft.quantity && draft.quantity > 0 ? draft.quantity : 1;
+  const unitPrice = isFiniteAmount(draft.unitPrice) ? draft.unitPrice : draft.actualAmount;
+  const computedActual =
+    isFiniteAmount(unitPrice) ? unitPrice * quantity : draft.actualAmount;
   const nextLine: SettlementExpenseLine = {
     id: context.editingId || createExpenseId(),
     category: draft.category || "기타비용",
@@ -245,12 +260,16 @@ export function upsertSettlementExpense(
     reservationCode: draft.scope === "reservation" ? context.sourceReservationCode : null,
     eventKey: draft.scope === "event_common" ? context.eventKey : null,
     expectedAmount: draft.expectedAmount,
-    actualAmount: draft.actualAmount,
-    confirmed: draft.confirmed && isFiniteAmount(draft.actualAmount),
-    voucherNumber: null,
+    actualAmount: computedActual,
+    confirmed: draft.confirmed && isFiniteAmount(computedActual),
+    voucherNumber: draft.voucherNumber?.trim() || null,
     note: draft.note.trim(),
     sourceType: "manual",
     removable: true,
+    quantity,
+    unitPrice: isFiniteAmount(unitPrice) ? unitPrice : null,
+    approvalNumber: draft.approvalNumber?.trim() || null,
+    expenseDate: draft.expenseDate?.trim() || null,
   };
 
   if (context.editingId) {
@@ -261,13 +280,31 @@ export function upsertSettlementExpense(
         id: line.id,
         sourceType: line.sourceType,
         removable: line.removable,
-        voucherNumber: line.voucherNumber,
+        voucherNumber: draft.voucherNumber === undefined ? line.voucherNumber : nextLine.voucherNumber,
         expectedAmount: isFiniteAmount(draft.expectedAmount) ? draft.expectedAmount : line.expectedAmount,
       };
     });
   }
 
   return [...lines, nextLine];
+}
+
+export function getExpenseQuantity(line: SettlementExpenseLine) {
+  return line.quantity && line.quantity > 0 ? line.quantity : 1;
+}
+
+export function getExpenseUnitPrice(line: SettlementExpenseLine) {
+  if (isFiniteAmount(line.unitPrice)) return line.unitPrice;
+  const provisional = resolveProvisionalAmount(line);
+  if (!isFiniteAmount(provisional)) return null;
+  const quantity = getExpenseQuantity(line);
+  return quantity > 0 ? Math.round(provisional / quantity) : provisional;
+}
+
+export function getExpenseLineTotal(line: SettlementExpenseLine) {
+  const unit = getExpenseUnitPrice(line);
+  if (!isFiniteAmount(unit)) return null;
+  return unit * getExpenseQuantity(line);
 }
 
 export function removeSettlementExpense(lines: SettlementExpenseLine[], id: string): SettlementExpenseLine[] {

@@ -66,14 +66,15 @@ type Row = [
 
 /** SEL00032(그래가자) 이번 달 예약 38건 — 행복투어 21 · 현담여행사 17 */
 const ROWS: Row[] = [
+  // 통합정산 테스트용: 공급여행사(행복투어) 목록 상위 5건을 국악와인열차·2026-10-17로 맞춤 (예약자·인원만 다르게)
   ["RSV-20261012-001", "2026-10-12 14:32", "HT-WINE01", 2, "김민수", "5678", "예약확정", "결제완료"],
   ["RSV-20261012-002", "2026-10-12 11:48", "HD-TY01", 2, "윤서아", "2231", "예약접수", "미결제"],
-  ["RSV-20261012-003", "2026-10-12 10:15", "HT-DY01", 1, "강도윤", "9012", "예약접수", "미결제"],
-  ["RSV-20261011-004", "2026-10-11 16:20", "HT-DMZ01", 3, "이영희", "3344", "예약확정", "일부결제"],
-  ["RSV-20261010-006", "2026-10-10 11:05", "HT-GP01", 1, "한지우", "7781", "예약접수", "결제완료"],
+  ["RSV-20261012-003", "2026-10-12 10:15", "HT-WINE01", 1, "강도윤", "9012", "예약접수", "미결제"],
+  ["RSV-20261011-004", "2026-10-11 16:20", "HT-WINE01", 3, "이영희", "3344", "예약확정", "일부결제"],
+  ["RSV-20261010-006", "2026-10-10 11:05", "HT-WINE01", 4, "한지우", "7781", "예약접수", "결제완료"],
   ["RSV-20261010-009", "2026-10-10 13:12", "HD-BS02", 2, "박지현", "4410", "예약접수", "미결제"],
   ["RSV-20261009-005", "2026-10-09 10:30", "HD-SC01", 2, "오하린", "6620", "예약확정", "결제완료"],
-  ["RSV-20261008-010", "2026-10-08 15:40", "HT-YS01", 1, "서준혁", "1098", "취소요청", "결제완료"],
+  ["RSV-20261008-010", "2026-10-08 15:40", "HT-WINE01", 2, "서준혁", "1098", "취소요청", "결제완료"],
   ["RSV-20261008-012", "2026-10-08 14:05", "HD-JS01", 1, "최준호", "8826", "취소요청", "결제완료"],
   ["RSV-20261007-008", "2026-10-07 09:50", "HT-WINE01", 3, "임채원", "5502", "예약확정", "결제완료"],
   ["RSV-20261005-015", "2026-10-05 17:10", "HT-GJ01", 4, "송민재", "3017", "예약확정", "결제완료"],
@@ -319,6 +320,8 @@ export type SellerReservationPaymentRecord = {
   type: "카드결제" | "계좌이체" | "환불";
   amount: number;
   result: "완료";
+  /** 현금(계좌이체) 입금자명 — 없으면 예약자명으로 표기 */
+  depositorName?: string;
 };
 
 export type SellerReservationStatusRecord = { at: string; status: SellerReservationStatus; note?: string };
@@ -372,7 +375,15 @@ type DetailOverride = Partial<
     SellerReservationDetail,
     "customerPhone" | "customerEmail" | "customerBirthDate" | "customerGender" | "companions" | "memo" | "supplierMemo" | "boardingPlace"
   >
-> & { partialPaidAmount?: number; cancelReason?: string; travelDate?: string };
+> & {
+  partialPaidAmount?: number;
+  cancelReason?: string;
+  travelDate?: string;
+  /** 결제수단 강제 — 정산 입금내역 현금/카드 구분용 SAMPLE */
+  paymentMethod?: "카드" | "계좌이체";
+  /** 결제내역 강제 — 카드/현금 분할 입금 SAMPLE */
+  payments?: SellerReservationPaymentRecord[];
+};
 
 const DETAIL_OVERRIDES: Record<string, DetailOverride> = {
   "RSV-20261012-001": {
@@ -384,8 +395,27 @@ const DETAIL_OVERRIDES: Record<string, DetailOverride> = {
     memo: "창가 좌석 요청",
     supplierMemo: "동행자 1명 채식 요청",
     boardingPlace: "서울역",
+    travelDate: "2026-10-17",
+    // 김민수: 카드 100,000 + 현금입금(홍길동) 30,000
+    payments: [
+      { at: "2026-10-12 14:35", type: "카드결제", amount: 100000, result: "완료" },
+      { at: "2026-10-12 15:10", type: "계좌이체", amount: 30000, result: "완료", depositorName: "홍길동" },
+    ],
   },
-  "RSV-20261011-004": { partialPaidAmount: 100000, travelDate: "2026-10-16" },
+  "RSV-20261012-003": { travelDate: "2026-10-17" },
+  "RSV-20261011-004": { partialPaidAmount: 100000, travelDate: "2026-10-17" },
+  // 한지우(4인): 현금입금 4건 × 65,000 · 입금자명 각각 다름
+  "RSV-20261010-006": {
+    travelDate: "2026-10-17",
+    paymentMethod: "계좌이체",
+    payments: [
+      { at: "2026-10-10 11:20", type: "계좌이체", amount: 65000, result: "완료", depositorName: "한지우" },
+      { at: "2026-10-10 11:35", type: "계좌이체", amount: 65000, result: "완료", depositorName: "박서준" },
+      { at: "2026-10-10 12:05", type: "계좌이체", amount: 65000, result: "완료", depositorName: "윤아린" },
+      { at: "2026-10-10 13:40", type: "계좌이체", amount: 65000, result: "완료", depositorName: "정하윤" },
+    ],
+  },
+  "RSV-20261008-010": { travelDate: "2026-10-17", paymentMethod: "계좌이체" }, // 서준혁 · 현금입금
   "RSV-20261008-012": { cancelReason: "개인사정" },
   "RSV-20261005-018": { cancelReason: "개인 일정 변경" },
 };
@@ -436,7 +466,7 @@ function buildDetail(reservation: SellerReservation, index: number): SellerReser
     });
 
   const travelDate = override.travelDate ?? shiftDate(reservation.reservedAt.slice(0, 10), 5 + (index % 9));
-  const paymentMethod = index % 3 === 2 ? "계좌이체" : "카드";
+  const paymentMethod = override.paymentMethod ?? (index % 3 === 2 ? "계좌이체" : "카드");
   const paidAt = addMinutes(reservation.reservedAt, 3);
   const confirmedAt = addMinutes(reservation.reservedAt, 38);
   const isCancelFlow = reservation.status === "취소요청" || reservation.status === "취소완료";
@@ -448,13 +478,20 @@ function buildDetail(reservation: SellerReservation, index: number): SellerReser
   if (reservation.paymentStatus === "일부결제") {
     paidAmount = override.partialPaidAmount ?? Math.round(amount / 2 / 10000) * 10000;
   }
-  const refundAmount = reservation.paymentStatus === "환불완료" ? paidAmount : 0;
 
   const payments: SellerReservationPaymentRecord[] = [];
-  if (paidAmount > 0) {
+  if (override.payments?.length) {
+    payments.push(...override.payments.map((payment) => ({ ...payment })));
+    paidAmount = override.payments
+      .filter((payment) => payment.type !== "환불")
+      .reduce((sum, payment) => sum + payment.amount, 0);
+  } else if (paidAmount > 0) {
     payments.push({ at: paidAt, type: paymentMethod === "카드" ? "카드결제" : "계좌이체", amount: paidAmount, result: "완료" });
   }
-  if (refundAmount > 0) payments.push({ at: cancelCompletedAt, type: "환불", amount: refundAmount, result: "완료" });
+  const refundAmount = reservation.paymentStatus === "환불완료" ? paidAmount : 0;
+  if (refundAmount > 0 && !payments.some((payment) => payment.type === "환불")) {
+    payments.push({ at: cancelCompletedAt, type: "환불", amount: refundAmount, result: "완료" });
+  }
 
   const statusHistory: SellerReservationStatusRecord[] = [{ at: reservation.reservedAt, status: "예약접수" }];
   if (reservation.status !== "예약접수") statusHistory.push({ at: confirmedAt, status: "예약확정", note: `${reservation.supplierName} 확정` });

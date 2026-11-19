@@ -20,17 +20,30 @@ export type MoneyDisplay =
   | { kind: "amount"; value: number; label: string }
   | { kind: "needs_review"; label: "확인 필요" };
 
+export type SettlementDepositChannel = "cash" | "card" | "refund" | "other";
+
 export type SettlementDepositRow = {
   /** 거래 고유 ID (결제 id / 환불 id) — 중복 집계 방지 키 */
   id: string;
   reservationCode: string;
+  bookerName: string;
   paidAt: string;
   method: string;
+  /** 현금입금 / 카드결제 구분 */
+  channel: SettlementDepositChannel;
+  channelLabel: "현금입금" | "카드결제" | "환불" | "기타";
+  /** 현금: 입금자명 / 카드: PG사명 */
+  counterparty: string;
+  /** @deprecated UI는 counterparty 사용. 기존 테스트 호환용 */
   payer: string;
   amount: number;
   amountLabel: string;
   status: string;
   kind: "payment" | "refund";
+  /** 거래번호 (결제·환불 번호) */
+  transactionNumber: string;
+  /** 승인번호 — 카드결제 중심, 현금은 "-" */
+  approvalNumber: string;
 };
 
 export type SettlementDepositEmptyReason = "no_transactions" | "unavailable";
@@ -49,10 +62,57 @@ export type SettlementSalesFinanceView = {
 /** 테스트·계산용 입력. confirmedSaleAmount 가 null 이면 결제의무액 확인 필요. */
 export type SettlementSaleReservationInput = {
   code: string;
+  bookerName?: string;
   confirmedSaleAmount: number | null;
   payments: ReservationPayment[];
   refunds: ReservationRefund[];
 };
+
+const CARD_PG_POOL = ["KSNET", "토스페이", "나이스페이", "KG이니시스"] as const;
+
+export function resolveSettlementDepositChannel(
+  method: string,
+  kind: "payment" | "refund",
+): SettlementDepositChannel {
+  if (kind === "refund") return "refund";
+  if (method === "신용카드") return "card";
+  if (method === "계좌이체" || method === "무통장입금" || method === "현금") return "cash";
+  return "other";
+}
+
+export function settlementDepositChannelLabel(
+  channel: SettlementDepositChannel,
+): SettlementDepositRow["channelLabel"] {
+  if (channel === "cash") return "현금입금";
+  if (channel === "card") return "카드결제";
+  if (channel === "refund") return "환불";
+  return "기타";
+}
+
+function resolveCardPgName(seed: string): string {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash + seed.charCodeAt(index) * (index + 1)) % CARD_PG_POOL.length;
+  }
+  return CARD_PG_POOL[hash];
+}
+
+export function resolveSettlementDepositCounterparty(input: {
+  channel: SettlementDepositChannel;
+  bookerName: string;
+  method: string;
+  paymentId: string;
+  processedBy?: string;
+}): string {
+  if (input.channel === "card") return resolveCardPgName(input.paymentId);
+  if (input.channel === "cash") {
+    const depositor = input.processedBy?.trim();
+    if (depositor && depositor !== "시스템") return depositor;
+    return input.bookerName.trim() || "입금자 미상";
+  }
+  if (input.channel === "refund") return input.method || input.processedBy?.trim() || "환불";
+  return input.processedBy?.trim() || "-";
+}
 
 function amountDisplay(value: number): MoneyDisplay {
   return { kind: "amount", value, label: formatKrw(value) };
@@ -139,47 +199,83 @@ export function calculateOverpaid(obligation: number, netReceived: number) {
 export function buildDepositRowsForReservation(input: SettlementSaleReservationInput): SettlementDepositRow[] {
   const rows: SettlementDepositRow[] = [];
   const seen = new Set<string>();
+  const bookerName = input.bookerName?.trim() || "-";
 
   for (const payment of input.payments) {
     if (seen.has(payment.id)) continue;
     seen.add(payment.id);
+    const channel = resolveSettlementDepositChannel(payment.method, "payment");
+    const counterparty = resolveSettlementDepositCounterparty({
+      channel,
+      bookerName,
+      method: payment.method,
+      paymentId: payment.id,
+      processedBy: payment.processedBy,
+    });
     rows.push({
       id: payment.id,
       reservationCode: input.code,
+      bookerName,
       paidAt: payment.paidAt,
       method: payment.method,
-      payer: payment.processedBy || "-",
+      channel,
+      channelLabel: settlementDepositChannelLabel(channel),
+      counterparty,
+      payer: counterparty,
       amount: payment.amount,
       amountLabel: formatKrw(payment.amount),
       status: payment.status,
       kind: "payment",
+      transactionNumber: payment.paymentNumber || "-",
+      approvalNumber: channel === "card" ? payment.approvalNumber || "-" : "-",
     });
   }
 
   for (const refund of input.refunds) {
     if (seen.has(refund.id)) continue;
     seen.add(refund.id);
+    const channel = resolveSettlementDepositChannel(refund.method, "refund");
+    const counterparty = resolveSettlementDepositCounterparty({
+      channel,
+      bookerName,
+      method: refund.method,
+      paymentId: refund.id,
+      processedBy: refund.processedBy,
+    });
     rows.push({
       id: refund.id,
       reservationCode: input.code,
+      bookerName,
       paidAt: refund.refundedAt,
       method: refund.method,
-      payer: refund.processedBy || "-",
+      channel,
+      channelLabel: settlementDepositChannelLabel(channel),
+      counterparty,
+      payer: counterparty,
       amount: refund.amount,
       amountLabel: formatKrw(refund.amount),
       status: refund.status,
       kind: "refund",
+      transactionNumber: refund.refundNumber || "-",
+      approvalNumber: "-",
     });
   }
 
   return rows;
 }
 
+/** 예약번호 기준 묶음 → 동일 예약 내 입금일 최신순 */
 function sortDepositRows(rows: SettlementDepositRow[]) {
   return [...rows].sort((a, b) => {
+    if (a.reservationCode !== b.reservationCode) return a.reservationCode.localeCompare(b.reservationCode);
     if (a.paidAt !== b.paidAt) return a.paidAt < b.paidAt ? 1 : -1;
     return a.id.localeCompare(b.id);
   });
+}
+
+/** 입금내역 합계 — 결제 +, 환불 - */
+export function sumSettlementDepositAmounts(rows: SettlementDepositRow[]) {
+  return rows.reduce((sum, row) => sum + (row.kind === "refund" ? -row.amount : row.amount), 0);
 }
 
 /**
@@ -239,6 +335,7 @@ export function buildSettlementSalesFinance(inputs: SettlementSaleReservationInp
 export function reservationToSaleInput(reservation: ReservationDetail): SettlementSaleReservationInput {
   return {
     code: reservation.code,
+    bookerName: reservation.bookerName,
     confirmedSaleAmount: resolveConfirmedSaleAmount(reservation),
     payments: getReservationPayments(reservation.code),
     refunds: getReservationRefunds(reservation.code),

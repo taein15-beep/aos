@@ -1183,53 +1183,108 @@ td.money,td.money-danger{text-align:right}
 .reservation-settlement-method-card strong{color:#213047;font-size:13px}
 .reservation-settlement-method-card em{color:#7d899a;font-size:11px;font-style:normal;line-height:1.45}
 .reservation-settlement-method-selection{margin:6px 0 0;color:#5b6b82;font-size:11px;font-weight:600}
-.settlement-doc-draft-content .member-web-detail-title-row h1{display:inline-flex;align-items:center;gap:8px}
+.settlement-doc-draft-content .member-web-detail-title-row h1{display:inline-flex;align-items:center;gap:8px;font-size:26px}
+.settlement-doc-draft-content .member-web-breadcrumb{font-size:13px}
+.settlement-doc-draft-content .member-web-detail-subtitle{font-size:13px}
+.settlement-doc-draft-content .member-web-detail-card-head{min-height:52px}
+.settlement-doc-draft-content .member-web-detail-card-head strong{font-size:15px;color:#1f2d42}
+.settlement-doc-draft-content .member-web-detail-card-head .badge{height:26px;padding:0 9px;font-size:12px}
+.settlement-doc-draft-title-emoji{font-size:16px;line-height:1;flex:0 0 auto}
+.settlement-doc-draft-content .member-web-detail-kpi small{font-size:13px;color:#5f6d81}
+.settlement-doc-draft-content .member-web-detail-kpi strong{font-size:16px}
+.settlement-doc-draft-content .member-web-table th{height:46px;font-size:13px}
+.settlement-doc-draft-content .member-web-table td{height:64px;font-size:13px}
+.settlement-doc-draft-content .member-web-table .member-name b{font-size:14px}
+.settlement-doc-draft-content .member-web-table .badge{height:26px;padding:0 9px;font-size:12px}
 .settlement-doc-draft-stack{display:grid;gap:12px}
 .settlement-doc-draft-info-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.settlement-doc-draft-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding:14px 16px}
+.settlement-doc-draft-summary .member-web-detail-kpi{height:88px;padding:14px 16px}
+.settlement-doc-draft-summary .member-web-detail-kpi strong{font-size:17px}
 .settlement-doc-draft-split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.settlement-doc-draft-placeholder{margin:0;padding:18px 14px;border:1px dashed #d5dde8;border-radius:7px;background:#f8fafc;color:#7a8699;font-size:12px;font-weight:600;text-align:center}
+.settlement-doc-draft-placeholder{margin:0;padding:18px 14px;border:1px dashed #d5dde8;border-radius:7px;background:#f8fafc;color:#7a8699;font-size:14px;font-weight:600;text-align:center}
 .settlement-doc-draft-table td,.settlement-doc-draft-table th{white-space:nowrap}
 .settlement-doc-draft-table tr.is-source-reservation{background:#f5f9ff}
-.settlement-doc-draft-source-tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;background:#e8f0fe;color:#2563eb;font-size:10px;font-weight:700;vertical-align:middle}
-.settlement-sales-data-note{margin:0 0 12px;padding:0 2px;color:#7a8699;font-size:12px;font-weight:600}
-.settlement-sales-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.settlement-sales-kpi-grid .member-web-detail-kpi{min-height:84px}
-.settlement-sales-kpi-grid .member-web-detail-kpi strong{font-size:20px}
+.settlement-doc-draft-table tr.is-excluded-reservation td{color:#94a3b8}
+.settlement-doc-draft-table tr.is-excluded-reservation .reservation-code-link{color:#94a3b8}
+.settlement-doc-draft-roster-table{min-width:1100px}
+.settlement-doc-draft-roster-table th:nth-child(1){width:16%}
+.settlement-doc-draft-roster-table th:nth-child(2){width:10%}
+.settlement-doc-draft-roster-table th:nth-child(3){width:14%}
+.settlement-doc-draft-roster-table th:nth-child(4){width:10%}
+.settlement-doc-draft-roster-table th:nth-child(5){width:12%}
+.settlement-doc-draft-roster-table th:nth-child(6){width:20%}
+.settlement-doc-draft-roster-table th:nth-child(7){width:8%}
+.settlement-doc-draft-memo-cell{padding:8px!important;white-space:normal!important}
+.settlement-doc-draft-memo-input{width:100%;min-width:140px;height:36px;border:1px solid #d7dee8;border-radius:6px;background:#fff;color:#1f2d42;padding:0 10px;font-size:13px;font-weight:600;outline:none}
+.settlement-doc-draft-memo-input:focus{border-color:#6ea0f6;box-shadow:0 0 0 3px #eaf2ff}
+.settlement-doc-draft-memo-input::placeholder{color:#94a3b8;font-weight:500}
+.settlement-doc-draft-include-btn{min-width:64px;height:32px;padding:0 12px;font-size:12px}
+.settlement-doc-draft-include-btn.is-included{border-color:#f1c40f;background:#fffbeb;color:#a16207}
+.settlement-doc-draft-source-tag{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:#e8f0fe;color:#2563eb;font-size:12px;font-weight:700;vertical-align:middle}
+.settlement-sales-data-note{margin:0 0 12px;padding:0 2px;color:#7a8699;font-size:13px;font-weight:600}
+.settlement-sales-kpi-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:12px 13px}
+.settlement-sales-kpi-grid .member-web-detail-kpi{min-height:80px;padding:12px 10px}
+.settlement-sales-kpi-grid .member-web-detail-kpi small{font-size:12px}
+.settlement-sales-kpi-grid .member-web-detail-kpi strong{font-size:15px}
 .settlement-sales-kpi-review{color:#b45309!important}
 .settlement-sales-kpi-net{color:#2563eb!important}
 .settlement-sales-kpi-due{color:#d92d20!important}
 .settlement-sales-kpi-over{color:#0f8738!important}
+.settlement-sales-kpi-profit{color:#15803d!important}
+.settlement-sales-kpi-loss{color:#d92d20!important}
+.settlement-sales-deposit-table{min-width:1120px}
 .settlement-sales-deposit-table .amount-cell.is-refund{color:#d92d20}
 .settlement-sales-deposit-table tr.is-refund-row td{background:#fcfbfa}
+.settlement-sales-deposit-table tr.is-reservation-group-start td{border-top:2px solid #94a3b8}
+.settlement-sales-deposit-table tr.is-reservation-group-start:first-child td{border-top:0}
+.settlement-sales-deposit-table tr.is-cash-deposit td{background:#f8fffb}
+.settlement-sales-deposit-table tr.is-card-payment td{background:#f8fbff}
+.settlement-sales-deposit-table tr.is-refund-row.is-cash-deposit td,
+.settlement-sales-deposit-table tr.is-refund-row.is-card-payment td{background:#fcfbfa}
+.settlement-deposit-reservation-cell{vertical-align:middle!important;background:#f8fafc;border-right:1px solid #e2e8f0}
+.settlement-deposit-reservation-meta{display:grid;gap:8px;justify-items:center;padding:4px 0}
+.settlement-deposit-reservation-meta .badge{height:26px;padding:0 9px;font-size:12px;font-weight:750;font-variant-numeric:tabular-nums}
+.settlement-sales-deposit-table tfoot td{height:52px;background:#f1f5f9;border-top:2px solid #64748b;font-size:13px}
+.settlement-deposit-total-row strong{color:#0f172a;font-size:14px;font-weight:800}
+.settlement-deposit-counterparty{display:flex;align-items:center;justify-content:flex-start;gap:8px;white-space:nowrap}
+.settlement-deposit-counterparty .badge{flex:0 0 auto}
+.settlement-deposit-counterparty strong{color:#1f2d42;font-size:13px;font-weight:700}
 .settlement-roster-table .center{text-align:center}
-.settlement-roster-details{font-size:12px}
-.settlement-roster-details summary{cursor:pointer;color:#2563eb;font-weight:700;list-style:none}
-.settlement-roster-details summary::-webkit-details-marker{display:none}
-.settlement-roster-details[open] summary{margin-bottom:6px}
-.settlement-roster-details dl{display:grid;gap:4px;margin:0;padding:8px;border:1px solid #e5eaf1;border-radius:6px;background:#f8fafc;min-width:160px}
-.settlement-roster-details dl>div{display:grid;grid-template-columns:72px 1fr;gap:6px}
-.settlement-roster-details dt{color:#7a8699;font-weight:700}
-.settlement-roster-details dd{margin:0;color:#1f2d42;font-weight:600}
+.settlement-roster-table tr.is-reservation-group-start td{border-top:2px solid #94a3b8}
+.settlement-roster-table tbody tr:first-child td{border-top:0}
+.settlement-roster-reservation-cell{vertical-align:middle!important;background:#f8fafc;border-right:1px solid #e2e8f0}
+.settlement-roster-passport-btn{height:30px;padding:0 12px;border:1px solid #bfdbfe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700;cursor:pointer}
+.settlement-roster-passport-btn:hover{background:#dbeafe}
+.settlement-roster-passport-modal{width:min(560px,92vw)}
+.settlement-roster-passport-card{margin:0 16px;padding:16px 18px;border:1px solid #dbe3ef;border-left:4px solid #3b82f6;border-radius:8px;background:#f8fafc;display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+.settlement-roster-passport-item{display:grid;grid-template-columns:76px 10px minmax(0,1fr);align-items:center;gap:4px;min-width:0}
+.settlement-roster-passport-item.is-full{grid-column:1 / -1}
+.settlement-roster-passport-item span{color:#64748b;font-size:13px;font-weight:600}
+.settlement-roster-passport-item b{color:#94a3b8;font-size:13px;font-weight:600;text-align:center}
+.settlement-roster-passport-item strong{color:#0f172a;font-size:14px;font-weight:700;word-break:break-word}
+.settlement-individual-expense-table tr.is-reservation-group-start td{border-top:2px solid #94a3b8}
+.settlement-individual-expense-table tbody tr:first-child td{border-top:0}
+.settlement-individual-expense-reservation-cell{vertical-align:middle!important;background:#f8fafc;border-right:1px solid #e2e8f0}
+.settlement-individual-expense-voucher-cell{vertical-align:middle!important;background:#f8fafc}
+.settlement-individual-expense-table tfoot td{height:52px;background:#f1f5f9;border-top:2px solid #64748b;font-size:13px}
+.settlement-individual-expense-total-row strong{color:#0f172a;font-size:14px;font-weight:800}
 .settlement-expense-add-btn{margin-left:auto;height:32px;display:inline-flex;align-items:center;gap:4px}
 .settlement-expense-table .text-left{text-align:left}
+.settlement-expense-table input{width:100%;min-width:0;height:34px;border:1px solid #d6dbe1;border-radius:6px;padding:0 8px;font-size:13px;font-weight:600;color:#1f2d42;background:#fff;box-sizing:border-box}
+.settlement-expense-table input.center{text-align:center}
+.settlement-expense-draft-row{background:#f8fafc}
+.settlement-expense-inline-actions{display:inline-flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.settlement-expense-inline-actions button{height:30px;min-width:30px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.settlement-expense-inline-actions button:disabled{opacity:.45;cursor:not-allowed}
+.settlement-expense-voucher-create{height:30px;padding:0 10px;white-space:nowrap}
+.settlement-expense-voucher-badge{display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid #f6d860;border-radius:999px;background:#fff7d6;color:#92400e;font-size:12px;font-weight:700;cursor:pointer}
+.settlement-expense-voucher-badge:hover{background:#fef3c7;color:#78350f}
 .settlement-expense-temp{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;background:#fff7ed;color:#c2410c;font-size:10px;font-weight:700}
 .settlement-expense-confirm{height:28px;padding:0 10px;border:1px solid #d5dde8;border-radius:999px;background:#fff;color:#64748b;font-size:12px;font-weight:700;cursor:pointer}
 .settlement-expense-confirm.is-on{border-color:#86efac;background:#ecfdf5;color:#15803d}
-.settlement-expense-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
-.settlement-expense-summary>div{border:1px solid #e5eaf1;border-radius:8px;background:#f8fafc;padding:10px 12px}
-.settlement-expense-summary span{display:block;color:#7a8699;font-size:12px;font-weight:700;margin-bottom:4px}
-.settlement-expense-summary strong{font-size:15px;color:#1f2d42}
-.settlement-expense-modal{width:min(560px,92vw)}
-.settlement-expense-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 2px 8px}
-.settlement-expense-form label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;color:#475569}
-.settlement-expense-form label.full{grid-column:1/-1}
-.settlement-expense-form input,.settlement-expense-form select,.settlement-expense-form textarea{height:38px;border:1px solid #d6dbe1;border-radius:6px;padding:0 10px;font-size:14px;font-weight:600;color:#1f2d42}
-.settlement-expense-form textarea{height:auto;padding:8px 10px;resize:vertical}
-.settlement-expense-check{flex-direction:row!important;align-items:center;gap:8px!important;grid-column:1/-1}
-.settlement-expense-check input{width:16px;height:16px}
-.settlement-expense-modal-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
-.settlement-expense-modal-actions>div{display:flex;gap:8px}
-.settlement-expense-modal-actions .danger{color:#b91c1c;border-color:#fecaca}
+.settlement-expense-table tfoot td{height:52px;background:#f1f5f9;border-top:2px solid #64748b;font-size:13px}
+.settlement-expense-total-row strong{color:#0f172a;font-size:14px;font-weight:800}
 .settlement-voucher-link{border:0;background:transparent;padding:0;color:#2563eb;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 .settlement-voucher-link:hover{color:#1d4ed8}
 .settlement-voucher-missing-label{color:#94a3b8;font-size:12px;font-weight:600}
@@ -1258,24 +1313,25 @@ td.money,td.money-danger{text-align:right}
 .settlement-profit-card .member-web-detail-card-head{align-items:center}
 .settlement-profit-hold,.settlement-profit-basis{margin:0 0 12px;padding:10px 12px;border-radius:8px;border:1px solid #e5eaf1;background:#f8fafc}
 .settlement-profit-hold{border-color:#fde68a;background:#fffbeb}
-.settlement-profit-hold strong,.settlement-profit-basis strong{display:block;margin-bottom:6px;font-size:12px;color:#1f2d42}
-.settlement-profit-hold ul,.settlement-profit-basis ul{margin:0;padding-left:18px;color:#475569;font-size:12px;line-height:1.55}
+.settlement-profit-hold strong,.settlement-profit-basis strong{display:block;margin-bottom:6px;font-size:14px;color:#1f2d42}
+.settlement-profit-hold ul,.settlement-profit-basis ul{margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.55}
 .settlement-profit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .settlement-profit-block{border:1px solid #e5eaf1;border-radius:8px;padding:12px;background:#fff}
-.settlement-profit-block h4{margin:0 0 10px;font-size:13px;color:#1f2d42}
+.settlement-profit-block h4{margin:0 0 10px;font-size:14px;color:#1f2d42}
 .settlement-profit-block dl{margin:0;display:grid;gap:8px}
 .settlement-profit-block dl>div{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
-.settlement-profit-block dt{color:#7a8699;font-size:12px;font-weight:700}
+.settlement-profit-block dt{color:#7a8699;font-size:13px;font-weight:700}
 .settlement-profit-block dd{margin:0;text-align:right}
-.settlement-profit-block strong{font-size:14px;color:#1f2d42;font-variant-numeric:tabular-nums}
-.settlement-profit-emphasis{font-size:15px!important;color:#0f172a!important}
+.settlement-profit-block strong{font-size:15px;color:#1f2d42;font-variant-numeric:tabular-nums}
+.settlement-profit-emphasis{font-size:16px!important;color:#0f172a!important}
 .settlement-profit-loss{color:#b91c1c!important}
 .settlement-profit-muted{color:#94a3b8!important;font-weight:650!important}
 .settlement-profit-result{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;border:1px solid #dbe3ee;border-radius:8px;background:#f1f5f9}
 .settlement-profit-result>div{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.settlement-profit-result span{color:#64748b;font-size:13px;font-weight:700}
-.settlement-profit-result strong{font-size:20px;color:#0f172a;font-variant-numeric:tabular-nums}
-@media(max-width:980px){.settlement-doc-draft-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settlement-doc-draft-split{grid-template-columns:1fr}.settlement-sales-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settlement-expense-summary{grid-template-columns:1fr 1fr}.settlement-expense-form{grid-template-columns:1fr}.settlement-voucher-meta{grid-template-columns:1fr 1fr}.settlement-voucher-split{grid-template-columns:1fr}.settlement-profit-grid{grid-template-columns:1fr}.settlement-profit-result{grid-template-columns:1fr}}
+.settlement-profit-result span{color:#64748b;font-size:14px;font-weight:700}
+.settlement-profit-result strong{font-size:22px;color:#0f172a;font-variant-numeric:tabular-nums}
+@media(max-width:1280px){.settlement-sales-kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:980px){.settlement-doc-draft-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settlement-doc-draft-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.settlement-doc-draft-split{grid-template-columns:1fr}.settlement-sales-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settlement-voucher-meta{grid-template-columns:1fr 1fr}.settlement-voucher-split{grid-template-columns:1fr}.settlement-profit-grid{grid-template-columns:1fr}.settlement-profit-result{grid-template-columns:1fr}}
 .reservation-cancel-body{max-height:min(72vh,760px);overflow-y:auto}
 .reservation-cancel-target{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px;border:1px solid #e7edf4;border-radius:7px;background:#fafbfd}
 .reservation-cancel-target>div{display:grid;gap:4px;min-width:0}

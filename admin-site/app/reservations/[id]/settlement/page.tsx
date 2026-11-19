@@ -14,8 +14,6 @@ import {
   buildInitialSettlementExpenses,
   type SettlementExpenseLine,
 } from "@/lib/admin/reservation-settlement-expenses";
-import { buildSettlementRosterFromTargets } from "@/lib/admin/reservation-settlement-roster";
-import { buildSettlementSalesFinanceFromTargets } from "@/lib/admin/reservation-settlement-sales";
 import { withReservationViewer } from "@/lib/admin/reservation-permission";
 
 export default function ReservationSettlementDraftPage() {
@@ -44,16 +42,6 @@ export default function ReservationSettlementDraftPage() {
     }
     setExpenses(buildInitialSettlementExpenses(draft));
   }, [draft]);
-
-  const sales = useMemo(
-    () => (draft ? buildSettlementSalesFinanceFromTargets(draft.targets) : null),
-    [draft],
-  );
-
-  const roster = useMemo(
-    () => (draft ? buildSettlementRosterFromTargets(draft.targets) : null),
-    [draft],
-  );
 
   const backToReservation = () => {
     router.push(withReservationViewer(`/reservations/${encodeURIComponent(reservationCode)}`, viewer));
@@ -124,16 +112,12 @@ export default function ReservationSettlementDraftPage() {
             </button>
           </section>
         ) : (
-          sales && roster && (
-            <SettlementDocumentShell
-              view={draft}
-              sales={sales}
-              roster={roster}
-              expenses={expenses}
-              onExpensesChange={setExpenses}
-              reservationHref={reservationHref}
-            />
-          )
+          <SettlementDocumentShell
+            view={draft}
+            expenses={expenses}
+            onExpensesChange={setExpenses}
+            reservationHref={reservationHref}
+          />
         )}
       </main>
     </ProductAdminShell>

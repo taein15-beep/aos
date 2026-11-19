@@ -124,8 +124,9 @@ function buildRecord(code: string, baseStatus: SellerReservationStatus): SellerC
       method: payment.type === "카드결제" ? "신용카드" : "계좌이체",
       amount: payment.amount,
       status: "결제완료",
-      approvalNumber: `${payment.type === "카드결제" ? "CARD" : "BANK"}-${suffix.replace(/\D/g, "").slice(-6)}`,
-      processedBy: "시스템",
+      approvalNumber: `${payment.type === "카드결제" ? "CARD" : "BANK"}-${suffix.replace(/\D/g, "").slice(-6)}${index + 1}`,
+      // 현금입금: 입금자명 / 카드: 시스템
+      processedBy: payment.type === "계좌이체" ? payment.depositorName || detail.customerName : "시스템",
     }));
   const refunds: ReservationRefund[] = detail.payments
     .filter((payment) => payment.type === "환불")

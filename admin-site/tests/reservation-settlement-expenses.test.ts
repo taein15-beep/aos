@@ -186,7 +186,7 @@ test("확인완료 비용 합산", () => {
   assert.equal(summary.unconfirmedCount, 1);
 });
 
-test("임시 상태와 실제 저장 구분 — 전표번호 미생성", () => {
+test("전표번호 미생성 라인은 null 유지", () => {
   const id = createExpenseId();
   assert.match(id, /^exp-/);
   const view = buildSettlementExpenseView({
@@ -196,7 +196,6 @@ test("임시 상태와 실제 저장 구분 — 전표번호 미생성", () => {
     eventKey: "E1",
     lines: [line({ id: "x1", voucherNumber: null })],
   });
-  assert.match(view.stateNote, /저장되지 않습니다/);
   assert.equal(view.lines[0].voucherNumber, null);
 });
 

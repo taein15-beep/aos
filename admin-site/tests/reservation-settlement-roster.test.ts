@@ -128,7 +128,7 @@ test("국내상품 표시 — 여권열 숨김", () => {
   assert.equal(view.showPassportColumns, false);
 });
 
-test("해외상품 여권정보 조건부 표시(미등록, 번호 미포함)", () => {
+test("해외상품 여권정보 샘플 표시", () => {
   assert.equal(resolveTourRegion({ productCategory: "해외여행 > 중국여행 > 청도" }), "overseas");
   const view = buildSettlementRoster([
     baseInput({
@@ -138,9 +138,13 @@ test("해외상품 여권정보 조건부 표시(미등록, 번호 미포함)", 
     }),
   ]);
   assert.equal(view.showPassportColumns, true);
-  assert.ok(view.rows.every((row) => row.passportStatus === "미등록"));
-  assert.ok(view.rows.every((row) => row.passportEnglishName === null));
-  assert.match(view.dataNote, /여권번호/);
+  assert.ok(view.rows.every((row) => row.passportStatus === "확인 필요"));
+  assert.ok(view.rows.every((row) => Boolean(row.passportNumber)));
+  assert.ok(view.rows.every((row) => Boolean(row.passportSurname)));
+  assert.ok(view.rows.every((row) => Boolean(row.passportGivenName)));
+  assert.ok(view.rows.every((row) => row.nationality === "대한민국"));
+  assert.ok(view.rows.every((row) => Boolean(row.passportExpiry)));
+  assert.equal(view.dataNote, "");
 });
 
 test("타 여행사 고객정보 접근 제한은 STEP2 targets를 따름", () => {

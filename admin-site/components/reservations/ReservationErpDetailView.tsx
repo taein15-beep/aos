@@ -12,6 +12,10 @@ import {
 } from "@/lib/admin/reservations-data";
 import { getSellerCancelRequests } from "@/lib/seller/seller-cancel-request-store";
 import { getSellerReservationDetail } from "@/lib/seller/seller-reservations-data";
+import {
+  formatWithdrawalVoucher,
+  listReservationWithdrawals,
+} from "@/lib/admin/reservation-withdrawals-data";
 
 type Props = {
   reservation: ReservationDetail;
@@ -43,7 +47,7 @@ const RESERVE_STATUS_OPTIONS = ["예약접수", "예약확정", "대기", "취�
 const PAYMENT_STATUS_OPTIONS = ["미결제", "부분결제", "결제완료", "환불진행", "환불완료"];
 const CHANNEL_OPTIONS = ["자사판매", "제휴여행사", "판매점"];
 const PAX_COLUMNS = ["No", "한글명", "성(영문)", "이름(영문)", "성별", "국적", "여권번호", "유효기간", "생일", "탑승지", "보험", "지자체증빙", "티켓", "여권"];
-const OUTPUT_COLUMNS = ["No", "항목 및 규격", "수량", "단가", "합계", "승인번호", "일자", "비고", "거래처", "지출비고"];
+const OUTPUT_COLUMNS = ["No", "항목 및 규격", "수량", "단가", "합계", "승인번호", "일자", "비고", "거래처", "지출전표"];
 
 function withCurrent(options: string[], current: string) {
   return current && !options.includes(current) ? [current, ...options] : options;
@@ -168,6 +172,8 @@ export function ReservationErpDetailView({
     const today = new Date().toISOString().slice(0, 10);
     return day !== "-" && day < today ? { label: "출발완료", tone: "gray" } : { label: "출발대기", tone: "blue" };
   }, [displayReserveStatus, reservation.departureAt]);
+
+  const withdrawals = useMemo(() => listReservationWithdrawals(reservation.code), [reservation.code]);
 
   const travelers = useMemo<TravelerRow[]>(() => {
     const boarding = reservation.boardingPoint || sellerDetail?.boardingPlace || "";
@@ -743,7 +749,24 @@ export function ReservationErpDetailView({
               </tr>
             </thead>
             <tbody>
-              <EmptyRow colSpan={OUTPUT_COLUMNS.length} message="등록된 출금 내역이 없습니다." />
+              {withdrawals.length ? (
+                withdrawals.map((line, index) => (
+                  <tr key={line.id}>
+                    <td className="center">{index + 1}</td>
+                    <td>{line.itemSpec}</td>
+                    <td className="center">1</td>
+                    <td className="right">{formatKrw(line.amount)}</td>
+                    <td className="right">{formatKrw(line.amount)}</td>
+                    <td className="center">-</td>
+                    <td className="center">{line.withdrawnAt}</td>
+                    <td>-</td>
+                    <td>{line.vendorName}</td>
+                    <td>{formatWithdrawalVoucher(line.voucherNumber)}</td>
+                  </tr>
+                ))
+              ) : (
+                <EmptyRow colSpan={OUTPUT_COLUMNS.length} message="등록된 출금 내역이 없습니다." />
+              )}
             </tbody>
           </table>
         </div>

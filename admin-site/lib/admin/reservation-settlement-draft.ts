@@ -38,8 +38,23 @@ export type SettlementTargetReservation = {
   reserveStatus: string;
   peopleLabel: string;
   peopleCount: number;
+  /** 판매된 곳: 본사 / 제휴업체명 / 판매점명 */
+  salesChannel: string;
   isSource: boolean;
 };
+
+/** 정산 목록용 판매채널 표기 — 본사 · 제휴업체명 · 판매점명 */
+export function resolveSettlementSalesChannel(reservation: Pick<ReservationDetail, "source" | "agency">): string {
+  const source = reservation.source;
+  if (!source || source.type === "direct") return "본사";
+  if (source.type === "seller") {
+    const sellerName = source.sellerName?.trim() || source.sellingAgencyName?.trim() || "판매점";
+    // SAMPLE: 판매점(그래가자) 접수는 본사 채널로 표기
+    if (sellerName === "그래가자") return "본사";
+    return sellerName;
+  }
+  return source.sellingAgencyName?.trim() || "제휴업체";
+}
 
 export type SettlementDocumentDraftView = {
   method: SettlementMethod;
@@ -95,6 +110,7 @@ function toTarget(reservation: ReservationDetail, sourceCode: string): Settlemen
     reserveStatus: reservation.reserveStatus,
     peopleLabel: formatPeopleLabel(reservation.counts),
     peopleCount: countReservationPeople(reservation.counts),
+    salesChannel: resolveSettlementSalesChannel(reservation),
     isSource: reservation.code === sourceCode,
   };
 }

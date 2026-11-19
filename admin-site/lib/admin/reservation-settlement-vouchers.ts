@@ -93,6 +93,27 @@ export function hasVoucherNumber(voucherNumber: string | null | undefined): bool
   return Boolean(voucherNumber?.trim());
 }
 
+/** 화면 임시 전표번호. EXP-YYYYMMDD-NNN */
+export function createExpenseVoucherNumber(
+  existing: Array<{ voucherNumber?: string | null }> = [],
+  date = new Date(),
+): string {
+  const ymd = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("");
+  const prefix = `EXP-${ymd}-`;
+  let max = 0;
+  for (const item of existing) {
+    const value = item.voucherNumber?.trim() || "";
+    if (!value.startsWith(prefix)) continue;
+    const seq = Number(value.slice(prefix.length));
+    if (Number.isFinite(seq) && seq > max) max = seq;
+  }
+  return `${prefix}${String(max + 1).padStart(3, "0")}`;
+}
+
 export function paymentStatusLabel(status: SettlementVoucherPaymentStatus): string {
   switch (status) {
     case "unpaid":

@@ -696,7 +696,7 @@ export default function ReservationsPage() {
                     <th>판매채널 / 판매사</th>
                     <th>담당자</th>
                     <th>알림 / 메모</th>
-                    <th>관리</th>
+                    <th>정산서</th>
                   </tr>
                 </thead>
                 <tbody>

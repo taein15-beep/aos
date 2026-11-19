@@ -1,7 +1,7 @@
 /**
  * 정산서 STEP 4 — 고객명단 조회 (읽기 전용)
- * - STEP 2 targets 재사용. 없는 여행자·여권정보를 생성하지 않습니다.
- * - SAMPLE Mock 기준이며 운영 수준의 개인정보 보안으로 간주하지 않습니다.
+ * - STEP 2 targets 재사용.
+ * - SAMPLE Mock 기준이며 여권정보는 UI 확인용 샘플입니다. 실운영 데이터로 간주하지 않습니다.
  */
 
 import { SAMPLE_PRODUCTS } from "@/lib/admin/products-data";
@@ -33,7 +33,11 @@ export type SettlementTravelerRow = {
   phone: string | null;
   boardingPoint: string | null;
   role: SettlementTravelerRole;
+  passportNumber: string | null;
+  passportSurname: string | null;
+  passportGivenName: string | null;
   passportEnglishName: string | null;
+  nationality: string | null;
   passportStatus: "미등록" | "확인 필요";
   passportExpiry: string | null;
 };
@@ -69,10 +73,109 @@ export type SettlementRosterReservationInput = {
     type: SellerReservationTravelerType;
     phoneMasked?: string | null;
     birthDate?: string | null;
+    gender?: string | null;
   }>;
   /** true 이면 해당 예약 명단 조회 실패로 처리 */
   unavailable?: boolean;
 };
+
+const SAMPLE_SURNAME_ROMAN: Record<string, string> = {
+  김: "KIM",
+  이: "LEE",
+  박: "PARK",
+  최: "CHOI",
+  정: "JUNG",
+  강: "KANG",
+  조: "CHO",
+  윤: "YOON",
+  장: "JANG",
+  임: "LIM",
+  한: "HAN",
+  오: "OH",
+  서: "SEO",
+  신: "SHIN",
+  권: "KWON",
+  황: "HWANG",
+  안: "AHN",
+  송: "SONG",
+  홍: "HONG",
+};
+
+const SAMPLE_GIVEN_ROMAN: Record<string, string> = {
+  민수: "MINSU",
+  영희: "YOUNGHEE",
+  지우: "JIWOO",
+  준혁: "JUNHYUK",
+  하윤: "HAYOON",
+  아린: "ARIN",
+  서준: "SEOJUN",
+  동행: "DONGHAENG",
+  길동: "GILDONG",
+};
+
+function hashSeed(text: string) {
+  let hash = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (hash * 31 + text.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function sampleGender(name: string, fallback?: string | null) {
+  if (fallback?.trim()) return fallback.trim();
+  return hashSeed(name) % 2 === 0 ? "남" : "여";
+}
+
+function sampleBirthDate(name: string, fallback?: string | null) {
+  if (fallback?.trim()) return fallback.trim();
+  const seed = hashSeed(name);
+  const year = 1975 + (seed % 25);
+  const month = String((seed % 12) + 1).padStart(2, "0");
+  const day = String((seed % 28) + 1).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function romanizeKoreanName(name: string) {
+  const trimmed = name.trim();
+  const surnameKo = trimmed.slice(0, 1);
+  const givenKo = trimmed.slice(1);
+  const surname = SAMPLE_SURNAME_ROMAN[surnameKo] || "KIM";
+  const given =
+    SAMPLE_GIVEN_ROMAN[givenKo] ||
+    givenKo
+      .split("")
+      .map((char, index) => String.fromCharCode(65 + ((char.charCodeAt(0) + index) % 26)))
+      .join("")
+      .slice(0, 8)
+      .toUpperCase() || "TRAVELER";
+  return { surname, givenName: given, englishName: `${surname} ${given}` };
+}
+
+function buildSamplePassport(input: {
+  reservationCode: string;
+  travelerName: string;
+  gender: string | null;
+  birthDate: string | null;
+  index: number;
+}) {
+  const roman = romanizeKoreanName(input.travelerName);
+  const seed = hashSeed(`${input.reservationCode}:${input.travelerName}:${input.index}`);
+  const passportNumber = `M${String(10000000 + (seed % 90000000))}`;
+  const expiryYear = 2028 + (seed % 5);
+  const expiryMonth = String((seed % 12) + 1).padStart(2, "0");
+  const expiryDay = String((seed % 28) + 1).padStart(2, "0");
+  return {
+    passportNumber,
+    passportSurname: roman.surname,
+    passportGivenName: roman.givenName,
+    passportEnglishName: roman.englishName,
+    nationality: "대한민국",
+    passportStatus: "확인 필요" as const,
+    passportExpiry: `${expiryYear}-${expiryMonth}-${expiryDay}`,
+    gender: sampleGender(input.travelerName, input.gender),
+    birthDate: sampleBirthDate(input.travelerName, input.birthDate),
+  };
+}
 
 const SELLER_PRODUCT_CATEGORY = new Map(
   listSellerAdminProducts(SELLER_CHANNEL_SELLER_ID).map((product) => [product.productCode, product.category]),
@@ -112,39 +215,62 @@ export function buildRosterRowsForReservation(input: SettlementRosterReservation
   const boarding = input.boardingPoint?.trim() || null;
 
   if (input.bookerName.trim()) {
+    const passport = buildSamplePassport({
+      reservationCode: input.code,
+      travelerName: input.bookerName,
+      gender: input.bookerGender?.trim() || null,
+      birthDate: input.bookerBirthDate?.trim() || null,
+      index: 0,
+    });
     rows.push({
       id: `${input.code}:booker:0`,
       reservationCode: input.code,
       bookerName: input.bookerName,
       travelerName: input.bookerName,
       personType: bookerPersonType(input.counts),
-      gender: input.bookerGender?.trim() || null,
-      birthDate: input.bookerBirthDate?.trim() || null,
+      gender: passport.gender,
+      birthDate: passport.birthDate,
       phone: input.phone?.trim() || null,
       boardingPoint: boarding,
       role: "booker",
-      passportEnglishName: null,
-      passportStatus: "미등록",
-      passportExpiry: null,
+      passportNumber: passport.passportNumber,
+      passportSurname: passport.passportSurname,
+      passportGivenName: passport.passportGivenName,
+      passportEnglishName: passport.passportEnglishName,
+      nationality: passport.nationality,
+      passportStatus: passport.passportStatus,
+      passportExpiry: passport.passportExpiry,
     });
   }
 
   (input.companions ?? []).forEach((companion, index) => {
     if (!companion.name?.trim()) return;
+    const travelerName = companion.name.trim();
+    const passport = buildSamplePassport({
+      reservationCode: input.code,
+      travelerName,
+      gender: companion.gender?.trim() || null,
+      birthDate: companion.birthDate?.trim() || null,
+      index: index + 1,
+    });
     rows.push({
       id: `${input.code}:companion:${index}`,
       reservationCode: input.code,
       bookerName: input.bookerName,
-      travelerName: companion.name.trim(),
+      travelerName,
       personType: companion.type,
-      gender: null,
-      birthDate: companion.birthDate?.trim() || null,
+      gender: passport.gender,
+      birthDate: passport.birthDate,
       phone: companion.phoneMasked?.trim() || null,
       boardingPoint: boarding,
       role: "companion",
-      passportEnglishName: null,
-      passportStatus: "미등록",
-      passportExpiry: null,
+      passportNumber: passport.passportNumber,
+      passportSurname: passport.passportSurname,
+      passportGivenName: passport.passportGivenName,
+      passportEnglishName: passport.passportEnglishName,
+      nationality: passport.nationality,
+      passportStatus: passport.passportStatus,
+      passportExpiry: passport.passportExpiry,
     });
   });
 
@@ -182,7 +308,7 @@ export function buildSettlementRoster(inputs: SettlementRosterReservationInput[]
       headcountLabel: "명단 조회 실패",
       showPassportColumns: false,
       emptyReason: "unavailable",
-      dataNote: "SAMPLE Mock 고객명단 기준 (실운영 고객정보 아님)",
+      dataNote: "",
     };
   }
 
@@ -197,7 +323,7 @@ export function buildSettlementRoster(inputs: SettlementRosterReservationInput[]
       headcountLabel: "명단 조회 실패",
       showPassportColumns: false,
       emptyReason: "unavailable",
-      dataNote: "SAMPLE Mock 고객명단 기준 (실운영 고객정보 아님)",
+      dataNote: "",
     };
   }
 
@@ -230,7 +356,7 @@ export function buildSettlementRoster(inputs: SettlementRosterReservationInput[]
     headcountLabel: headcount.label,
     showPassportColumns,
     emptyReason: listedPeopleCount === 0 ? "no_roster" : null,
-    dataNote: "SAMPLE Mock 고객명단 기준 (실운영 고객정보 아님) · 여권번호는 정산서에 표시하지 않습니다",
+    dataNote: "",
   };
 }
 
