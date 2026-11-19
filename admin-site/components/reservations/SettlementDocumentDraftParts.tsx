@@ -28,17 +28,6 @@ import {
 } from "@/lib/admin/reservation-settlement-sales";
 import { SettlementExpensePanel } from "@/components/reservations/SettlementExpensePanel";
 
-function PlaceholderPanel({ title, note = "다음 단계에서 연동 예정" }: { title: string; note?: string }) {
-  return (
-    <section className="panel member-web-detail-card settlement-doc-draft-panel">
-      <div className="member-web-detail-card-head">
-        <strong>{title}</strong>
-      </div>
-      <p className="settlement-doc-draft-placeholder">{note}</p>
-    </section>
-  );
-}
-
 function MoneyValue({ value, tone }: { value: MoneyDisplay; tone?: "due" | "over" | "net" | "profit" | "loss" }) {
   if (value.kind === "needs_review") {
     return <strong className="settlement-sales-kpi-review">{value.label}</strong>;
@@ -671,10 +660,6 @@ export function SettlementIndividualExpenseSection({
   );
 }
 
-export function SettlementDocumentFutureSections() {
-  return <PlaceholderPanel title="입금·결제·지출전표 상세" />;
-}
-
 export function SettlementDocumentShell({
   view,
   expenses,
@@ -772,7 +757,6 @@ export function SettlementDocumentShell({
         expenses={expenses}
         onChange={onExpensesChange}
       />
-      <SettlementDocumentFutureSections />
     </div>
   );
 }
